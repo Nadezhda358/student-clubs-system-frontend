@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @SpringBootApplication
-@EnableFeignClients(basePackages = "com.school.ppmg.student_clubs_system_client.client")
+@EnableFeignClients(basePackages = "com.school.ppmg.student_clubs_system_client.clients")
 public class StudentClubsSystemClientApplication {
 
 	public static void main(String[] args) {
