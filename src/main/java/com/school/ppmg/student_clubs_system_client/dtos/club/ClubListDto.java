@@ -4,5 +4,6 @@ public record ClubListDto(
         Long id,
         String name,
         String room,
-        Boolean isActive
+        Boolean isActive,
+        String mainImage
 ) {}

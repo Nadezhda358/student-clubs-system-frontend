@@ -1,208 +1,73 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+  <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Student Clubs</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Student Clubs | ClubsHub</title>
+    <link th:href="@{/assets/logo.png}" rel="icon" type="image/png"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Sora:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" th:href="@{/css/clubs.css}" />
+  </head>
+  <body>
+    <header>
+      <div class="container">
+        <nav class="navbar">
+          <div class="brand">
+            <div class="brand-mark">
+              <img src="assets/logo.png" alt="ClubsHub logo" />
+            </div>
+            <div class="brand-text">
+              <span>ClubsHub</span>
+              <span>Student Life</span>
+            </div>
+          </div>
 
-    <link rel="stylesheet" th:href="@{/css/home.css}" />
-</head>
-<body>
+          <div class="nav-links">
+            <a class="active" href="#">Dashboard</a>
+            <a href="#">Clubs</a>
+            <a href="#">Projects</a>
+            <a href="#">Calendar</a>
+            <a href="#">Contact</a>
+          </div>
 
-<header class="site-header">
-    <div class="container header-inner">
-        <a class="brand" th:href="@{/}">
-            <span class="brand-mark" aria-hidden="true">★</span>
-            <span class="brand-text">Student Clubs</span>
-        </a>
-
-        <nav class="nav">
-            <a th:href="@{/}" class="nav-link is-active">Home</a>
-            <a th:href="@{/clubs}" class="nav-link">Browse</a>
-            <a th:href="@{/events}" class="nav-link">Events</a>
-            <a th:href="@{/login}" class="nav-link nav-cta">Login</a>
+          <div class="nav-actions">
+            <button class="cta-button" type="button">+ New Event</button>
+            <div class="avatar" aria-hidden="true"></div>
+          </div>
         </nav>
-    </div>
-</header>
 
-<main class="page">
-    <!-- Animated background blobs -->
-    <div class="bg-blobs" aria-hidden="true">
-        <span class="blob blob-1"></span>
-        <span class="blob blob-2"></span>
-        <span class="blob blob-3"></span>
-        <span class="blob blob-4"></span>
-    </div>
-
-    <section class="hero container">
-        <div class="hero-left">
-            <div class="hero-badge">
-                <span class="dot"></span>
-                New clubs & activities every week
-            </div>
-
-            <h1 class="hero-title">
-                Find your people.
-                <span class="accent">Join a club</span>
-                today.
-            </h1>
-
-            <p class="hero-subtitle">
-                Explore clubs, meet friends, and build cool things after class. Pick a club that matches your vibe.
+        <section class="hero">
+          <div>
+            <span class="hero-tag">Human-centered clubs</span>
+            <h1>We are your partners in student clubs & campus events.</h1>
+            <p>
+              Build communities, track activities, and share events with one
+              modern dashboard. Give every club a home, every member a voice,
+              and every event a moment to shine.
             </p>
-
-            <div class="hero-actions">
-                <a class="btn btn-primary" th:href="@{/clubs}">Explore clubs</a>
-                <a class="btn btn-ghost" th:href="@{/clubs(active=true)}">Show active</a>
+            <div class="hero-buttons">
+              <button class="cta-button" type="button">Get Started</button>
+              <button class="ghost-button" type="button">Learn More</button>
             </div>
+          </div>
 
-            <div class="hero-stats">
-                <div class="stat">
-                    <div class="stat-num" th:text="${page != null ? page.totalElements : 0}">25</div>
-                    <div class="stat-label">clubs</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-num">∞</div>
-                    <div class="stat-label">memories</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-num">+XP</div>
-                    <div class="stat-label">skills</div>
-                </div>
+          <div class="hero-visual">
+            <div class="mock-image" role="img" aria-label="Club dashboard mockup">
+              <div class="mock-lines"></div>
             </div>
-        </div>
-
-        <div class="hero-right">
-            <div class="hero-card">
-                <div class="hero-card-top">
-                    <div class="spark" aria-hidden="true">✦</div>
-                    <div>
-                        <div class="hero-card-title">Quick filters</div>
-                        <div class="hero-card-subtitle">Make it easy to find your match</div>
-                    </div>
-                </div>
-
-                <form class="filter" method="get" th:action="@{/}">
-                    <label class="field">
-                        <span class="field-label">Status</span>
-                        <select class="field-input" name="active">
-                            <option th:selected="${active == null}" value="">All</option>
-                            <option th:selected="${active == true}" value="true">Active</option>
-                            <option th:selected="${active == false}" value="false">Inactive</option>
-                        </select>
-                    </label>
-
-                    <label class="field">
-                        <span class="field-label">Cards per page</span>
-                        <select class="field-input" name="size">
-                            <option th:selected="${size == 6}" value="6">6</option>
-                            <option th:selected="${size == 9}" value="9">9</option>
-                            <option th:selected="${size == 12}" value="12">12</option>
-                        </select>
-                    </label>
-
-                    <input type="hidden" name="page" value="0" />
-                    <input type="hidden" name="sort" th:value="${sort}" />
-
-                    <button class="btn btn-primary btn-block" type="submit">Apply</button>
-                </form>
-
-                <div class="hero-tip">
-                    Tip: hover the cards ✨
-                </div>
+            <div class="float-pill">Live Club Feed</div>
+            <div class="float-card">
+              <h4>28 Clubs Active</h4>
+              <p>Next: Activities Fair</p>
             </div>
-        </div>
-    </section>
-
-    <section class="container section-head">
-        <div>
-            <h2 class="section-title">Clubs</h2>
-            <p class="section-subtitle">A colorful list of what’s happening at school.</p>
-        </div>
-
-        <a class="btn btn-ghost" th:href="@{/clubs}">Open full list →</a>
-    </section>
-
-    <section class="container">
-        <div class="grid">
-            <!-- Empty state -->
-            <div class="empty" th:if="${clubs == null or #lists.isEmpty(clubs)}">
-                <div class="empty-icon">🫧</div>
-                <div class="empty-title">No clubs found</div>
-                <div class="empty-subtitle">Try changing the filter.</div>
-            </div>
-
-            <!-- Cards -->
-            <a class="club-card"
-               th:each="c : ${clubs}"
-               th:href="@{/clubs/{id}(id=${c.id})}">
-                <div class="card-top">
-                    <div class="badge" th:classappend="${c.isActive} ? ' badge-live' : ' badge-muted'">
-                        <span class="pulse" th:if="${c.isActive}" aria-hidden="true"></span>
-                        <span th:text="${c.isActive} ? 'Active' : 'Inactive'">Active</span>
-                    </div>
-
-                    <div class="card-emoji" aria-hidden="true">🎉</div>
-                </div>
-
-                <div class="card-title" th:text="${c.name}">Chess Club</div>
-
-                <div class="card-meta">
-                    <div class="meta-pill">
-                        <span aria-hidden="true">📍</span>
-                        <span>Room</span>
-                        <strong th:text="${c.room}">C02</strong>
-                    </div>
-                </div>
-
-                <div class="card-footer">
-                    <span class="card-link">Open →</span>
-                    <span class="card-id" th:text="'#' + ${c.id}">#12</span>
-                </div>
-
-                <span class="shine" aria-hidden="true"></span>
-            </a>
-        </div>
-
-        <!-- Simple pager for the home page -->
-        <div class="pager" th:if="${page != null and page.totalPages > 1}">
-            <a class="btn btn-ghost"
-               th:classappend="${page.first} ? ' is-disabled' : ''"
-               th:href="@{/(active=${active}, page=${page.number - 1}, size=${size}, sort=${sort})}">
-                Prev
-            </a>
-
-            <div class="pager-text">
-                Page <strong th:text="${page.number + 1}">1</strong> / <strong th:text="${page.totalPages}">1</strong>
-                · Total <strong th:text="${page.totalElements}">0</strong>
-            </div>
-
-            <a class="btn btn-primary"
-               th:classappend="${page.last} ? ' is-disabled' : ''"
-               th:href="@{/(active=${active}, page=${page.number + 1}, size=${size}, sort=${sort})}">
-                Next
-            </a>
-        </div>
-    </section>
-</main>
-
-<footer class="site-footer">
-    <div class="container footer-inner">
-        <div class="footer-left">
-            <div class="footer-brand">
-                <span class="brand-mark" aria-hidden="true">★</span>
-                <span>Student Clubs</span>
-            </div>
-            <p class="footer-note">Made for fun school life — clubs, events, friends.</p>
-        </div>
-
-        <div class="footer-right">
-            <a th:href="@{/clubs}" class="footer-link">Clubs</a>
-            <a th:href="@{/events}" class="footer-link">Events</a>
-            <a th:href="@{/about}" class="footer-link">About</a>
-        </div>
-    </div>
-</footer>
-
-</body>
+          </div>
+        </section>
+      </div>
+    </header>
+  </body>
 </html>
