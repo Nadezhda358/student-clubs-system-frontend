@@ -69,5 +69,152 @@
         </section>
       </div>
     </header>
+
+    <main>
+      <section class="clubs-section" id="clubs-section">
+        <div class="container">
+          <div class="section-heading">
+            <h2>Explore Student Clubs</h2>
+            <p>Find your community, meet new friends, and see where each club meets.</p>
+          </div>
+
+          <div class="club-grid">
+            <article class="club-card" th:each="club : ${clubs}">
+              <div
+                class="club-card__media"
+                th:classappend="${club.mainImage != null and !#strings.isEmpty(club.mainImage)} ? ' has-image' : ''"
+              >
+                <img
+                  th:if="${club.mainImage != null and !#strings.isEmpty(club.mainImage)}"
+                  th:src="@{/assets/{file}(file=${club.mainImage})}"
+                  th:alt="${club.name} + ' cover'"
+                />
+                <span
+                  class="club-card__placeholder"
+                  th:if="${club.mainImage == null or #strings.isEmpty(club.mainImage)}"
+                  th:text="${club.name != null and !#strings.isEmpty(club.name) ? #strings.substring(club.name, 0, 1) : 'C'}"
+                >
+                  C
+                </span>
+              </div>
+              <div class="club-card__body">
+                <h3 th:text="${club.name}">Club Name</h3>
+                <p class="club-room">
+                  <span>Room</span>
+                  <span th:text="${club.room != null and !#strings.isEmpty(club.room) ? club.room : 'TBD'}">A-204</span>
+                </p>
+              </div>
+            </article>
+            <div class="club-empty" th:if="${#lists.isEmpty(clubs)}">
+              <p>No clubs available yet. Check back soon!</p>
+            </div>
+          </div>
+
+          <div
+            class="pagination"
+            th:with="currentPage=${page.totalPages > 0 ? page.number + 1 : 1}, totalPages=${page.totalPages > 0 ? page.totalPages : 1}, lastIndex=${page.totalPages > 0 ? page.totalPages - 1 : 0}"
+          >
+            <a
+              class="page-button"
+              th:classappend="${page.first} ? ' disabled' : ''"
+              th:href="${page.first} ? '#' : (@{/clubs(page=0, size=${size}, sort=${sort}, active=${active})} + '#clubs-section')"
+              th:attr="aria-disabled=${page.first}"
+            >
+              First
+            </a>
+            <a
+              class="page-button"
+              th:classappend="${page.first} ? ' disabled' : ''"
+              th:href="${page.first} ? '#' : (@{/clubs(page=${page.number - 1}, size=${size}, sort=${sort}, active=${active})} + '#clubs-section')"
+              th:attr="aria-disabled=${page.first}"
+            >
+              Previous
+            </a>
+
+            <form class="page-input" th:action="@{/clubs#clubs-section}" method="get">
+              <input type="hidden" name="size" th:value="${size}" />
+              <input type="hidden" name="sort" th:value="${sort}" />
+              <input type="hidden" name="active" th:value="${active}" />
+              <label class="sr-only" for="pageNumber">Page</label>
+              <input
+                id="pageNumber"
+                name="pageDisplay"
+                type="number"
+                min="1"
+                inputmode="numeric"
+                th:attr="max=${totalPages}"
+                th:value="${currentPage}"
+              />
+              <span class="page-total">of <span th:text="${totalPages}">1</span></span>
+            </form>
+
+            <a
+              class="page-button"
+              th:classappend="${page.last} ? ' disabled' : ''"
+              th:href="${page.last} ? '#' : (@{/clubs(page=${page.number + 1}, size=${size}, sort=${sort}, active=${active})} + '#clubs-section')"
+              th:attr="aria-disabled=${page.last}"
+            >
+              Next
+            </a>
+            <a
+              class="page-button"
+              th:classappend="${page.last} ? ' disabled' : ''"
+              th:href="${page.last} ? '#' : (@{/clubs(page=${lastIndex}, size=${size}, sort=${sort}, active=${active})} + '#clubs-section')"
+              th:attr="aria-disabled=${page.last}"
+            >
+              Last
+            </a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="page-footer">
+      <div class="container">
+        <p>&copy; 2026 ClubsHub. Built for student communities.</p>
+      </div>
+    </footer>
+
+    <script>
+      const toneClasses = ["tone-1", "tone-2", "tone-3", "tone-4", "tone-5", "tone-6"];
+      document.querySelectorAll(".club-card__media:not(.has-image)").forEach((media) => {
+        const tone = toneClasses[Math.floor(Math.random() * toneClasses.length)];
+        media.classList.add(tone);
+      });
+
+      const pageForm = document.querySelector(".page-input");
+      if (pageForm) {
+        const pageInput = pageForm.querySelector("input[name='pageDisplay']");
+        const hiddenPage =
+          pageForm.querySelector("input[name='page']") ||
+          Object.assign(document.createElement("input"), {
+            type: "hidden",
+            name: "page"
+          });
+        if (!hiddenPage.parentNode) {
+          pageForm.appendChild(hiddenPage);
+        }
+
+        const normalizePage = () => {
+          const raw = Number.parseInt(pageInput.value, 10);
+          const max = Number.parseInt(pageInput.max || "1", 10);
+          const safeValue = Number.isNaN(raw) ? 1 : Math.min(Math.max(raw, 1), max);
+          hiddenPage.value = String(safeValue - 1);
+        };
+
+        pageInput.addEventListener("change", () => {
+          normalizePage();
+          if (pageForm.requestSubmit) {
+            pageForm.requestSubmit();
+          } else {
+            pageForm.submit();
+          }
+        });
+
+        pageForm.addEventListener("submit", () => {
+          normalizePage();
+        });
+      }
+    </script>
   </body>
 </html>

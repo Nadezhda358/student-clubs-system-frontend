@@ -13,12 +13,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequiredArgsConstructor
 public class ClubController {
     private final ClubClient clubClient;
+    private static final int PAGE_SIZE = 9;
 
     @GetMapping("/clubs")
     public String clubsPage(
             @RequestParam(required = false) Boolean active,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "9") int size,
             @RequestParam(required = false) String sort,
             Model model
     ) {
@@ -27,7 +28,7 @@ public class ClubController {
             sort = "name,asc";
         }
 
-        PageResponse<ClubListDto> result = clubClient.getAll(active, page, size, sort);
+        PageResponse<ClubListDto> result = clubClient.getAll(active, page, PAGE_SIZE, sort);
 
         model.addAttribute("page", result);
         model.addAttribute("clubs", result.getContent());
@@ -35,7 +36,7 @@ public class ClubController {
         // keep query params for pagination links
         model.addAttribute("active", active);
         model.addAttribute("sort", sort);
-        model.addAttribute("size", size);
+        model.addAttribute("size", PAGE_SIZE);
 
         return "clubs/index";
     }

@@ -19,7 +19,7 @@ public interface ClubClient {
     PageResponse<ClubListDto> getAll(
             @RequestParam(required = false) Boolean active,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "9") int size,
             @RequestParam(required = false) String sort
     );
 
