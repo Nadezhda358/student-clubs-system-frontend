@@ -82,16 +82,16 @@
             <article class="club-card" th:each="club : ${clubs}">
               <div
                 class="club-card__media"
-                th:classappend="${club.mainImage != null and !#strings.isEmpty(club.mainImage)} ? ' has-image' : ''"
+                th:classappend="${club.mainImageUrl != null and !#strings.isEmpty(club.mainImageUrl)} ? ' has-image' : ''"
               >
                 <img
-                  th:if="${club.mainImage != null and !#strings.isEmpty(club.mainImage)}"
-                  th:src="@{/assets/{file}(file=${club.mainImage})}"
+                  th:if="${club.mainImageUrl != null and !#strings.isEmpty(club.mainImageUrl)}"
+                  th:src="${club.mainImageUrl}"
                   th:alt="${club.name} + ' cover'"
                 />
                 <span
                   class="club-card__placeholder"
-                  th:if="${club.mainImage == null or #strings.isEmpty(club.mainImage)}"
+                  th:if="${club.mainImageUrl == null or #strings.isEmpty(club.mainImageUrl)}"
                   th:text="${club.name != null and !#strings.isEmpty(club.name) ? #strings.substring(club.name, 0, 1) : 'C'}"
                 >
                   C

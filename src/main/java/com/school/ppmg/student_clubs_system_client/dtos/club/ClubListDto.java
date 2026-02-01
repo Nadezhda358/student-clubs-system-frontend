@@ -5,5 +5,5 @@ public record ClubListDto(
         String name,
         String room,
         Boolean isActive,
-        String mainImage
+        String mainImageUrl
 ) {}
