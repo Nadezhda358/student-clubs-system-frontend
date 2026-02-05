@@ -1,14 +1,4 @@
 
-      :root {
-        --lavender: #c7b6d8;
-        --royal-purple: #6b3fa0;
-        --sunlit-yellow: #f2c94c;
-        --deep-brown: #3b2a2c;
-        --olive: #676c3d;
-        --cloud: #f6f2fb;
-        --ink: #22161c;
-      }
-
       * {
         box-sizing: border-box;
       }
@@ -27,14 +17,14 @@
         color: inherit;
       }
 
-      header {
+      .hero-shell {
         position: relative;
         overflow: hidden;
         padding-bottom: 5rem;
       }
 
-      header::before,
-      header::after {
+      .hero-shell::before,
+      .hero-shell::after {
         content: "";
         position: absolute;
         border-radius: 999px;
@@ -43,7 +33,7 @@
         animation: drift 14s ease-in-out infinite;
       }
 
-      header::before {
+      .hero-shell::before {
         width: 420px;
         height: 420px;
         top: -160px;
@@ -52,7 +42,7 @@
         animation-delay: -2s;
       }
 
-      header::after {
+      .hero-shell::after {
         width: 520px;
         height: 520px;
         left: -220px;
@@ -68,92 +58,6 @@
         z-index: 1;
       }
 
-      .navbar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 1.2rem 0 1rem;
-        gap: 1.5rem;
-      }
-
-      .brand {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        font-weight: 700;
-      }
-
-      .brand-mark {
-        width: 75px;
-        height: 75px;
-        border-radius: 18px;
-        display: grid;
-        place-items: center;
-        box-shadow: 0 6px 16px rgba(59, 42, 44, 0.08);
-        overflow: hidden;
-        padding: 5px;
-      }
-
-      .brand-mark img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-      }
-
-      .brand-text {
-        display: flex;
-        flex-direction: column;
-        line-height: 1.1;
-      }
-
-      .brand-text span:first-child {
-        font-size: 1.5rem;
-        letter-spacing: 0.02em;
-      }
-
-      .brand-text span:last-child {
-        font-size: 0.8rem;
-        color: var(--olive);
-        text-transform: uppercase;
-        letter-spacing: 0.2em;
-      }
-
-      .nav-links {
-        display: flex;
-        align-items: center;
-        gap: 2rem;
-        font-size: 1.5rem;
-        font-weight: 500;
-        color: var(--deep-brown);
-      }
-
-      .nav-links a {
-        position: relative;
-        padding-bottom: 0.35rem;
-      }
-
-      .nav-links a::after {
-        content: "";
-        position: absolute;
-        left: 0;
-        bottom: 0;
-        width: 0;
-        height: 2px;
-        background: var(--royal-purple);
-        transition: width 0.25s ease;
-      }
-
-      .nav-links a:hover::after,
-      .nav-links a.active::after {
-        width: 100%;
-      }
-
-      .nav-actions {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-      }
-
       .cta-button {
         background: var(--royal-purple);
         color: white;
@@ -166,18 +70,7 @@
         transition: transform 0.25s ease, box-shadow 0.25s ease;
       }
 
-      .ghost-button {
-        background: transparent;
-        border: 1px solid rgba(59, 42, 44, 0.15);
-        padding: 0.8rem 1.4rem;
-        border-radius: 999px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: transform 0.25s ease, border-color 0.25s ease;
-      }
-
-      .cta-button:hover,
-      .ghost-button:hover {
+      .cta-button:hover {
         transform: translateY(-2px);
       }
 
@@ -512,19 +405,6 @@
         font-size: 0.95rem;
       }
 
-      .page-footer {
-        padding: 2rem 0 3rem;
-        background: rgba(255, 255, 255, 0.6);
-        border-top: 1px solid rgba(59, 42, 44, 0.08);
-      }
-
-      .page-footer p {
-        margin: 0;
-        font-size: 0.95rem;
-        color: rgba(34, 22, 28, 0.6);
-        text-align: center;
-      }
-
       .sr-only {
         position: absolute;
         width: 1px;
@@ -588,22 +468,6 @@
       }
 
       @media (max-width: 900px) {
-        .navbar {
-          flex-wrap: wrap;
-          justify-content: center;
-        }
-
-        .nav-links {
-          width: 100%;
-          justify-content: center;
-          flex-wrap: wrap;
-        }
-
-        .nav-actions {
-          width: 100%;
-          justify-content: center;
-        }
-
         .hero {
           grid-template-columns: 1fr;
         }
@@ -618,15 +482,6 @@
       }
 
       @media (max-width: 600px) {
-        .navbar {
-          align-items: flex-start;
-        }
-
-        .nav-links {
-          flex-direction: column;
-          gap: 0.75rem;
-        }
-
         .hero-buttons {
           flex-direction: column;
           align-items: flex-start;

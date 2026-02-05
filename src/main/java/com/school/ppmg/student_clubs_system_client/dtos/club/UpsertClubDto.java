@@ -13,5 +13,5 @@ public record UpsertClubDto(
         @Email @Size(max = 255) String contactEmail,
         @Size(max = 40) String contactPhone,
         @NotNull Boolean isActive,
-        Long createdById
+        @NotNull Long primaryTeacherId
 ) {}

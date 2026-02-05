@@ -11,36 +11,13 @@
       href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Sora:wght@300;400;600;700&display=swap"
       rel="stylesheet"
     />
+    <link rel="stylesheet" th:href="@{/css/site-chrome.css}" />
     <link rel="stylesheet" th:href="@{/css/clubs.css}" />
   </head>
   <body>
-    <header>
+    <div class="hero-shell">
+      <header th:replace="fragments/site-chrome :: siteHeader"></header>
       <div class="container">
-        <nav class="navbar">
-          <div class="brand">
-            <div class="brand-mark">
-              <img src="assets/logo.png" alt="ClubsHub logo" />
-            </div>
-            <div class="brand-text">
-              <span>ClubsHub</span>
-              <span>Student Life</span>
-            </div>
-          </div>
-
-          <div class="nav-links">
-            <a class="active" href="#">Dashboard</a>
-            <a href="#">Clubs</a>
-            <a href="#">Projects</a>
-            <a href="#">Calendar</a>
-            <a href="#">Contact</a>
-          </div>
-
-          <div class="nav-actions">
-            <button class="cta-button" type="button">+ New Event</button>
-            <div class="avatar" aria-hidden="true"></div>
-          </div>
-        </nav>
-
         <section class="hero">
           <div>
             <span class="hero-tag">Human-centered clubs</span>
@@ -68,7 +45,7 @@
           </div>
         </section>
       </div>
-    </header>
+    </div>
 
     <main>
       <section class="clubs-section" id="clubs-section">
@@ -169,11 +146,7 @@
       </section>
     </main>
 
-    <footer class="page-footer">
-      <div class="container">
-        <p>&copy; 2026 ClubsHub. Built for student communities.</p>
-      </div>
-    </footer>
+    <footer th:replace="fragments/site-chrome :: siteFooter"></footer>
 
     <script>
       const toneClasses = ["tone-1", "tone-2", "tone-3", "tone-4", "tone-5", "tone-6"];

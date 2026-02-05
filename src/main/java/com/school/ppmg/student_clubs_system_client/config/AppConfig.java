@@ -4,6 +4,7 @@ import feign.Logger;
 import feign.RequestInterceptor;
 import feign.codec.ErrorDecoder;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -28,17 +29,14 @@ public class AppConfig {
             }
 
             HttpServletRequest request = attrs.getRequest();
-
-            // Forward Authorization header
-            String authHeader = request.getHeader("Authorization");
-            if (authHeader != null) {
-                requestTemplate.header("Authorization", authHeader);
+            HttpSession session = request.getSession(false);
+            if (session == null) {
+                return;
             }
 
-            // Forward cookies (important for session-based auth)
-            String cookie = request.getHeader("Cookie");
-            if (cookie != null) {
-                requestTemplate.header("Cookie", cookie);
+            Object token = session.getAttribute(SessionConstants.SESSION_JWT);
+            if (token instanceof String jwt && !jwt.isBlank()) {
+                requestTemplate.header("Authorization", "Bearer " + jwt);
             }
         };
     }
