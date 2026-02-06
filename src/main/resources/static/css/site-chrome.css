@@ -8,6 +8,11 @@
   --ink: #22161c;
 }
 
+body {
+  background: linear-gradient(160deg, #fdfbff 0%, #f4ecfb 40%, #f7f7f0 100%);
+  min-height: 100vh;
+}
+
 .site-header,
 .page-footer {
   font-family: "Sora", sans-serif;
