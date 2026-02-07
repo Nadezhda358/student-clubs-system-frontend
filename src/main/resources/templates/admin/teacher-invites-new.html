@@ -18,19 +18,22 @@
       crossorigin="anonymous"
     />
     <link rel="stylesheet" th:href="@{/css/site-chrome.css}" />
+    <link rel="stylesheet" th:href="@{/css/admin-invites.css}" />
   </head>
-  <body class="bg-light">
+  <body class="bg-light admin-invites">
     <header th:replace="fragments/site-chrome :: siteHeader"></header>
 
-    <main class="container py-4">
+    <main class="container py-4 invite-page">
       <div class="row justify-content-center">
         <div class="col-lg-9 col-xl-8">
-          <div class="card shadow-sm">
-            <div class="card-body">
-              <h1 class="h4 mb-2">Invite Teachers</h1>
-              <p class="text-muted mb-4">
-                Send multiple teacher invites in one request.
-              </p>
+          <div class="invite-shell">
+            <section class="invite-panel">
+              <div class="invite-panel__header">
+                <h1 class="h4 mb-2">Invite Teachers</h1>
+                <p class="text-muted mb-4">
+                  Send multiple teacher invites in one request.
+                </p>
+              </div>
 
               <div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
               <div class="alert alert-warning" th:if="${warning}" th:text="${warning}"></div>
@@ -54,29 +57,32 @@
 
                 <button class="btn btn-primary mt-3" type="submit">Send Invites</button>
               </form>
-            </div>
-          </div>
+            </section>
 
-          <div class="card shadow-sm mt-4" th:if="${invites != null and !#lists.isEmpty(invites)}">
-            <div class="card-header bg-white">
-              <strong>Invites Sent</strong>
-            </div>
-            <div class="table-responsive">
-              <table class="table table-striped mb-0">
-                <thead class="table-light">
-                  <tr>
-                    <th scope="col">Email</th>
-                    <th scope="col">Expires At</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr th:each="invite : ${invites}">
-                    <td th:text="${invite.email}">teacher@school.bg</td>
-                    <td th:text="${invite.expiresAt}">2026-02-06T10:30:00Z</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+            <section
+              class="invite-panel invite-panel--table"
+              th:if="${invites != null and !#lists.isEmpty(invites)}"
+            >
+              <div class="invite-panel__header">
+                <strong>Invites Sent</strong>
+              </div>
+              <div class="table-responsive invite-panel__table">
+                <table class="table align-middle mb-0">
+                  <thead>
+                    <tr>
+                      <th scope="col">Email</th>
+                      <th scope="col">Expires At</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr th:each="invite : ${invites}">
+                      <td th:text="${invite.email}">teacher@school.bg</td>
+                      <td th:text="${invite.expiresAt}">2026-02-06T10:30:00Z</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
           </div>
         </div>
       </div>

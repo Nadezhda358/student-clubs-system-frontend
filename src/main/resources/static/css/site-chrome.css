@@ -11,6 +11,12 @@
 body {
   background: linear-gradient(160deg, #fdfbff 0%, #f4ecfb 40%, #f7f7f0 100%);
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+body > main {
+  flex: 1;
 }
 
 .site-header,
@@ -154,6 +160,7 @@ body {
   padding: 2rem 0 3rem;
   background: rgba(255, 255, 255, 0.6);
   border-top: 1px solid rgba(59, 42, 44, 0.08);
+  margin-top: auto;
 }
 
 .page-footer p {
