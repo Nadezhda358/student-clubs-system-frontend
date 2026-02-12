@@ -12,7 +12,7 @@ import java.util.List;
 @FeignClient(
         name = "student-clubs-system",
         contextId = "teacherInviteClient",
-        url = "${backend.api.base-url}/api/admin/teacher-invites"
+        url = "${app.api.base-url}/api/admin/teacher-invites"
 )
 public interface TeacherInviteClient {
 

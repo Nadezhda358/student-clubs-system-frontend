@@ -1,0 +1,16 @@
+<div th:fragment="content">
+  <div class="tab-message" th:if="${error}" th:text="${error}">
+    Announcements are not available yet.
+  </div>
+
+  <div th:if="${error == null}">
+    <div class="tab-message" th:if="${announcements == null or #lists.isEmpty(announcements)}">
+      No announcements yet.
+    </div>
+    <ul class="tab-list" th:if="${announcements != null and !#lists.isEmpty(announcements)}">
+      <li th:each="announcement : ${announcements}">
+        <span th:text="${announcement}">Announcement</span>
+      </li>
+    </ul>
+  </div>
+</div>

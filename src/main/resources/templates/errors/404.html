@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Not Found | ClubsHub</title>
+    <link th:href="@{/assets/logo.png}" rel="icon" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Sora:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" th:href="@{/css/site-chrome.css}" />
+    <link rel="stylesheet" th:href="@{/css/club-details.css}" />
+  </head>
+  <body>
+    <header th:replace="fragments/site-chrome :: siteHeader"></header>
+
+    <main class="club-details">
+      <div class="site-container">
+        <section class="error-panel">
+          <p class="error-code">404</p>
+          <h1 class="error-title">Club not found</h1>
+          <p class="error-text">
+            We could not find a club with ID
+            <span th:text="${missingClubId}">0</span>.
+          </p>
+          <a class="ghost-button" th:href="@{/clubs}">Back to clubs</a>
+        </section>
+      </div>
+    </main>
+
+    <footer th:replace="fragments/site-chrome :: siteFooter"></footer>
+  </body>
+</html>

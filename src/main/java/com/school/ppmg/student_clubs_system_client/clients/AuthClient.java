@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 @FeignClient(
         name = "student-clubs-system",
         contextId = "authClient",
-        url = "${backend.api.base-url}/api/auth"
+        url = "${app.api.base-url}/api/auth"
 )
 public interface AuthClient {
 

@@ -1,0 +1,198 @@
+.club-details,
+body {
+  font-family: "Sora", sans-serif;
+  color: var(--ink);
+}
+
+body {
+  margin: 0;
+}
+
+.club-details {
+  padding: 2.8rem 0 4rem;
+}
+
+.club-details__header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1.8rem;
+}
+
+.club-details__title {
+  font-family: "Playfair Display", serif;
+  font-size: clamp(2.2rem, 3.6vw, 3rem);
+  margin: 0 0 0.6rem;
+  color: var(--deep-brown);
+}
+
+.club-details__description {
+  margin: 0;
+  max-width: 720px;
+  color: rgba(34, 22, 28, 0.7);
+}
+
+.club-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  border-bottom: 1px solid rgba(34, 22, 28, 0.1);
+  padding-bottom: 0.75rem;
+  margin-bottom: 1.6rem;
+}
+
+.tab-button {
+  background: transparent;
+  border: 1px solid transparent;
+  padding: 0.55rem 1.2rem;
+  border-radius: 999px;
+  font-weight: 600;
+  color: var(--deep-brown);
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.tab-button:hover {
+  border-color: rgba(107, 63, 160, 0.2);
+  color: var(--royal-purple);
+}
+
+.tab-button.is-active {
+  background: rgba(107, 63, 160, 0.12);
+  border-color: rgba(107, 63, 160, 0.2);
+  color: var(--royal-purple);
+}
+
+.tab-panel {
+  display: none;
+}
+
+.tab-panel.is-active {
+  display: block;
+}
+
+.detail-grid {
+  display: grid;
+  gap: 1rem;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(34, 22, 28, 0.08);
+  border-radius: 18px;
+  padding: 1.5rem 1.7rem;
+}
+
+.detail-row {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 1.2rem;
+  align-items: start;
+}
+
+.detail-label {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: rgba(34, 22, 28, 0.5);
+  font-weight: 600;
+}
+
+.detail-value {
+  color: var(--deep-brown);
+  font-weight: 500;
+  white-space: pre-line;
+}
+
+.detail-value a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.status-badge.is-active {
+  background: rgba(16, 185, 129, 0.15);
+  color: #047857;
+}
+
+.status-badge.is-inactive {
+  background: rgba(239, 68, 68, 0.12);
+  color: #b91c1c;
+}
+
+.tab-placeholder,
+.tab-message {
+  padding: 1.2rem 1.4rem;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px dashed rgba(34, 22, 28, 0.12);
+  color: rgba(34, 22, 28, 0.65);
+}
+
+.tab-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.9rem;
+}
+
+.tab-list li {
+  padding: 0.9rem 1.1rem;
+  border-radius: 14px;
+  border: 1px solid rgba(34, 22, 28, 0.08);
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.error-panel {
+  margin: 1.5rem auto 0;
+  max-width: 640px;
+  padding: 2rem 2.2rem;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(34, 22, 28, 0.08);
+  text-align: center;
+}
+
+.error-code {
+  margin: 0;
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--royal-purple);
+}
+
+.error-title {
+  margin: 0.5rem 0 0.8rem;
+  font-family: "Playfair Display", serif;
+  color: var(--deep-brown);
+}
+
+.error-text {
+  margin: 0 0 1.4rem;
+  color: rgba(34, 22, 28, 0.7);
+}
+
+@media (max-width: 700px) {
+  .detail-row {
+    grid-template-columns: 1fr;
+    gap: 0.4rem;
+  }
+
+  .club-tabs {
+    gap: 0.6rem;
+  }
+
+  .tab-button {
+    width: 100%;
+    text-align: center;
+  }
+}
