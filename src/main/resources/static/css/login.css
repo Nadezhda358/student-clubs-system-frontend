@@ -12,6 +12,10 @@
   box-sizing: border-box;
 }
 
+html {
+  font-size: 67%;
+}
+
 body {
   margin: 0;
   font-family: "Sora", sans-serif;
@@ -25,19 +29,32 @@ a {
   color: inherit;
 }
 
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-left: 64px;
+  padding-right: 64px;
+}
+
 .login-page {
   min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding: 2.5rem 0;
+}
+
+.login-page .container {
+  width: 100%;
   display: grid;
   place-items: center;
-  padding: 2.5rem 1.5rem;
 }
 
 .login-card {
-  width: min(480px, 95vw);
+  width: min(322px, 95vw);
   background: white;
-  border-radius: 26px;
+  border-radius: 17px;
   padding: 2.5rem;
-  box-shadow: 0 28px 60px rgba(59, 42, 44, 0.16);
+  box-shadow: 0 19px 40px rgba(59, 42, 44, 0.16);
   position: relative;
   overflow: hidden;
 }
@@ -45,12 +62,12 @@ a {
 .login-card::before {
   content: "";
   position: absolute;
-  width: 180px;
-  height: 180px;
+  width: 121px;
+  height: 121px;
   border-radius: 50%;
   background: radial-gradient(circle at 30% 30%, rgba(242, 201, 76, 0.4), transparent 70%);
-  top: -80px;
-  right: -60px;
+  top: -54px;
+  right: -40px;
 }
 
 .brand {
@@ -61,14 +78,14 @@ a {
 }
 
 .brand-mark {
-  width: 70px;
-  height: 70px;
-  border-radius: 18px;
+  width: 47px;
+  height: 47px;
+  border-radius: 12px;
   display: grid;
   place-items: center;
-  box-shadow: 0 6px 16px rgba(59, 42, 44, 0.08);
+  box-shadow: 0 4px 11px rgba(59, 42, 44, 0.08);
   overflow: hidden;
-  padding: 6px;
+  padding: 4px;
   background: white;
 }
 
@@ -122,7 +139,7 @@ label {
 input {
   width: 100%;
   padding: 0.9rem 1rem;
-  border-radius: 14px;
+  border-radius: 9px;
   border: 1px solid rgba(59, 42, 44, 0.18);
   font-size: 1rem;
   outline: none;
@@ -131,7 +148,7 @@ input {
 
 input:focus {
   border-color: var(--royal-purple);
-  box-shadow: 0 0 0 3px rgba(107, 63, 160, 0.15);
+  box-shadow: 0 0 0 2px rgba(107, 63, 160, 0.15);
 }
 
 .cta-button {
@@ -140,23 +157,23 @@ input:focus {
   color: white;
   border: none;
   padding: 0.95rem 1.6rem;
-  border-radius: 999px;
+  border-radius: 669px;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 12px 24px rgba(107, 63, 160, 0.25);
+  box-shadow: 0 8px 16px rgba(107, 63, 160, 0.25);
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 .cta-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 16px 28px rgba(107, 63, 160, 0.28);
+  transform: translateY(-1px);
+  box-shadow: 0 11px 19px rgba(107, 63, 160, 0.28);
 }
 
 .alert {
   background: rgba(220, 38, 38, 0.1);
   color: #b91c1c;
   padding: 0.8rem 1rem;
-  border-radius: 12px;
+  border-radius: 8px;
   border: 1px solid rgba(185, 28, 28, 0.2);
   margin-bottom: 1.2rem;
   font-weight: 600;

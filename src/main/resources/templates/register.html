@@ -15,93 +15,95 @@
   </head>
   <body>
     <main class="login-page">
-      <section class="login-card">
-        <div class="brand">
-          <div class="brand-mark">
-            <img th:src="@{/assets/logo.png}" alt="ClubsHub logo" />
+      <div class="container">
+        <section class="login-card">
+          <div class="brand">
+            <div class="brand-mark">
+              <img th:src="@{/assets/logo.png}" alt="ClubsHub logo" />
+            </div>
+            <div class="brand-text">
+              <span>ClubsHub</span>
+              <span>Student Life</span>
+            </div>
           </div>
-          <div class="brand-text">
-            <span>ClubsHub</span>
-            <span>Student Life</span>
-          </div>
-        </div>
 
-        <h1>Create your student account</h1>
-        <p>Join clubs, RSVP to events, and connect with your campus.</p>
+          <h1>Create your student account</h1>
+          <p>Join clubs, RSVP to events, and connect with your campus.</p>
 
-        <div class="alert" th:if="${error}" th:text="${error}"></div>
+          <div class="alert" th:if="${error}" th:text="${error}"></div>
 
-        <form th:action="@{/register}" method="post" th:object="${registerStudentRequest}">
-          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+          <form th:action="@{/register}" method="post" th:object="${registerStudentRequest}">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
-          <label for="email">Email</label>
-          <input
-            id="email"
-            type="email"
-            th:field="*{email}"
-            autocomplete="email"
-            placeholder="you@example.com"
-            required
-          />
+            <label for="email">Email</label>
+            <input
+              id="email"
+              type="email"
+              th:field="*{email}"
+              autocomplete="email"
+              placeholder="you@example.com"
+              required
+            />
 
-          <label for="password">Password</label>
-          <input
-            id="password"
-            type="password"
-            th:field="*{password}"
-            autocomplete="new-password"
-            placeholder="Create a password"
-            required
-          />
+            <label for="password">Password</label>
+            <input
+              id="password"
+              type="password"
+              th:field="*{password}"
+              autocomplete="new-password"
+              placeholder="Create a password"
+              required
+            />
 
-          <label for="firstName">First name</label>
-          <input
-            id="firstName"
-            type="text"
-            th:field="*{firstName}"
-            autocomplete="given-name"
-            placeholder="First name"
-            required
-          />
+            <label for="firstName">First name</label>
+            <input
+              id="firstName"
+              type="text"
+              th:field="*{firstName}"
+              autocomplete="given-name"
+              placeholder="First name"
+              required
+            />
 
-          <label for="lastName">Last name</label>
-          <input
-            id="lastName"
-            type="text"
-            th:field="*{lastName}"
-            autocomplete="family-name"
-            placeholder="Last name"
-            required
-          />
+            <label for="lastName">Last name</label>
+            <input
+              id="lastName"
+              type="text"
+              th:field="*{lastName}"
+              autocomplete="family-name"
+              placeholder="Last name"
+              required
+            />
 
-          <label for="grade">Grade</label>
-          <input
-            id="grade"
-            type="number"
-            th:field="*{grade}"
-            min="1"
-            max="12"
-            step="1"
-            placeholder="1 - 12"
-            required
-          />
+            <label for="grade">Grade</label>
+            <input
+              id="grade"
+              type="number"
+              th:field="*{grade}"
+              min="1"
+              max="12"
+              step="1"
+              placeholder="1 - 12"
+              required
+            />
 
-          <label for="className">Class</label>
-          <input
-            id="className"
-            type="text"
-            th:field="*{className}"
-            maxlength="20"
-            placeholder="Class name or section"
-            required
-          />
+            <label for="className">Class</label>
+            <input
+              id="className"
+              type="text"
+              th:field="*{className}"
+              maxlength="20"
+              placeholder="Class name or section"
+              required
+            />
 
-          <button class="cta-button" type="submit">Create account</button>
-        </form>
+            <button class="cta-button" type="submit">Create account</button>
+          </form>
 
-        <a class="back-link" th:href="@{/login}">Already registered? Sign in</a>
-        <a class="back-link" th:href="@{/clubs}">Back to clubs</a>
-      </section>
+          <a class="back-link" th:href="@{/login}">Already registered? Sign in</a>
+          <a class="back-link" th:href="@{/clubs}">Back to clubs</a>
+        </section>
+      </div>
     </main>
   </body>
 </html>

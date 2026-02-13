@@ -8,6 +8,10 @@
   --ink: #22161c;
 }
 
+html {
+  font-size: 67%;
+}
+
 body {
   background: linear-gradient(160deg, #fdfbff 0%, #f4ecfb 40%, #f7f7f0 100%);
   min-height: 100vh;
@@ -36,9 +40,11 @@ body > main {
   color: inherit;
 }
 
-.site-container {
-  width: min(1320px, 96vw);
+.container {
+  max-width: 1200px;
   margin: 0 auto;
+  padding-left: 64px;
+  padding-right: 64px;
 }
 
 .site-navbar {
@@ -57,14 +63,14 @@ body > main {
 }
 
 .brand-mark {
-  width: 75px;
-  height: 75px;
-  border-radius: 18px;
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
   display: grid;
   place-items: center;
-  box-shadow: 0 6px 16px rgba(59, 42, 44, 0.08);
+  box-shadow: 0 4px 11px rgba(59, 42, 44, 0.08);
   overflow: hidden;
-  padding: 5px;
+  padding: 3px;
 }
 
 .brand-mark img {
@@ -111,7 +117,7 @@ body > main {
   left: 0;
   bottom: 0;
   width: 0;
-  height: 2px;
+  height: 1px;
   background: var(--royal-purple);
   transition: width 0.25s ease;
 }
@@ -146,14 +152,14 @@ body > main {
   background: transparent;
   border: 1px solid rgba(59, 42, 44, 0.15);
   padding: 0.8rem 1.4rem;
-  border-radius: 999px;
+  border-radius: 669px;
   font-weight: 500;
   cursor: pointer;
   transition: transform 0.25s ease, border-color 0.25s ease;
 }
 
 .ghost-button:hover {
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 
 .page-footer {

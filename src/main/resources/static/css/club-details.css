@@ -30,7 +30,7 @@ body {
 
 .club-details__description {
   margin: 0;
-  max-width: 720px;
+  max-width: 482px;
   color: rgba(34, 22, 28, 0.7);
 }
 
@@ -47,7 +47,7 @@ body {
   background: transparent;
   border: 1px solid transparent;
   padding: 0.55rem 1.2rem;
-  border-radius: 999px;
+  border-radius: 669px;
   font-weight: 600;
   color: var(--deep-brown);
   cursor: pointer;
@@ -78,13 +78,13 @@ body {
   gap: 1rem;
   background: rgba(255, 255, 255, 0.75);
   border: 1px solid rgba(34, 22, 28, 0.08);
-  border-radius: 18px;
+  border-radius: 12px;
   padding: 1.5rem 1.7rem;
 }
 
 .detail-row {
   display: grid;
-  grid-template-columns: 180px 1fr;
+  grid-template-columns: 121px 1fr;
   gap: 1.2rem;
   align-items: start;
 }
@@ -106,15 +106,15 @@ body {
 .detail-value a {
   color: inherit;
   text-decoration: underline;
-  text-decoration-thickness: 2px;
-  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
 }
 
 .status-badge {
   display: inline-flex;
   align-items: center;
   padding: 0.3rem 0.8rem;
-  border-radius: 999px;
+  border-radius: 669px;
   font-size: 0.85rem;
   font-weight: 600;
 }
@@ -132,7 +132,7 @@ body {
 .tab-placeholder,
 .tab-message {
   padding: 1.2rem 1.4rem;
-  border-radius: 16px;
+  border-radius: 11px;
   background: rgba(255, 255, 255, 0.7);
   border: 1px dashed rgba(34, 22, 28, 0.12);
   color: rgba(34, 22, 28, 0.65);
@@ -148,16 +148,16 @@ body {
 
 .tab-list li {
   padding: 0.9rem 1.1rem;
-  border-radius: 14px;
+  border-radius: 9px;
   border: 1px solid rgba(34, 22, 28, 0.08);
   background: rgba(255, 255, 255, 0.8);
 }
 
 .error-panel {
   margin: 1.5rem auto 0;
-  max-width: 640px;
+  max-width: 429px;
   padding: 2rem 2.2rem;
-  border-radius: 20px;
+  border-radius: 13px;
   background: rgba(255, 255, 255, 0.8);
   border: 1px solid rgba(34, 22, 28, 0.08);
   text-align: center;

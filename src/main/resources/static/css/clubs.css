@@ -6,7 +6,7 @@
       body {
         margin: 0;
         font-family: "Sora", sans-serif;
-        font-size: 17px;
+        font-size: 11px;
         color: var(--ink);
         min-height: 100vh;
       }
@@ -26,33 +26,31 @@
       .hero-shell::after {
         content: "";
         position: absolute;
-        border-radius: 999px;
+        border-radius: 669px;
         z-index: 0;
         opacity: 0.5;
         animation: drift 14s ease-in-out infinite;
       }
 
       .hero-shell::before {
-        width: 420px;
-        height: 420px;
-        top: -160px;
-        right: -120px;
+        width: 281px;
+        height: 281px;
+        top: -107px;
+        right: -80px;
         background: radial-gradient(circle at 30% 30%, var(--sunlit-yellow), transparent 70%);
         animation-delay: -2s;
       }
 
       .hero-shell::after {
-        width: 520px;
-        height: 520px;
-        left: -220px;
-        top: 120px;
+        width: 348px;
+        height: 348px;
+        left: -147px;
+        top: 80px;
         background: radial-gradient(circle at 60% 40%, var(--lavender), transparent 70%);
         animation-duration: 18s;
       }
 
-      .container {
-        width: min(1320px, 96vw);
-        margin: 0 auto;
+      .hero-shell .container {
         position: relative;
         z-index: 1;
       }
@@ -62,24 +60,24 @@
         color: white;
         border: none;
         padding: 0.85rem 1.6rem;
-        border-radius: 999px;
+        border-radius: 669px;
         font-weight: 600;
-        box-shadow: 0 12px 24px rgba(107, 63, 160, 0.25);
+        box-shadow: 0 8px 16px rgba(107, 63, 160, 0.25);
         cursor: pointer;
         transition: transform 0.25s ease, box-shadow 0.25s ease;
       }
 
       .cta-button:hover {
-        transform: translateY(-2px);
+        transform: translateY(-1px);
       }
 
       .avatar {
-        width: 44px;
-        height: 44px;
+        width: 29px;
+        height: 29px;
         border-radius: 50%;
         background: linear-gradient(130deg, var(--lavender), var(--royal-purple));
-        border: 2px solid white;
-        box-shadow: 0 10px 20px rgba(107, 63, 160, 0.25);
+        border: 1px solid white;
+        box-shadow: 0 7px 13px rgba(107, 63, 160, 0.25);
       }
 
       .hero {
@@ -97,7 +95,7 @@
         background: rgba(242, 201, 76, 0.2);
         color: var(--deep-brown);
         padding: 0.6rem 1.2rem;
-        border-radius: 999px;
+        border-radius: 669px;
         font-size: 0.82rem;
         font-weight: 600;
         text-transform: uppercase;
@@ -127,16 +125,16 @@
       .hero-visual {
         position: relative;
         background: white;
-        border-radius: 28px;
+        border-radius: 19px;
         padding: 1.4rem;
-        box-shadow: 0 30px 70px rgba(59, 42, 44, 0.18);
+        box-shadow: 0 20px 47px rgba(59, 42, 44, 0.18);
         overflow: hidden;
         animation: float 8s ease-in-out infinite;
       }
 
       .mock-image {
-        height: 360px;
-        border-radius: 22px;
+        height: 241px;
+        border-radius: 15px;
         background: linear-gradient(140deg, rgba(199, 182, 216, 0.7), rgba(107, 63, 160, 0.75)),
           radial-gradient(circle at 20% 20%, rgba(242, 201, 76, 0.9), transparent 55%),
           radial-gradient(circle at 80% 10%, rgba(255, 255, 255, 0.75), transparent 45%);
@@ -153,27 +151,27 @@
       }
 
       .mock-image::before {
-        width: 140px;
-        height: 140px;
+        width: 94px;
+        height: 94px;
         background: rgba(242, 201, 76, 0.85);
-        bottom: -40px;
-        left: -30px;
+        bottom: -27px;
+        left: -20px;
         animation: drift 10s ease-in-out infinite;
       }
 
       .mock-image::after {
-        width: 180px;
-        height: 180px;
+        width: 121px;
+        height: 121px;
         background: rgba(255, 255, 255, 0.35);
-        top: -60px;
-        right: -40px;
+        top: -40px;
+        right: -27px;
         animation: drift 12s ease-in-out infinite;
       }
 
       .mock-lines {
         position: absolute;
-        inset: 24px;
-        border-radius: 18px;
+        inset: 16px;
+        border-radius: 12px;
         border: 1px solid rgba(255, 255, 255, 0.35);
         background: rgba(255, 255, 255, 0.15);
       }
@@ -182,19 +180,19 @@
       .mock-lines::after {
         content: "";
         position: absolute;
-        left: 14px;
-        right: 14px;
-        height: 10px;
-        border-radius: 999px;
+        left: 9px;
+        right: 9px;
+        height: 7px;
+        border-radius: 669px;
         background: rgba(255, 255, 255, 0.45);
       }
 
       .mock-lines::before {
-        top: 18px;
+        top: 12px;
       }
 
       .mock-lines::after {
-        top: 42px;
+        top: 28px;
         width: 65%;
       }
 
@@ -203,10 +201,10 @@
         right: 1.2rem;
         bottom: 1.4rem;
         background: white;
-        border-radius: 18px;
+        border-radius: 12px;
         padding: 1rem 1.2rem;
-        min-width: 190px;
-        box-shadow: 0 18px 30px rgba(59, 42, 44, 0.2);
+        min-width: 127px;
+        box-shadow: 0 12px 20px rgba(59, 42, 44, 0.2);
       }
 
       .float-card h4 {
@@ -225,12 +223,12 @@
         top: 1.3rem;
         left: 1.4rem;
         background: rgba(255, 255, 255, 0.85);
-        border-radius: 999px;
+        border-radius: 669px;
         padding: 0.55rem 1rem;
         font-size: 0.8rem;
         font-weight: 600;
         color: var(--deep-brown);
-        box-shadow: 0 12px 20px rgba(59, 42, 44, 0.15);
+        box-shadow: 0 8px 13px rgba(59, 42, 44, 0.15);
       }
 
       main {
@@ -269,8 +267,8 @@
 
       .club-card {
         background: white;
-        border-radius: 22px;
-        box-shadow: 0 18px 35px rgba(59, 42, 44, 0.12);
+        border-radius: 15px;
+        box-shadow: 0 12px 23px rgba(59, 42, 44, 0.12);
         overflow: hidden;
         display: flex;
         flex-direction: column;
@@ -279,13 +277,13 @@
       }
 
       .club-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 24px 45px rgba(59, 42, 44, 0.18);
+        transform: translateY(-3px);
+        box-shadow: 0 16px 30px rgba(59, 42, 44, 0.18);
       }
 
       .club-card__media {
         position: relative;
-        height: 180px;
+        height: 121px;
         display: grid;
         place-items: center;
         overflow: hidden;
@@ -342,7 +340,7 @@
       .club-empty {
         grid-column: 1 / -1;
         background: rgba(255, 255, 255, 0.7);
-        border-radius: 18px;
+        border-radius: 12px;
         padding: 2rem;
         text-align: center;
         color: rgba(34, 22, 28, 0.7);
@@ -358,18 +356,18 @@
 
       .page-button {
         padding: 0.7rem 1.4rem;
-        border-radius: 999px;
+        border-radius: 669px;
         background: white;
         border: 1px solid rgba(59, 42, 44, 0.15);
         color: var(--deep-brown);
         font-weight: 600;
-        box-shadow: 0 10px 18px rgba(59, 42, 44, 0.08);
+        box-shadow: 0 7px 12px rgba(59, 42, 44, 0.08);
         transition: transform 0.2s ease, box-shadow 0.2s ease;
       }
 
       .page-button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 14px 22px rgba(59, 42, 44, 0.12);
+        transform: translateY(-1px);
+        box-shadow: 0 9px 15px rgba(59, 42, 44, 0.12);
       }
 
       .page-button.disabled {
@@ -384,12 +382,12 @@
         gap: 0.75rem;
         padding: 0.5rem 1rem;
         background: rgba(255, 255, 255, 0.8);
-        border-radius: 999px;
+        border-radius: 669px;
         border: 1px solid rgba(59, 42, 44, 0.12);
       }
 
       .page-input input {
-        width: 70px;
+        width: 47px;
         border: none;
         background: transparent;
         font-size: 1rem;
@@ -445,7 +443,7 @@
           transform: translateY(0);
         }
         50% {
-          transform: translateY(-10px);
+          transform: translateY(-7px);
         }
       }
 
@@ -455,7 +453,7 @@
           transform: translate(0, 0);
         }
         50% {
-          transform: translate(-10px, 8px);
+          transform: translate(-7px, 5px);
         }
       }
 
@@ -487,7 +485,7 @@
         }
 
         .mock-image {
-          height: 260px;
+          height: 174px;
         }
 
         .float-pill,
