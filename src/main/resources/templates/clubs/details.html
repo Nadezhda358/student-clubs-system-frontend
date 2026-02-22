@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="${club.name} + ' | ClubsHub'">Club Details | ClubsHub</title>
+    <link th:href="@{/assets/logo.png}" rel="icon" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Sora:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" th:href="@{/css/site-chrome.css}" />
+    <link rel="stylesheet" th:href="@{/css/club-details.css}" />
+  </head>
+  <body>
+    <header th:replace="fragments/site-chrome :: siteHeader"></header>
+
+    <main class="club-details">
+      <div class="container">
+        <section class="club-details__header">
+          <div>
+            <h1 class="club-details__title" th:text="${club.name}">Club Name</h1>
+            <p
+              class="club-details__description"
+              th:if="${club.description != null and !#strings.isEmpty(club.description)}"
+              th:text="${club.description}"
+            >
+              Club description goes here.
+            </p>
+          </div>
+        </section>
+
+        <div class="club-tabs" role="tablist" aria-label="Club tabs">
+          <button
+            class="tab-button is-active"
+            type="button"
+            data-tab-button="general"
+            aria-controls="tab-general"
+            aria-selected="true"
+          >
+            General
+          </button>
+          <button
+            class="tab-button"
+            type="button"
+            data-tab-button="events"
+            aria-controls="tab-events"
+            aria-selected="false"
+          >
+            Events
+          </button>
+          <button
+            class="tab-button"
+            type="button"
+            data-tab-button="media"
+            aria-controls="tab-media"
+            aria-selected="false"
+          >
+            Media
+          </button>
+          <button
+            class="tab-button"
+            type="button"
+            data-tab-button="announcements"
+            aria-controls="tab-announcements"
+            aria-selected="false"
+          >
+            Announcements
+          </button>
+        </div>
+
+        <section id="tab-general" class="tab-panel is-active" data-tab-panel="general">
+          <div class="detail-grid">
+            <div class="detail-row" th:if="${club.name != null and !#strings.isEmpty(club.name)}">
+              <span class="detail-label">Name</span>
+              <span class="detail-value" th:text="${club.name}">Club Name</span>
+            </div>
+            <div
+              class="detail-row"
+              th:if="${club.description != null and !#strings.isEmpty(club.description)}"
+            >
+              <span class="detail-label">Description</span>
+              <span class="detail-value" th:text="${club.description}">Description</span>
+            </div>
+            <div
+              class="detail-row"
+              th:if="${club.scheduleText != null and !#strings.isEmpty(club.scheduleText)}"
+            >
+              <span class="detail-label">Schedule</span>
+              <span class="detail-value" th:text="${club.scheduleText}">Schedule</span>
+            </div>
+            <div class="detail-row" th:if="${club.room != null and !#strings.isEmpty(club.room)}">
+              <span class="detail-label">Room</span>
+              <span class="detail-value" th:text="${club.room}">Room</span>
+            </div>
+            <div
+              class="detail-row"
+              th:if="${club.contactEmail != null and !#strings.isEmpty(club.contactEmail)}"
+            >
+              <span class="detail-label">Contact Email</span>
+              <span class="detail-value">
+                <a th:href="'mailto:' + ${club.contactEmail}" th:text="${club.contactEmail}">
+                  contact@school.bg
+                </a>
+              </span>
+            </div>
+            <div
+              class="detail-row"
+              th:if="${club.contactPhone != null and !#strings.isEmpty(club.contactPhone)}"
+            >
+              <span class="detail-label">Contact Phone</span>
+              <span class="detail-value">
+                <a th:href="'tel:' + ${club.contactPhone}" th:text="${club.contactPhone}">
+                  +1 555-123-4567
+                </a>
+              </span>
+            </div>
+            <div class="detail-row" th:if="${club.isActive != null}">
+              <span class="detail-label">Status</span>
+              <span class="detail-value">
+                <span
+                  class="status-badge"
+                  th:classappend="${club.isActive} ? ' is-active' : ' is-inactive'"
+                  th:text="${club.isActive} ? 'Active' : 'Inactive'"
+                >
+                  Active
+                </span>
+              </span>
+            </div>
+            <div class="detail-row" th:if="${club.createdAt != null}">
+              <span class="detail-label">Created</span>
+              <span class="detail-value" th:text="${club.createdAt}">2026-02-01T12:30:00Z</span>
+            </div>
+            <div class="detail-row" th:if="${club.updatedAt != null}">
+              <span class="detail-label">Updated</span>
+              <span class="detail-value" th:text="${club.updatedAt}">2026-02-05T09:45:00Z</span>
+            </div>
+          </div>
+        </section>
+
+        <section
+          id="tab-events"
+          class="tab-panel"
+          data-tab-panel="events"
+          th:attr="data-tab-url=@{/clubs/{id}/tabs/events(id=${club.id})}"
+        >
+          <div class="tab-placeholder">
+            Open this tab to load events.
+          </div>
+        </section>
+
+        <section
+          id="tab-media"
+          class="tab-panel"
+          data-tab-panel="media"
+          th:attr="data-tab-url=@{/clubs/{id}/tabs/media(id=${club.id})}"
+        >
+          <div class="tab-placeholder">
+            Open this tab to load media.
+          </div>
+        </section>
+
+        <section
+          id="tab-announcements"
+          class="tab-panel"
+          data-tab-panel="announcements"
+          th:attr="data-tab-url=@{/clubs/{id}/tabs/announcements(id=${club.id})}"
+        >
+          <div class="tab-placeholder">
+            Open this tab to load announcements.
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer th:replace="fragments/site-chrome :: siteFooter"></footer>
+
+    <script>
+      (() => {
+        const tabButtons = Array.from(document.querySelectorAll("[data-tab-button]"));
+        const tabPanels = Array.from(document.querySelectorAll("[data-tab-panel]"));
+        const panelMap = new Map(
+          tabPanels.map((panel) => [panel.dataset.tabPanel, panel])
+        );
+
+        const setActiveTab = (tabName) => {
+          tabButtons.forEach((button) => {
+            const isActive = button.dataset.tabButton === tabName;
+            button.classList.toggle("is-active", isActive);
+            button.setAttribute("aria-selected", String(isActive));
+            button.tabIndex = isActive ? 0 : -1;
+          });
+
+          tabPanels.forEach((panel) => {
+            panel.classList.toggle("is-active", panel.dataset.tabPanel === tabName);
+          });
+
+          const activePanel = panelMap.get(tabName);
+          if (!activePanel) {
+            return;
+          }
+
+          const tabUrl = activePanel.dataset.tabUrl;
+          if (tabUrl && !activePanel.dataset.loaded) {
+            activePanel.dataset.loaded = "true";
+            fetch(tabUrl, { headers: { "X-Requested-With": "XMLHttpRequest" } })
+              .then((response) => {
+                if (!response.ok) {
+                  throw new Error("Failed to load tab.");
+                }
+                return response.text();
+              })
+              .then((html) => {
+                activePanel.innerHTML = html;
+              })
+              .catch(() => {
+                activePanel.innerHTML =
+                  '<div class="tab-placeholder">Not available yet.</div>';
+              });
+          }
+        };
+
+        tabButtons.forEach((button) => {
+          button.addEventListener("click", (event) => {
+            event.preventDefault();
+            setActiveTab(button.dataset.tabButton);
+          });
+        });
+
+        const params = new URLSearchParams(window.location.search);
+        const initialTab = params.get("tab");
+        if (initialTab && panelMap.has(initialTab)) {
+          setActiveTab(initialTab);
+        }
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,24 @@
+<div th:fragment="content">
+  <div class="tab-message" th:if="${error}" th:text="${error}">
+    Media is not available yet.
+  </div>
+
+  <div th:if="${error == null}">
+    <div class="tab-message" th:if="${media == null or #lists.isEmpty(media)}">
+      No media uploaded yet.
+    </div>
+    <ul class="tab-list" th:if="${media != null and !#lists.isEmpty(media)}">
+      <li th:each="item : ${media}">
+        <div>
+          <strong th:text="${item.type != null ? item.type : 'Media'}">Media</strong>
+        </div>
+        <div>
+          <a th:if="${item.url != null}" th:href="${item.url}" th:text="${item.url}">
+            Media link
+          </a>
+          <span th:if="${item.url == null}">Link unavailable</span>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>

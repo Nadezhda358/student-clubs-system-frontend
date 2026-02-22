@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+  <body th:fragment="adminShell(pageBodyClass, content, pageScripts)" th:classappend="${pageBodyClass}">
+    <header th:replace="fragments/site-chrome :: siteHeader"></header>
+
+    <main class="admin-shell">
+      <div class="admin-shell__container">
+        <div class="admin-shell__grid">
+          <aside class="admin-sidebar" aria-label="Admin navigation">
+            <details
+              class="admin-sidebar__details"
+              open
+              th:with="
+                path=${currentPath != null ? currentPath : ''},
+                clubsActive=${path == '/admin/clubs' or (#strings.startsWith(path, '/admin/clubs/') and path != '/admin/clubs/create')},
+                addClubActive=${path == '/admin/clubs/create'},
+                eventsActive=${path == '/admin/events'},
+                clubAppsActive=${path == '/admin/applications/clubs' or path == '/admin/membership-applications'},
+                eventAppsActive=${path == '/admin/applications/events' or path == '/admin/event-applications'},
+                statsActive=${path == '/admin/stats'},
+                teacherInvitesActive=${path == '/admin/teacher-invites' or path == '/admin/teacher-invites/new'}
+              "
+            >
+              <summary class="admin-sidebar__toggle">Admin Menu</summary>
+
+              <div class="admin-sidebar__panel">
+                <div class="admin-sidebar__heading">
+                  <p class="admin-sidebar__eyebrow">Admin Workspace</p>
+                  <h2>Manage</h2>
+                </div>
+
+                <nav class="admin-sidebar__nav">
+                  <a
+                    class="admin-sidebar__link"
+                    th:classappend="${clubsActive} ? ' is-active' : ''"
+                    th:attr="aria-current=${clubsActive} ? 'page' : null"
+                    th:href="@{/admin/clubs}"
+                  >
+                    Clubs
+                  </a>
+                  <a
+                    class="admin-sidebar__link"
+                    th:classappend="${addClubActive} ? ' is-active' : ''"
+                    th:attr="aria-current=${addClubActive} ? 'page' : null"
+                    th:href="@{/admin/clubs/create}"
+                  >
+                    Add Club
+                  </a>
+                  <a
+                    class="admin-sidebar__link"
+                    th:classappend="${eventsActive} ? ' is-active' : ''"
+                    th:attr="aria-current=${eventsActive} ? 'page' : null"
+                    th:href="@{/admin/events}"
+                  >
+                    Events
+                  </a>
+                  <a
+                    class="admin-sidebar__link"
+                    th:classappend="${clubAppsActive} ? ' is-active' : ''"
+                    th:attr="aria-current=${clubAppsActive} ? 'page' : null"
+                    th:href="@{/admin/applications/clubs}"
+                  >
+                    Club Membership Applications
+                  </a>
+                  <a
+                    class="admin-sidebar__link"
+                    th:classappend="${eventAppsActive} ? ' is-active' : ''"
+                    th:attr="aria-current=${eventAppsActive} ? 'page' : null"
+                    th:href="@{/admin/applications/events}"
+                  >
+                    Event Applications
+                  </a>
+                  <a
+                    class="admin-sidebar__link"
+                    th:classappend="${statsActive} ? ' is-active' : ''"
+                    th:attr="aria-current=${statsActive} ? 'page' : null"
+                    th:href="@{/admin/stats}"
+                  >
+                    Stats
+                  </a>
+                  <a
+                    class="admin-sidebar__link"
+                    th:classappend="${teacherInvitesActive} ? ' is-active' : ''"
+                    th:attr="aria-current=${teacherInvitesActive} ? 'page' : null"
+                    th:href="@{/admin/teacher-invites}"
+                  >
+                    Invite Teacher
+                  </a>
+                </nav>
+              </div>
+            </details>
+          </aside>
+
+          <section class="admin-shell__content">
+            <th:block th:replace="${content}"></th:block>
+          </section>
+        </div>
+      </div>
+    </main>
+
+    <footer th:replace="fragments/site-chrome :: siteFooter"></footer>
+    <th:block th:if="${pageScripts != null}" th:replace="${pageScripts}"></th:block>
+  </body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Teacher Registration | ClubsHub</title>
+    <link th:href="@{/assets/logo.png}" rel="icon" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Sora:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" th:href="@{/css/login.css}" />
+  </head>
+  <body>
+    <main class="login-page">
+      <div class="container">
+        <section class="login-card">
+          <div class="brand">
+            <div class="brand-mark">
+              <img th:src="@{/assets/logo.png}" alt="ClubsHub logo" />
+            </div>
+            <div class="brand-text">
+              <span>ClubsHub</span>
+              <span>Student Life</span>
+            </div>
+          </div>
+
+          <h1>Activate your teacher invite</h1>
+          <p>Use the invite token from your email to create your account.</p>
+
+          <div class="alert" th:if="${error}" th:text="${error}"></div>
+
+          <form th:action="@{/register/teacher}" method="post" th:object="${registerTeacherRequest}">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+            <label for="token">Invite token</label>
+            <input
+              id="token"
+              type="text"
+              th:field="*{token}"
+              autocomplete="off"
+              placeholder="Paste your invite token"
+              required
+            />
+
+            <label for="password">Password</label>
+            <input
+              id="password"
+              type="password"
+              th:field="*{password}"
+              autocomplete="new-password"
+              placeholder="Create a password"
+              required
+            />
+
+            <label for="firstName">First name</label>
+            <input
+              id="firstName"
+              type="text"
+              th:field="*{firstName}"
+              autocomplete="given-name"
+              placeholder="First name"
+              required
+            />
+
+            <label for="lastName">Last name</label>
+            <input
+              id="lastName"
+              type="text"
+              th:field="*{lastName}"
+              autocomplete="family-name"
+              placeholder="Last name"
+              required
+            />
+
+            <button class="cta-button" type="submit">Create account</button>
+          </form>
+
+          <a class="back-link" th:href="@{/login}">Already registered? Sign in</a>
+          <a class="back-link" th:href="@{/clubs}">Back to clubs</a>
+        </section>
+      </div>
+    </main>
+  </body>
+</html>
