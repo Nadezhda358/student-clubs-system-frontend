@@ -15,16 +15,23 @@
           </div>
 
           <div class="nav-links">
-            <a class="active" th:href="@{/clubs}">Clubs</a>
+            <a
+              th:href="@{/clubs}"
+              th:classappend="${currentPath != null and #strings.startsWith(currentPath, '/clubs')} ? ' active' : ''"
+            >
+              Clubs
+            </a>
             <a
               th:if="${sessionUser != null and sessionUser.role == T(com.school.ppmg.student_clubs_system_client.enums.UserRole).ADMIN}"
-              th:href="@{/admin}"
+              th:href="@{/admin/clubs}"
+              th:classappend="${currentPath != null and #strings.startsWith(currentPath, '/admin')} ? ' active' : ''"
             >
               Admin
             </a>
             <a
               th:if="${sessionUser != null and sessionUser.role == T(com.school.ppmg.student_clubs_system_client.enums.UserRole).TEACHER}"
               th:href="@{/teacher}"
+              th:classappend="${currentPath != null and #strings.startsWith(currentPath, '/teacher')} ? ' active' : ''"
             >
               Teacher
             </a>

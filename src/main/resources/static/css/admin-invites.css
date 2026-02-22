@@ -1,3 +1,8 @@
+.admin-invites .invite-page {
+  max-width: 980px;
+  padding-top: 0.5rem;
+}
+
 .admin-invites .invite-shell {
   display: flex;
   flex-direction: column;

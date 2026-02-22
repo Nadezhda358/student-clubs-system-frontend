@@ -22,10 +22,10 @@ public class AdminTeacherInviteController {
 
     @GetMapping("/admin")
     public String adminHome() {
-        return "redirect:/admin/teacher-invites/new";
+        return "redirect:/admin/clubs";
     }
 
-    @GetMapping("/admin/teacher-invites/new")
+    @GetMapping({"/admin/teacher-invites", "/admin/teacher-invites/new"})
     public String newTeacherInvitesPage(Model model) {
         if (!model.containsAttribute("emailsText")) {
             model.addAttribute("emailsText", "");

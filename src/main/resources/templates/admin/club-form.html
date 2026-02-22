@@ -12,13 +12,13 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" th:href="@{/css/site-chrome.css}" />
+    <link rel="stylesheet" th:href="@{/css/admin-shell.css}" />
     <link rel="stylesheet" th:href="@{/css/club-form.css}" />
   </head>
-  <body class="club-form-page">
-    <header th:replace="fragments/site-chrome :: siteHeader"></header>
-
-    <main class="club-form-main">
-      <div class="container club-form-container">
+  <body th:replace="~{fragments/admin-shell :: adminShell('club-form-page', ~{::adminPageContent}, ~{::pageScripts})}">
+    <th:block th:fragment="adminPageContent">
+      <div class="club-form-main">
+        <div class="container club-form-container">
         <section class="club-form-header">
           <a class="club-form-back" th:href="@{/admin/clubs}">Back to Clubs</a>
           <p class="club-form-tag">Admin Workspace</p>
@@ -143,9 +143,10 @@
             </button>
           </div>
         </form>
+        </div>
       </div>
-    </main>
+    </th:block>
 
-    <footer th:replace="fragments/site-chrome :: siteFooter"></footer>
+    <th:block th:fragment="pageScripts"></th:block>
   </body>
 </html>

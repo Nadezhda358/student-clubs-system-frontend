@@ -18,15 +18,13 @@
       crossorigin="anonymous"
     />
     <link rel="stylesheet" th:href="@{/css/site-chrome.css}" />
+    <link rel="stylesheet" th:href="@{/css/admin-shell.css}" />
     <link rel="stylesheet" th:href="@{/css/admin-invites.css}" />
   </head>
-  <body class="bg-light admin-invites">
-    <header th:replace="fragments/site-chrome :: siteHeader"></header>
-
-    <main class="container py-4 invite-page">
-      <div class="row justify-content-center">
-        <div class="col-lg-9 col-xl-8">
-          <div class="invite-shell">
+  <body th:replace="~{fragments/admin-shell :: adminShell('bg-light admin-invites', ~{::adminPageContent}, ~{::pageScripts})}">
+    <th:block th:fragment="adminPageContent">
+      <div class="invite-page">
+        <div class="invite-shell">
             <section class="invite-panel">
               <div class="invite-panel__header">
                 <h1 class="h4 mb-2">Invite Teachers</h1>
@@ -84,15 +82,15 @@
               </div>
             </section>
           </div>
-        </div>
       </div>
-    </main>
-    <footer th:replace="fragments/site-chrome :: siteFooter"></footer>
+    </th:block>
 
-    <script
-      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
-      integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
-      crossorigin="anonymous"
-    ></script>
+    <th:block th:fragment="pageScripts">
+      <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"
+      ></script>
+    </th:block>
   </body>
 </html>

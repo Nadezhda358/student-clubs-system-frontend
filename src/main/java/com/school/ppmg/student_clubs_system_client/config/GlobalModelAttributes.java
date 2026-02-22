@@ -23,4 +23,21 @@ public class GlobalModelAttributes {
 
         return null;
     }
+
+    @ModelAttribute("currentPath")
+    public String currentPath(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+        String contextPath = request.getContextPath();
+
+        if (uri == null || uri.isBlank()) {
+            return "/";
+        }
+
+        if (contextPath != null && !contextPath.isBlank() && uri.startsWith(contextPath)) {
+            String resolved = uri.substring(contextPath.length());
+            return resolved.isBlank() ? "/" : resolved;
+        }
+
+        return uri;
+    }
 }

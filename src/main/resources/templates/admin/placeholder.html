@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="${pageTitle} + ' | ClubsHub Admin'">Admin Section | ClubsHub Admin</title>
+    <link th:href="@{/assets/logo.png}" rel="icon" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Sora:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" th:href="@{/css/site-chrome.css}" />
+    <link rel="stylesheet" th:href="@{/css/admin-shell.css}" />
+    <link rel="stylesheet" th:href="@{/css/admin-placeholder.css}" />
+  </head>
+  <body th:replace="~{fragments/admin-shell :: adminShell('admin-placeholder-page', ~{::adminPageContent}, ~{::pageScripts})}">
+    <th:block th:fragment="adminPageContent">
+      <div class="admin-placeholder">
+        <div class="admin-placeholder__header">
+          <p class="admin-placeholder__tag">Admin Workspace</p>
+          <h1 th:text="${pageTitle}">Events</h1>
+          <p class="admin-placeholder__subtitle" th:text="${pageSubtitle}">
+            This admin section is being prepared.
+          </p>
+        </div>
+
+        <section class="admin-placeholder__panel" aria-live="polite">
+          <h2>Coming soon</h2>
+          <p th:text="${comingSoonMessage}">
+            This page is available in the navigation and will be implemented soon.
+          </p>
+          <div class="admin-placeholder__actions">
+            <a class="admin-placeholder__link" th:href="@{/admin/clubs}">Back to Clubs</a>
+          </div>
+        </section>
+      </div>
+    </th:block>
+
+    <th:block th:fragment="pageScripts"></th:block>
+  </body>
+</html>

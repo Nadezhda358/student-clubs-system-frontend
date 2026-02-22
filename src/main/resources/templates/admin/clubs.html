@@ -12,13 +12,13 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" th:href="@{/css/site-chrome.css}" />
+    <link rel="stylesheet" th:href="@{/css/admin-shell.css}" />
     <link rel="stylesheet" th:href="@{/css/admin-clubs.css}" />
   </head>
-  <body class="admin-clubs-page">
-    <header th:replace="fragments/site-chrome :: siteHeader"></header>
-
-    <main class="admin-clubs">
-      <div class="container admin-clubs__container">
+  <body th:replace="~{fragments/admin-shell :: adminShell('admin-clubs-page', ~{::adminPageContent}, ~{::pageScripts})}">
+    <th:block th:fragment="adminPageContent">
+      <div class="admin-clubs">
+        <div class="container admin-clubs__container">
         <section class="admin-clubs__hero">
           <div>
             <p class="admin-clubs__tag">Admin Workspace</p>
@@ -103,9 +103,10 @@
             Last
           </a>
         </section>
+        </div>
       </div>
-    </main>
+    </th:block>
 
-    <footer th:replace="fragments/site-chrome :: siteFooter"></footer>
+    <th:block th:fragment="pageScripts"></th:block>
   </body>
 </html>
