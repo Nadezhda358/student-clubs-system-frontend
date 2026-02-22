@@ -11,6 +11,7 @@ public record ClubDto(
         String room,
         String contactEmail,
         String contactPhone,
+        String mainImageUrl,
         Boolean isActive,
 
         Long createdById,

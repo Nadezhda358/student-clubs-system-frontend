@@ -43,13 +43,6 @@ public class AppConfig {
 
     @Bean
     public ErrorDecoder feignErrorDecoder() {
-        return (methodKey, response) -> switch (response.status()) {
-            case 400 -> new RuntimeException("Bad request");
-            case 401 -> new RuntimeException("Unauthorized");
-            case 403 -> new RuntimeException("Forbidden");
-            case 404 -> new RuntimeException("Not found");
-            case 500 -> new RuntimeException("Backend error");
-            default -> new RuntimeException("Feign error: " + response.status());
-        };
+        return new ErrorDecoder.Default();
     }
 }
