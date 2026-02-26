@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Club Applications | ClubsHub</title>
+    <link th:href="@{/assets/logo.png}" rel="icon" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Sora:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" th:href="@{/css/site-chrome.css}" />
+    <link rel="stylesheet" th:href="@{/css/me-membership-applications.css}" />
+  </head>
+  <body>
+    <header th:replace="fragments/site-chrome :: siteHeader"></header>
+
+    <main class="me-applications-page">
+      <div class="container">
+        <section class="me-applications-hero">
+          <h1 class="me-applications-title">My Club Applications</h1>
+          <p class="me-applications-subtitle">
+            Track your membership application requests and their current status.
+          </p>
+        </section>
+
+        <div
+          class="me-applications-alert me-applications-alert--warning"
+          role="alert"
+          th:if="${accessMessage}"
+          th:text="${accessMessage}"
+        >
+          Only students can view membership applications.
+        </div>
+
+        <div
+          class="me-applications-alert me-applications-alert--error"
+          role="alert"
+          th:if="${loadErrorMessage}"
+          th:text="${loadErrorMessage}"
+        >
+          Unable to load your applications right now.
+        </div>
+
+        <section class="me-applications-panel" th:if="${accessMessage == null}">
+          <form class="me-applications-filter" method="get" th:action="@{/me/membership-applications}">
+            <label class="me-applications-filter__label" for="statusFilter">Status</label>
+            <select
+              id="statusFilter"
+              name="status"
+              class="me-applications-filter__select"
+              onchange="this.form.submit()"
+            >
+              <option value="" th:selected="${selectedStatus == null}">All</option>
+              <option value="PENDING" th:selected="${selectedStatus != null and selectedStatus.name() == 'PENDING'}">
+                Pending
+              </option>
+              <option value="APPROVED" th:selected="${selectedStatus != null and selectedStatus.name() == 'APPROVED'}">
+                Approved
+              </option>
+              <option value="REJECTED" th:selected="${selectedStatus != null and selectedStatus.name() == 'REJECTED'}">
+                Rejected
+              </option>
+            </select>
+            <noscript>
+              <button class="me-applications-filter__button" type="submit">Filter</button>
+            </noscript>
+          </form>
+
+          <div class="me-applications-empty" th:if="${#lists.isEmpty(applications) and loadErrorMessage == null}">
+            You dont have any applications yet.
+          </div>
+
+          <div
+            class="me-applications-table-wrap"
+            th:if="${!#lists.isEmpty(applications)}"
+          >
+            <table class="me-applications-table">
+              <thead>
+                <tr>
+                  <th scope="col">Club</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Created</th>
+                  <th scope="col">Motivation</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="app : ${applications}">
+                  <td>
+                    <div class="me-applications-club">
+                      <span class="me-applications-club__primary" th:text="|Club #${app.clubId}|">
+                        Club #1
+                      </span>
+                      <span class="me-applications-club__secondary">
+                        TODO: clubName not available in MembershipApplicationDto
+                      </span>
+                    </div>
+                  </td>
+                  <td>
+                    <span
+                      class="membership-status-badge"
+                      th:classappend="${app.status != null ? ' is-' + #strings.toLowerCase(app.status.name()) : ''}"
+                      th:text="${app.status != null ? app.status.name() : 'UNKNOWN'}"
+                    >
+                      PENDING
+                    </span>
+                  </td>
+                  <td
+                    th:text="${app.createdAt != null ? #temporals.format(app.createdAt, 'yyyy-MM-dd HH:mm') : '-'}"
+                  >
+                    2026-02-01 12:30
+                  </td>
+                  <td class="me-applications-motivation" th:with="motivation=${app.motivationText}">
+                    <span
+                      class="me-applications-muted"
+                      th:if="${motivation == null or #strings.isEmpty(motivation)}"
+                    >
+                      No motivation provided.
+                    </span>
+                    <span
+                      th:unless="${motivation == null or #strings.isEmpty(motivation)}"
+                      th:text="${#strings.length(motivation) > 180 ? #strings.substring(motivation, 0, 180) + '…' : motivation}"
+                    >
+                      I would like to join this club because...
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer th:replace="fragments/site-chrome :: siteFooter"></footer>
+  </body>
+</html>

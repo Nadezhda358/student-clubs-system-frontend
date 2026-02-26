@@ -1,11 +1,15 @@
 package com.school.ppmg.student_clubs_system_client.controllers;
 
 import com.school.ppmg.student_clubs_system_client.clients.ClubClient;
+import com.school.ppmg.student_clubs_system_client.clients.MembershipApplicationClient;
+import com.school.ppmg.student_clubs_system_client.dtos.auth.AuthUserDto;
 import com.school.ppmg.student_clubs_system_client.dtos.club.ClubDto;
 import com.school.ppmg.student_clubs_system_client.dtos.club.ClubListDto;
+import com.school.ppmg.student_clubs_system_client.dtos.club.CreateMembershipApplicationRequest;
 import com.school.ppmg.student_clubs_system_client.dtos.club.MediaDto;
 import com.school.ppmg.student_clubs_system_client.dtos.club.UpsertClubDto;
 import com.school.ppmg.student_clubs_system_client.dtos.common.PageResponse;
+import com.school.ppmg.student_clubs_system_client.enums.UserRole;
 import feign.FeignException;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -13,9 +17,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 import java.util.Map;
@@ -24,6 +30,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ClubController {
     private final ClubClient clubClient;
+    private final MembershipApplicationClient membershipApplicationClient;
     private static final int PAGE_SIZE = 9;
 
     @GetMapping("/clubs")
@@ -277,6 +284,50 @@ public class ClubController {
         }
     }
 
+    @PostMapping("/clubs/{id}/membership-applications/apply")
+    public String applyForMembership(
+            @PathVariable("id") Long clubId,
+            @RequestParam(required = false) String motivationText,
+            @ModelAttribute("sessionUser") AuthUserDto sessionUser,
+            RedirectAttributes redirectAttributes
+    ) {
+        if (sessionUser == null) {
+            redirectAttributes.addFlashAttribute("success", "Please sign in to apply for club membership.");
+            return "redirect:/login";
+        }
+
+        if (!isStudent(sessionUser)) {
+            redirectAttributes.addFlashAttribute("membershipApplyWarningMessage", "Only students can apply.");
+            return "redirect:/clubs/" + clubId;
+        }
+
+        String normalizedMotivation = normalizeMembershipMotivation(motivationText);
+        if (normalizedMotivation != null && normalizedMotivation.length() > 2000) {
+            redirectAttributes.addFlashAttribute(
+                    "membershipApplyErrorMessage",
+                    "Motivation text must be 2000 characters or fewer."
+            );
+            redirectAttributes.addFlashAttribute("membershipApplyDraft", normalizedMotivation);
+            return "redirect:/clubs/" + clubId;
+        }
+
+        try {
+            membershipApplicationClient.apply(clubId, new CreateMembershipApplicationRequest(normalizedMotivation));
+            redirectAttributes.addFlashAttribute("membershipApplySuccessMessage", "Application submitted.");
+            redirectAttributes.addFlashAttribute("membershipApplicationSubmitted", true);
+            return "redirect:/clubs/" + clubId;
+        } catch (FeignException ex) {
+            if (ex.status() == HttpStatus.UNAUTHORIZED.value()) {
+                redirectAttributes.addFlashAttribute("success", "Please sign in to apply for club membership.");
+                return "redirect:/login";
+            }
+
+            redirectAttributes.addFlashAttribute("membershipApplyDraft", normalizedMotivation == null ? "" : normalizedMotivation);
+            addMembershipApplyErrorFlash(redirectAttributes, ex);
+            return "redirect:/clubs/" + clubId;
+        }
+    }
+
     @GetMapping("/clubs/{id}/tabs/events")
     public String clubEventsTab(@PathVariable Long id, Model model) {
         try {
@@ -365,6 +416,80 @@ public class ClubController {
     private String normalizeOptionalText(String value) {
         String normalized = normalizeRequiredText(value);
         return normalized.isEmpty() ? null : normalized;
+    }
+
+    private String normalizeMembershipMotivation(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        String normalized = value.trim();
+        return normalized.isEmpty() ? null : normalized;
+    }
+
+    private boolean isStudent(AuthUserDto sessionUser) {
+        return sessionUser != null && sessionUser.role() == UserRole.STUDENT;
+    }
+
+    private void addMembershipApplyErrorFlash(RedirectAttributes redirectAttributes, FeignException ex) {
+        HttpStatus status = HttpStatus.resolve(ex.status());
+        if (status == null) {
+            status = HttpStatus.BAD_GATEWAY;
+        }
+
+        String message = switch (status) {
+            case CONFLICT -> "You already have a pending application for this club.";
+            case FORBIDDEN -> "Only students can apply.";
+            case NOT_FOUND -> "This club was not found.";
+            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> firstNonBlank(
+                    extractUserMessage(ex),
+                    "Please review your motivation text and try again."
+            );
+            default -> firstNonBlank(
+                    extractUserMessage(ex),
+                    "Unable to submit your application right now. Please try again."
+            );
+        };
+
+        if (status == HttpStatus.CONFLICT || status == HttpStatus.FORBIDDEN) {
+            redirectAttributes.addFlashAttribute("membershipApplyWarningMessage", message);
+            return;
+        }
+
+        redirectAttributes.addFlashAttribute("membershipApplyErrorMessage", message);
+    }
+
+    private String extractUserMessage(FeignException ex) {
+        String content = ex.contentUTF8();
+        if (content == null || content.isBlank()) {
+            return "";
+        }
+
+        String extracted = extractJsonField(content, "message");
+        if (!extracted.isBlank()) {
+            return extracted;
+        }
+
+        extracted = extractJsonField(content, "error");
+        if (!extracted.isBlank()) {
+            return extracted;
+        }
+
+        extracted = extractJsonField(content, "detail");
+        if (!extracted.isBlank()) {
+            return extracted;
+        }
+
+        String compact = content.trim();
+        if (!compact.startsWith("<") && compact.length() <= 220) {
+            return compact;
+        }
+
+        return "";
+    }
+
+    private String firstNonBlank(String primary, String fallback) {
+        return primary != null && !primary.isBlank() ? primary : fallback;
     }
 
     private String toClubSaveErrorMessage(FeignException ex) {

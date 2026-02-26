@@ -29,6 +29,13 @@
               Admin
             </a>
             <a
+              th:if="${sessionUser != null and sessionUser.role == T(com.school.ppmg.student_clubs_system_client.enums.UserRole).STUDENT}"
+              th:href="@{/me/membership-applications}"
+              th:classappend="${currentPath != null and #strings.startsWith(currentPath, '/me/membership-applications')} ? ' active' : ''"
+            >
+              My Applications
+            </a>
+            <a
               th:if="${sessionUser != null and sessionUser.role == T(com.school.ppmg.student_clubs_system_client.enums.UserRole).TEACHER}"
               th:href="@{/teacher}"
               th:classappend="${currentPath != null and #strings.startsWith(currentPath, '/teacher')} ? ' active' : ''"

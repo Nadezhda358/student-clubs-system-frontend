@@ -138,6 +138,90 @@
               <span class="detail-value" th:text="${club.updatedAt}">2026-02-05T09:45:00Z</span>
             </div>
           </div>
+
+          <section
+            class="membership-panel"
+            th:with="
+              isStudent=${sessionUser != null and sessionUser.role == T(com.school.ppmg.student_clubs_system_client.enums.UserRole).STUDENT},
+              formDisabled=${membershipApplicationSubmitted != null and membershipApplicationSubmitted}
+            "
+          >
+            <div class="membership-panel__header">
+              <h2 class="membership-panel__title">Join this club</h2>
+              <p class="membership-panel__subtitle">
+                Submit an application to request membership.
+              </p>
+            </div>
+
+            <div
+              class="membership-alert membership-alert--success"
+              role="status"
+              th:if="${membershipApplySuccessMessage}"
+              th:text="${membershipApplySuccessMessage}"
+            >
+              Application submitted.
+            </div>
+            <div
+              class="membership-alert membership-alert--warning"
+              role="alert"
+              th:if="${membershipApplyWarningMessage}"
+              th:text="${membershipApplyWarningMessage}"
+            >
+              Only students can apply.
+            </div>
+            <div
+              class="membership-alert membership-alert--error"
+              role="alert"
+              th:if="${membershipApplyErrorMessage}"
+              th:text="${membershipApplyErrorMessage}"
+            >
+              Unable to submit your application right now.
+            </div>
+
+            <div class="membership-panel__empty" th:if="${!isStudent}">
+              <p class="membership-panel__empty-text">Only students can apply.</p>
+              <p class="membership-panel__empty-text" th:if="${sessionUser == null}">
+                <a th:href="@{/login}">Sign in</a> with a student account to continue.
+              </p>
+            </div>
+
+            <form
+              class="membership-form"
+              method="post"
+              th:if="${isStudent}"
+              th:action="@{/clubs/{id}/membership-applications/apply(id=${club.id})}"
+            >
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+              <label class="membership-form__label" for="motivationText">Motivation (optional)</label>
+              <textarea
+                id="motivationText"
+                name="motivationText"
+                class="membership-form__textarea"
+                rows="5"
+                maxlength="2000"
+                placeholder="Tell the club why you want to join (optional)."
+                th:text="${membershipApplyDraft}"
+                th:disabled="${formDisabled}"
+              ></textarea>
+
+              <div class="membership-form__meta">
+                <p class="membership-form__hint">Maximum 2000 characters.</p>
+                <p class="membership-form__status" th:if="${formDisabled}">
+                  Status: PENDING
+                </p>
+              </div>
+
+              <button
+                type="submit"
+                class="membership-form__button"
+                th:disabled="${formDisabled}"
+                th:text="${formDisabled} ? 'Application Submitted' : 'Apply'"
+              >
+                Apply
+              </button>
+            </form>
+          </section>
         </section>
 
         <section
