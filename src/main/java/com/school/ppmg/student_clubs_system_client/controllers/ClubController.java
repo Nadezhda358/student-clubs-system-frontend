@@ -9,6 +9,7 @@ import com.school.ppmg.student_clubs_system_client.dtos.club.CreateMembershipApp
 import com.school.ppmg.student_clubs_system_client.dtos.club.MediaDto;
 import com.school.ppmg.student_clubs_system_client.dtos.club.UpsertClubDto;
 import com.school.ppmg.student_clubs_system_client.dtos.common.PageResponse;
+import com.school.ppmg.student_clubs_system_client.enums.MembershipRequestStatus;
 import com.school.ppmg.student_clubs_system_client.enums.UserRole;
 import feign.FeignException;
 import jakarta.servlet.http.HttpServletResponse;
@@ -270,12 +271,27 @@ public class ClubController {
     @GetMapping("/clubs/{id}")
     public String clubDetails(
             @PathVariable Long id,
+            @ModelAttribute("sessionUser") AuthUserDto sessionUser,
             Model model,
             HttpServletResponse response
     ) {
         try {
             ClubDto club = clubClient.getById(id);
             model.addAttribute("club", club);
+
+            boolean hasPendingApplication = false;
+            if (isStudent(sessionUser)) {
+                try {
+                    hasPendingApplication = membershipApplicationClient
+                            .getMyApplications(MembershipRequestStatus.PENDING)
+                            .stream()
+                            .anyMatch(application -> application.clubId() != null && application.clubId().equals(id));
+                } catch (RuntimeException ignored) {
+                    // Club page should still render even if membership status lookup fails.
+                }
+            }
+
+            model.addAttribute("membershipApplicationPending", hasPendingApplication);
             return "clubs/details";
         } catch (FeignException.NotFound ex) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
