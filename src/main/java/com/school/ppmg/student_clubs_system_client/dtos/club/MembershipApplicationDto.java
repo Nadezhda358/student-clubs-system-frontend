@@ -7,6 +7,7 @@ import java.time.OffsetDateTime;
 public record MembershipApplicationDto(
         Long id,
         Long clubId,
+        String clubName,
         Long studentId,
         MembershipRequestStatus status,
         String motivationText,

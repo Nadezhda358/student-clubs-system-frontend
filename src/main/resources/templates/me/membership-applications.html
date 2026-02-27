@@ -47,22 +47,22 @@
         <section class="me-applications-panel" th:if="${accessMessage == null}">
           <form class="me-applications-filter" method="get" th:action="@{/me/membership-applications}">
             <label class="me-applications-filter__label" for="statusFilter">Status</label>
-            <select
-              id="statusFilter"
-              name="status"
-              class="me-applications-filter__select"
-              onchange="this.form.submit()"
-            >
-              <option value="" th:selected="${selectedStatus == null}">All</option>
-              <option value="PENDING" th:selected="${selectedStatus != null and selectedStatus.name() == 'PENDING'}">
-                Pending
+            <select id="statusFilter"
+                    name="status"
+                    class="me-applications-filter__select"
+                    onchange="this.form.submit()">
+
+              <option value=""
+                      th:selected="${selectedStatus == null}">
+                All
               </option>
-              <option value="APPROVED" th:selected="${selectedStatus != null and selectedStatus.name() == 'APPROVED'}">
-                Approved
+
+              <option th:each="status : ${T(com.school.ppmg.student_clubs_system_client.enums.MembershipRequestStatus).values()}"
+                      th:value="${status.name()}"
+                      th:text="${#strings.capitalize(#strings.toLowerCase(status.name()))}"
+                      th:selected="${selectedStatus != null and selectedStatus == status}">
               </option>
-              <option value="REJECTED" th:selected="${selectedStatus != null and selectedStatus.name() == 'REJECTED'}">
-                Rejected
-              </option>
+
             </select>
             <noscript>
               <button class="me-applications-filter__button" type="submit">Filter</button>
@@ -90,12 +90,10 @@
                 <tr th:each="app : ${applications}">
                   <td>
                     <div class="me-applications-club">
-                      <span class="me-applications-club__primary" th:text="|Club #${app.clubId}|">
-                        Club #1
-                      </span>
-                      <span class="me-applications-club__secondary">
-                        TODO: clubName not available in MembershipApplicationDto
-                      </span>
+                      <a th:href="@{/clubs/{id}(id=${app.clubId})}"
+                         class="me-applications-club__primary"
+                         th:text="${app.clubName}">
+                      </a>
                     </div>
                   </td>
                   <td>
@@ -104,13 +102,11 @@
                       th:classappend="${app.status != null ? ' is-' + #strings.toLowerCase(app.status.name()) : ''}"
                       th:text="${app.status != null ? app.status.name() : 'UNKNOWN'}"
                     >
-                      PENDING
                     </span>
                   </td>
                   <td
                     th:text="${app.createdAt != null ? #temporals.format(app.createdAt, 'yyyy-MM-dd HH:mm') : '-'}"
                   >
-                    2026-02-01 12:30
                   </td>
                   <td class="me-applications-motivation" th:with="motivation=${app.motivationText}">
                     <span
