@@ -2,9 +2,11 @@ package com.school.ppmg.student_clubs_system_client.clients;
 
 import com.school.ppmg.student_clubs_system_client.dtos.club.CreateMembershipApplicationRequest;
 import com.school.ppmg.student_clubs_system_client.dtos.club.MembershipApplicationDto;
+import com.school.ppmg.student_clubs_system_client.dtos.club.UpdateMembershipApplicationStatusRequest;
 import com.school.ppmg.student_clubs_system_client.enums.MembershipRequestStatus;
 import jakarta.validation.Valid;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,4 +28,18 @@ public interface MembershipApplicationClient {
             @RequestParam(required = false) MembershipRequestStatus status
     );
 
+    @GetMapping("/admin/membership-applications")
+    @PreAuthorize("hasRole('ADMIN')")
+    List<MembershipApplicationDto> adminGetAll(
+            @RequestParam(required = false) MembershipRequestStatus status,
+            @RequestParam(required = false) Long clubId,
+            @RequestParam(required = false) String q
+    );
+
+    @PatchMapping("/admin/membership-applications/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    MembershipApplicationDto adminUpdateApplicationStatus(
+            @PathVariable Long id,
+            @RequestBody UpdateMembershipApplicationStatusRequest request
+    );
 }

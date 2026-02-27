@@ -9,6 +9,8 @@ public record MembershipApplicationDto(
         Long clubId,
         String clubName,
         Long studentId,
+        String studentFullName,
+        String studentEmail,
         MembershipRequestStatus status,
         String motivationText,
         OffsetDateTime createdAt
