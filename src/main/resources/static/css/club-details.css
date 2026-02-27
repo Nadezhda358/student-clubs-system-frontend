@@ -34,31 +34,31 @@ body.club-modal-open {
 .tab-button {
   background: transparent;
   border: 1px solid transparent;
-  padding: 0.65rem 1.15rem;
+  padding: 10px 14px;
   border-radius: 999px;
   font: inherit;
   font-weight: 600;
   color: rgba(59, 42, 44, 0.82);
+  opacity: 0.85;
   cursor: pointer;
-  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease,
-    transform 0.2s ease;
+  transition: transform 0.15s ease, background 0.2s ease, opacity 0.2s ease,
+    color 0.2s ease, border-color 0.2s ease;
 }
 
 .tab-button:hover {
-  border-color: rgba(107, 63, 160, 0.15);
-  background: rgba(107, 63, 160, 0.06);
+  opacity: 1;
+  border-color: rgba(107, 63, 160, 0.16);
+  background: rgba(107, 63, 160, 0.08);
   color: var(--royal-purple);
   transform: translateY(-1px);
 }
 
 .tab-button.is-active {
-  background: linear-gradient(
-    135deg,
-    rgba(107, 63, 160, 0.14),
-    rgba(242, 201, 76, 0.1)
-  );
-  border-color: rgba(107, 63, 160, 0.18);
+  opacity: 1;
+  background: rgba(107, 63, 160, 0.18);
+  border-color: rgba(107, 63, 160, 0.28);
   color: var(--royal-purple);
+  transform: translateY(-1px);
 }
 
 .tab-panel {
@@ -187,10 +187,15 @@ body.club-modal-open {
 .club-hero__apply-button:focus-visible,
 .club-apply-modal__close:focus-visible,
 .club-apply-modal__button:focus-visible,
-.membership-form__textarea:focus-visible,
-.tab-button:focus-visible {
+.membership-form__textarea:focus-visible {
   outline: 2px solid rgba(242, 201, 76, 0.95);
   outline-offset: 2px;
+}
+
+.tab-button:focus-visible {
+  outline: 2px solid rgba(107, 63, 160, 0.45);
+  outline-offset: 2px;
+  opacity: 1;
 }
 
 .club-hero__tagline {
@@ -212,6 +217,12 @@ body.club-modal-open {
 
 .club-tabs--under-hero {
   margin-top: 16px;
+  padding: 10px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(107, 63, 160, 0.18);
+  backdrop-filter: blur(10px);
+  margin-bottom: 4px;
 }
 
 .club-chip {
@@ -569,7 +580,7 @@ body.club-modal-open {
 
 .club-toast {
   position: fixed;
-  top: 24px;
+  bottom: 24px;
   right: 24px;
   display: flex;
   align-items: center;
@@ -580,7 +591,7 @@ body.club-modal-open {
   min-width: 280px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
   opacity: 0;
-  transform: translateY(-10px);
+  transform: translateY(10px);
   transition: all 0.3s ease;
   z-index: 2000;
 }
@@ -729,7 +740,8 @@ body.club-modal-open {
   }
 
   .club-toast {
-    top: 16px;
+    top: auto;
+    bottom: 16px;
     right: 16px;
     left: 16px;
     min-width: 0;
