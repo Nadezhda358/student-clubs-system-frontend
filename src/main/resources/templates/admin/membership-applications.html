@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Membership Applications | ClubsHub Admin</title>
+    <link th:href="@{/assets/logo.png}" rel="icon" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Sora:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" th:href="@{/css/site-chrome.css}" />
+    <link rel="stylesheet" th:href="@{/css/admin-shell.css}" />
+  </head>
+  <body th:replace="~{fragments/admin-shell :: adminShell('admin-membership-applications-page', ~{::adminPageContent}, ~{::pageScripts})}">
+    <th:block th:fragment="adminPageContent">
+      <div class="container" style="padding-top: 1.5rem; padding-bottom: 2rem;">
+        <h1 style="margin-top: 0;">Club Membership Applications</h1>
+
+        <form method="get" th:action="@{/admin/membership-applications}" style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem;">
+          <label>
+            Status
+            <select name="status">
+              <option value="" th:selected="${status == null}">All</option>
+              <option
+                th:each="s : ${statusValues}"
+                th:value="${s.name()}"
+                th:selected="${status != null and status == s}"
+                th:text="${s.name()}"
+              ></option>
+            </select>
+          </label>
+
+          <label>
+            Club ID
+            <input type="number" min="1" name="clubId" th:value="${clubId}" />
+          </label>
+
+          <label>
+            Search
+            <input type="text" name="q" th:value="${q}" />
+          </label>
+
+          <button type="submit">Apply</button>
+          <a th:href="@{/admin/membership-applications}">Reset</a>
+        </form>
+
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr>
+                <th style="text-align: left; border-bottom: 1px solid #ddd; padding: 0.5rem;">Created At</th>
+                <th style="text-align: left; border-bottom: 1px solid #ddd; padding: 0.5rem;">Club Name</th>
+                <th style="text-align: left; border-bottom: 1px solid #ddd; padding: 0.5rem;">Student Full Name</th>
+                <th style="text-align: left; border-bottom: 1px solid #ddd; padding: 0.5rem;">Student Email</th>
+                <th style="text-align: left; border-bottom: 1px solid #ddd; padding: 0.5rem;">Status</th>
+                <th style="text-align: left; border-bottom: 1px solid #ddd; padding: 0.5rem;">Motivation Text</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:if="${#lists.isEmpty(applications)}">
+                <td colspan="6" style="padding: 0.75rem; color: #666;">No membership applications found.</td>
+              </tr>
+              <tr th:each="app : ${applications}">
+                <td
+                  style="padding: 0.5rem; border-bottom: 1px solid #f0f0f0;"
+                  th:text="${app.createdAt != null ? #temporals.format(app.createdAt, 'yyyy-MM-dd HH:mm') : '-'}"
+                >
+                  2026-02-27 10:00
+                </td>
+                <td style="padding: 0.5rem; border-bottom: 1px solid #f0f0f0;" th:text="${app.clubName}">Math Club</td>
+                <td style="padding: 0.5rem; border-bottom: 1px solid #f0f0f0;" th:text="${app.studentFullName}">John Doe</td>
+                <td style="padding: 0.5rem; border-bottom: 1px solid #f0f0f0;" th:text="${app.studentEmail}">john@school.edu</td>
+                <td
+                  style="padding: 0.5rem; border-bottom: 1px solid #f0f0f0;"
+                  th:text="${app.status != null ? app.status.name() : '-'}"
+                >
+                  PENDING
+                </td>
+                <td style="padding: 0.5rem; border-bottom: 1px solid #f0f0f0;" th:text="${app.motivationText}">I want to join.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </th:block>
+
+    <th:block th:fragment="pageScripts"></th:block>
+  </body>
+</html>
