@@ -56,10 +56,9 @@
           </div>
 
           <div class="club-grid">
-            <a
-              class="club-card club-card-link"
+            <article
+              class="club-card"
               th:each="club : ${clubs}"
-              th:href="@{/clubs/{id}(id=${club.id})}"
             >
               <div
                 class="club-card__media"
@@ -79,13 +78,29 @@
                 </span>
               </div>
               <div class="club-card__body">
-                <h3 th:text="${club.name}">Club Name</h3>
+                <h3>
+                  <a
+                    class="club-card__name-link"
+                    th:href="@{/clubs/{id}(id=${club.id})}"
+                    th:text="${club.name}"
+                  >
+                    Club Name
+                  </a>
+                </h3>
                 <p class="club-room">
                   <span>Room</span>
                   <span th:text="${club.room != null and !#strings.isEmpty(club.room) ? club.room : 'TBD'}">A-204</span>
                 </p>
+                <div class="club-card__footer">
+                  <a
+                    class="club-card__more-button"
+                    th:href="@{/clubs/{id}(id=${club.id})}"
+                  >
+                    More
+                  </a>
+                </div>
               </div>
-            </a>
+            </article>
             <div class="club-empty" th:if="${#lists.isEmpty(clubs)}">
               <p>No clubs available yet. Check back soon!</p>
             </div>
