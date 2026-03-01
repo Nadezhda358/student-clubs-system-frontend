@@ -1,0 +1,715 @@
+.admin-membership-applications-page {
+  --membership-surface-top: rgba(255, 255, 255, 0.9);
+  --membership-surface-bottom: rgba(246, 242, 251, 0.76);
+  --membership-ink: rgba(34, 22, 28, 0.88);
+  --membership-muted: rgba(34, 22, 28, 0.66);
+  --membership-divider: rgba(59, 42, 44, 0.1);
+  --membership-hover: rgba(199, 182, 216, 0.19);
+  --membership-focus: rgba(107, 63, 160, 0.26);
+  --status-pending-bg: rgba(245, 176, 35, 0.2);
+  --status-pending-ink: #8b5f00;
+  --status-approved-bg: rgba(16, 185, 129, 0.18);
+  --status-approved-ink: #0f766e;
+  --status-rejected-bg: rgba(239, 68, 68, 0.16);
+  --status-rejected-ink: #b91c1c;
+  --status-neutral-bg: rgba(59, 42, 44, 0.1);
+  --status-neutral-ink: rgba(59, 42, 44, 0.78);
+}
+
+.admin-membership-page {
+  padding-top: 1.5rem;
+  padding-bottom: 2.2rem;
+}
+
+.membership-surface {
+  position: relative;
+  padding: 1.65rem;
+  border-radius: 24px;
+  background: linear-gradient(155deg, var(--membership-surface-top), var(--membership-surface-bottom));
+  overflow: hidden;
+}
+
+.membership-surface::before {
+  content: "";
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  right: -110px;
+  top: -120px;
+  background: radial-gradient(circle at 30% 30%, rgba(242, 201, 76, 0.45), transparent 68%);
+  opacity: 0.58;
+}
+
+.membership-surface::after {
+  content: "";
+  position: absolute;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  left: -74px;
+  bottom: -92px;
+  background: radial-gradient(circle at 62% 38%, rgba(107, 63, 160, 0.2), transparent 70%);
+  opacity: 0.66;
+}
+
+.membership-surface > * {
+  position: relative;
+  z-index: 1;
+}
+
+.membership-page-header {
+  margin-bottom: 1.2rem;
+}
+
+.membership-page-kicker {
+  margin: 0 0 0.45rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: rgba(59, 42, 44, 0.58);
+}
+
+.membership-page-header h1 {
+  margin: 0 0 0.35rem;
+  font-family: "Playfair Display", serif;
+  font-size: clamp(1.9rem, 3vw, 2.45rem);
+  color: var(--deep-brown);
+}
+
+.membership-page-subtitle {
+  margin: 0;
+  max-width: 700px;
+  font-size: 0.9rem;
+  color: var(--membership-muted);
+}
+
+.membership-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  align-items: flex-end;
+  margin-bottom: 1.15rem;
+}
+
+.membership-filter {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 150px;
+  flex: 0 1 180px;
+}
+
+.membership-filter--search {
+  flex: 1 1 260px;
+}
+
+.membership-filter-label {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: rgba(59, 42, 44, 0.72);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.membership-filter-control {
+  width: 100%;
+  height: 2.55rem;
+  border-radius: 12px;
+  border: 1px solid rgba(59, 42, 44, 0.16);
+  background: rgba(255, 255, 255, 0.86);
+  color: var(--membership-ink);
+  padding: 0 0.75rem;
+  font-family: "Sora", sans-serif;
+  font-size: 0.82rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.membership-filter-control:focus-visible {
+  outline: none;
+  border-color: rgba(107, 63, 160, 0.55);
+  box-shadow: 0 0 0 3px var(--membership-focus);
+}
+
+.membership-filter-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding-bottom: 0.05rem;
+}
+
+.membership-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 2.45rem;
+  border-radius: 999px;
+  padding: 0 1rem;
+  border: 1px solid transparent;
+  font-size: 0.79rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+
+.membership-filter-btn:hover {
+  transform: translateY(-1px);
+}
+
+.membership-filter-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--membership-focus);
+}
+
+.membership-filter-btn--apply {
+  color: #ffffff;
+  background: linear-gradient(120deg, #6b3fa0, #8d55bf);
+}
+
+.membership-filter-btn--reset {
+  color: var(--deep-brown);
+  border-color: rgba(59, 42, 44, 0.2);
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.membership-table-wrap {
+  overflow-x: auto;
+}
+
+.membership-table {
+  width: 100% !important;
+  border-collapse: separate !important;
+  border-spacing: 0;
+}
+
+.membership-table.dataTable.no-footer {
+  border-bottom: 0;
+}
+
+.membership-table.dataTable thead th,
+.membership-table.dataTable thead td {
+  border-bottom: 1px solid var(--membership-divider);
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.64), rgba(255, 255, 255, 0.35));
+  color: rgba(59, 42, 44, 0.85);
+  padding: 0.86rem 0.7rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.membership-table.dataTable tbody td {
+  border-bottom: 1px solid rgba(59, 42, 44, 0.08);
+  padding: 0.82rem 0.7rem;
+  font-size: 0.81rem;
+  color: var(--membership-ink);
+  vertical-align: middle;
+}
+
+.membership-table.dataTable tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.membership-table.dataTable.display tbody tr.odd,
+.membership-table.dataTable.stripe tbody tr.odd {
+  background: transparent;
+}
+
+.membership-table.dataTable tbody tr:hover {
+  background: linear-gradient(90deg, rgba(107, 63, 160, 0.07), rgba(242, 201, 76, 0.08));
+}
+
+.membership-table.dataTable tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.membership-empty-row td {
+  font-size: 0.85rem;
+  color: var(--membership-muted);
+}
+
+.membership-col-status,
+.membership-col-actions {
+  white-space: nowrap;
+}
+
+.membership-col-actions {
+  min-width: 190px;
+}
+
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 1.72rem;
+  border-radius: 999px;
+  padding: 0 0.75rem;
+  font-size: 0.67rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.status-chip--pending {
+  background: var(--status-pending-bg);
+  color: var(--status-pending-ink);
+}
+
+.status-chip--approved {
+  background: var(--status-approved-bg);
+  color: var(--status-approved-ink);
+}
+
+.status-chip--rejected {
+  background: var(--status-rejected-bg);
+  color: var(--status-rejected-ink);
+}
+
+.status-chip--neutral,
+.status-chip--decided {
+  background: var(--status-neutral-bg);
+  color: var(--status-neutral-ink);
+}
+
+.membership-action-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.membership-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 4.6rem;
+  height: 1.96rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 0 0.85rem;
+  font-size: 0.73rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease, background-color 0.18s ease, color 0.18s ease;
+}
+
+.membership-action:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--membership-focus);
+}
+
+.membership-action:hover {
+  transform: translateY(-1px);
+}
+
+.membership-action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.membership-action--approve {
+  border-color: rgba(16, 185, 129, 0.5);
+  color: #0f766e;
+  background: rgba(236, 253, 245, 0.76);
+}
+
+.membership-action--approve:hover {
+  border-color: rgba(16, 185, 129, 0.8);
+  background: rgba(220, 252, 231, 0.95);
+}
+
+.membership-action--reject {
+  border-color: rgba(220, 38, 38, 0.46);
+  color: #b91c1c;
+  background: rgba(254, 242, 242, 0.8);
+}
+
+.membership-action--reject:hover {
+  border-color: rgba(220, 38, 38, 0.76);
+  background: rgba(254, 226, 226, 0.95);
+}
+
+.admin-membership-page .dataTables_wrapper {
+  margin-top: 0.25rem;
+}
+
+.admin-membership-page .dataTables_wrapper .dataTables_length,
+.admin-membership-page .dataTables_wrapper .dataTables_filter {
+  margin-bottom: 0.9rem;
+  color: var(--membership-muted);
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.admin-membership-page .dataTables_wrapper .dataTables_filter input,
+.admin-membership-page .dataTables_wrapper .dataTables_length select {
+  border: 1px solid rgba(59, 42, 44, 0.15);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.88);
+  color: var(--membership-ink);
+  min-height: 2rem;
+  font-size: 0.76rem;
+}
+
+.admin-membership-page .dataTables_wrapper .dataTables_filter input:focus-visible,
+.admin-membership-page .dataTables_wrapper .dataTables_length select:focus-visible {
+  outline: none;
+  border-color: rgba(107, 63, 160, 0.58);
+  box-shadow: 0 0 0 3px var(--membership-focus);
+}
+
+.admin-membership-page .dataTables_wrapper .dataTables_info {
+  margin-top: 0.95rem;
+  color: var(--membership-muted);
+  font-size: 0.74rem;
+  padding-top: 0.45rem;
+}
+
+.admin-membership-page .dataTables_wrapper .dataTables_paginate {
+  margin-top: 0.75rem;
+}
+
+.admin-membership-page .dataTables_wrapper .paginate_button {
+  border-radius: 999px !important;
+  border: 1px solid transparent !important;
+  background: rgba(255, 255, 255, 0.8) !important;
+  color: var(--deep-brown) !important;
+  min-width: 2rem;
+}
+
+.admin-membership-page .dataTables_wrapper .paginate_button.current,
+.admin-membership-page .dataTables_wrapper .paginate_button.current:hover {
+  border-color: rgba(107, 63, 160, 0.32) !important;
+  background: linear-gradient(120deg, rgba(107, 63, 160, 0.18), rgba(242, 201, 76, 0.2)) !important;
+  color: #4d286f !important;
+}
+
+.admin-membership-page .dataTables_wrapper .paginate_button:hover {
+  border-color: rgba(59, 42, 44, 0.14) !important;
+  background: rgba(255, 255, 255, 0.94) !important;
+  color: var(--deep-brown) !important;
+}
+
+.membership-modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1.1rem;
+  background: rgba(18, 18, 24, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 1700;
+}
+
+.membership-modal.is-open {
+  display: flex;
+}
+
+.membership-modal__content {
+  width: min(520px, 100%);
+  border-radius: 22px;
+  border: 1px solid rgba(59, 42, 44, 0.1);
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.98), rgba(246, 242, 251, 0.9));
+  box-shadow: 0 22px 50px rgba(16, 12, 20, 0.27);
+  padding: 1.2rem 1.2rem 1.05rem;
+}
+
+.membership-modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.85rem;
+}
+
+.membership-modal__kicker {
+  margin: 0 0 0.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.13em;
+  font-size: 0.64rem;
+  color: rgba(59, 42, 44, 0.56);
+  font-weight: 700;
+}
+
+.membership-modal__title {
+  margin: 0;
+  font-family: "Playfair Display", serif;
+  font-size: 1.55rem;
+  color: var(--deep-brown);
+}
+
+.membership-modal__logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 11px;
+  object-fit: contain;
+  background: rgba(255, 255, 255, 0.84);
+  padding: 0.2rem;
+}
+
+.membership-modal__message {
+  margin: 0 0 0.9rem;
+  color: var(--membership-ink);
+  font-size: 0.86rem;
+}
+
+.membership-modal__summary {
+  margin: 0;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.membership-modal__summary-row {
+  display: grid;
+  grid-template-columns: 5.2rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.65rem;
+  border-radius: 12px;
+  padding: 0.52rem 0.62rem;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.membership-modal__summary-row dt {
+  margin: 0;
+  font-size: 0.68rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: rgba(59, 42, 44, 0.62);
+  font-weight: 700;
+}
+
+.membership-modal__summary-row dd {
+  margin: 0;
+  color: var(--membership-ink);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.membership-modal__actions {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.55rem;
+}
+
+.modal-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 7rem;
+  height: 2.35rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 0.77rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, filter 0.2s ease;
+}
+
+.modal-btn:hover {
+  transform: translateY(-1px);
+}
+
+.modal-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--membership-focus);
+}
+
+.modal-btn--secondary {
+  color: var(--deep-brown);
+  border-color: rgba(59, 42, 44, 0.22);
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.modal-btn--primary {
+  color: #ffffff;
+  background: linear-gradient(120deg, #6b3fa0, #8d55bf);
+}
+
+.modal-btn--primary.is-approve {
+  background: linear-gradient(120deg, #0f766e, #10b981);
+}
+
+.modal-btn--primary.is-reject {
+  background: linear-gradient(120deg, #b91c1c, #ef4444);
+}
+
+.toast-container {
+  position: fixed;
+  right: 1.05rem;
+  bottom: 1.05rem;
+  z-index: 1600;
+  width: min(360px, calc(100vw - 2rem));
+  display: grid;
+  gap: 0.48rem;
+}
+
+.toast-item {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 0.65rem;
+  align-items: center;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  padding: 0.62rem 0.66rem;
+  box-shadow: 0 12px 26px rgba(16, 12, 20, 0.17);
+  animation: toast-in 0.24s ease both;
+}
+
+.toast-item.is-hiding {
+  animation: toast-out 0.22s ease forwards;
+}
+
+.toast-item--success {
+  background: rgba(236, 253, 245, 0.97);
+  color: #065f46;
+  border-color: rgba(16, 185, 129, 0.33);
+}
+
+.toast-item--error {
+  background: rgba(254, 242, 242, 0.97);
+  color: #991b1b;
+  border-color: rgba(239, 68, 68, 0.37);
+}
+
+.toast-item--warning {
+  background: rgba(255, 251, 235, 0.97);
+  color: #92400e;
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+.toast-item--info {
+  background: rgba(239, 246, 255, 0.98);
+  color: #1e3a8a;
+  border-color: rgba(59, 130, 246, 0.33);
+}
+
+.toast-item__logo {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.77);
+  padding: 0.15rem;
+}
+
+.toast-item__body {
+  min-width: 0;
+}
+
+.toast-item__title {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.toast-item__text {
+  margin: 0.2rem 0 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes toast-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@media (max-width: 920px) {
+  .membership-surface {
+    padding: 1.3rem 1rem 1.15rem;
+  }
+
+  .membership-filter {
+    flex: 1 1 170px;
+  }
+
+  .membership-filter--search {
+    flex-basis: 100%;
+  }
+}
+
+@media (max-width: 700px) {
+  .admin-membership-page {
+    padding-top: 1rem;
+    padding-bottom: 1.6rem;
+  }
+
+  .membership-page-subtitle {
+    font-size: 0.82rem;
+  }
+
+  .membership-filters {
+    gap: 0.62rem;
+  }
+
+  .membership-filter,
+  .membership-filter--search {
+    flex-basis: 100%;
+    min-width: 0;
+  }
+
+  .membership-filter-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .membership-filter-btn {
+    flex: 1 1 48%;
+  }
+
+  .membership-table.dataTable thead th,
+  .membership-table.dataTable tbody td {
+    padding-left: 0.54rem;
+    padding-right: 0.54rem;
+  }
+
+  .membership-modal {
+    padding: 0.85rem;
+  }
+
+  .membership-modal__content {
+    border-radius: 18px;
+    padding: 1rem 0.92rem;
+  }
+
+  .membership-modal__summary-row {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+
+  .membership-modal__actions {
+    justify-content: stretch;
+    flex-wrap: wrap;
+  }
+
+  .modal-btn {
+    flex: 1 1 46%;
+  }
+
+  .toast-container {
+    width: min(92vw, 360px);
+    right: 0.7rem;
+    bottom: 0.7rem;
+  }
+}

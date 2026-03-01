@@ -10,242 +10,179 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-          href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Sora:wght@300;400;600;700&display=swap"
-          rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Sora:wght@300;400;600;700&display=swap"
+    rel="stylesheet"
   />
   <link rel="stylesheet" th:href="@{/css/site-chrome.css}" />
   <link rel="stylesheet" th:href="@{/css/admin-shell.css}" />
 
   <!-- DataTables CSS -->
   <link
-          rel="stylesheet"
-          type="text/css"
-          href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css"
+    rel="stylesheet"
+    type="text/css"
+    href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css"
   />
-  <style>
-    .membership-action {
-      border: 1px solid #d0d0d0;
-      border-radius: 999px;
-      padding: 0.25rem 0.7rem;
-      font-size: 0.85rem;
-      cursor: pointer;
-      background: #fff;
-      margin-right: 0.35rem;
-    }
-
-    .membership-action--approve {
-      border-color: #7ad3b6;
-      color: #0f766e;
-      background: #ecfdf5;
-    }
-
-    .membership-action--reject {
-      border-color: #f3a6a6;
-      color: #b91c1c;
-      background: #fef2f2;
-    }
-
-    .membership-modal {
-      position: fixed;
-      inset: 0;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      background: rgba(0, 0, 0, 0.42);
-      z-index: 1500;
-      padding: 1rem;
-    }
-
-    .membership-modal.is-open {
-      display: flex;
-    }
-
-    .membership-modal__content {
-      width: min(480px, 100%);
-      background: #fff;
-      border-radius: 12px;
-      padding: 1rem;
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
-    }
-
-    .membership-modal__actions {
-      margin-top: 1rem;
-      display: flex;
-      justify-content: flex-end;
-      gap: 0.5rem;
-    }
-
-    .toast-container {
-      position: fixed;
-      right: 1rem;
-      bottom: 1rem;
-      z-index: 1600;
-      display: grid;
-      gap: 0.5rem;
-      width: min(360px, calc(100vw - 2rem));
-    }
-
-    .toast-item {
-      display: grid;
-      grid-template-columns: auto 1fr;
-      align-items: center;
-      gap: 0.6rem;
-      border-radius: 10px;
-      padding: 0.6rem 0.7rem;
-      border: 1px solid transparent;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-    }
-
-    .toast-item--success {
-      background: #ecfdf5;
-      color: #065f46;
-      border-color: #9ee7d0;
-    }
-
-    .toast-item--error {
-      background: #fef2f2;
-      color: #991b1b;
-      border-color: #f7b8b8;
-    }
-
-    .toast-item__logo {
-      width: 28px;
-      height: 28px;
-      object-fit: contain;
-    }
-  </style>
+  <link rel="stylesheet" th:href="@{/css/admin-membership-applications.css}" />
 </head>
 
 <body
-        th:replace="~{fragments/admin-shell :: adminShell('admin-membership-applications-page', ~{::adminPageContent}, ~{::pageScripts})}"
+  th:replace="~{fragments/admin-shell :: adminShell('admin-membership-applications-page', ~{::adminPageContent}, ~{::pageScripts})}"
 >
 <th:block th:fragment="adminPageContent">
-  <div class="container" style="padding-top: 1.5rem; padding-bottom: 2rem;">
-    <h1 style="margin-top: 0;">Club Membership Applications</h1>
+  <div class="container admin-membership-page">
+    <section class="membership-surface">
+      <header class="membership-page-header">
+        <p class="membership-page-kicker">Admin Workspace</p>
+        <h1>Club Membership Applications</h1>
+        <p class="membership-page-subtitle">
+          Review pending requests quickly, approve eligible students, and keep membership decisions consistent.
+        </p>
+      </header>
 
-    <form
-            method="get"
-            th:action="@{/admin/membership-applications}"
-            style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem;"
-    >
-      <label>
-        Status
-        <select name="status">
-          <option value="" th:selected="${status == null}">All</option>
-          <option
-                  th:each="s : ${statusValues}"
-                  th:value="${s.name()}"
-                  th:selected="${status != null and status == s}"
-                  th:text="${s.name()}"
-          ></option>
-        </select>
-      </label>
+      <form method="get" th:action="@{/admin/membership-applications}" class="membership-filters">
+        <label class="membership-filter">
+          <span class="membership-filter-label">Status</span>
+          <select class="membership-filter-control" name="status">
+            <option value="" th:selected="${status == null}">All</option>
+            <option
+              th:each="s : ${statusValues}"
+              th:value="${s.name()}"
+              th:selected="${status != null and status == s}"
+              th:text="${s.name()}"
+            ></option>
+          </select>
+        </label>
 
-      <label>
-        Club ID
-        <input type="number" min="1" name="clubId" th:value="${clubId}" />
-      </label>
+        <label class="membership-filter">
+          <span class="membership-filter-label">Club ID</span>
+          <input class="membership-filter-control" type="number" min="1" name="clubId" th:value="${clubId}" />
+        </label>
 
-      <label>
-        Search
-        <input type="text" name="q" th:value="${q}" />
-      </label>
+        <label class="membership-filter membership-filter--search">
+          <span class="membership-filter-label">Search</span>
+          <input class="membership-filter-control" type="text" name="q" th:value="${q}" />
+        </label>
 
-      <button type="submit">Apply</button>
-      <a th:href="@{/admin/membership-applications}">Reset</a>
-    </form>
+        <div class="membership-filter-actions">
+          <button class="membership-filter-btn membership-filter-btn--apply" type="submit">Apply</button>
+          <a class="membership-filter-btn membership-filter-btn--reset" th:href="@{/admin/membership-applications}">Reset</a>
+        </div>
+      </form>
 
-    <div style="overflow-x: auto;">
-      <!-- DataTables needs an id -->
-      <table id="membershipAppsTable" style="width: 100%; border-collapse: collapse;">
-        <thead>
-        <tr>
-          <th style="text-align: left; border-bottom: 1px solid #ddd; padding: 0.5rem;">Created At</th>
-          <th style="text-align: left; border-bottom: 1px solid #ddd; padding: 0.5rem;">Club Name</th>
-          <th style="text-align: left; border-bottom: 1px solid #ddd; padding: 0.5rem;">Student Full Name</th>
-          <th style="text-align: left; border-bottom: 1px solid #ddd; padding: 0.5rem;">Student Email</th>
-          <th style="text-align: left; border-bottom: 1px solid #ddd; padding: 0.5rem;">Status</th>
-          <th style="text-align: left; border-bottom: 1px solid #ddd; padding: 0.5rem;">Motivation Text</th>
-          <th style="text-align: left; border-bottom: 1px solid #ddd; padding: 0.5rem;">Actions</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:if="${#lists.isEmpty(applications)}">
-          <td colspan="7" style="padding: 0.75rem; color: #666;">No membership applications found.</td>
-        </tr>
+      <div class="membership-table-wrap">
+        <table id="membershipAppsTable" class="display membership-table">
+          <thead>
+          <tr>
+            <th>Created At</th>
+            <th>Club Name</th>
+            <th>Student Full Name</th>
+            <th>Student Email</th>
+            <th>Status</th>
+            <th>Motivation Text</th>
+            <th>Actions</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr class="membership-empty-row" th:if="${#lists.isEmpty(applications)}">
+            <td colspan="7">No membership applications found.</td>
+          </tr>
 
-        <tr th:each="app : ${applications}">
-          <td
-                  style="padding: 0.5rem; border-bottom: 1px solid #f0f0f0;"
-                  th:text="${app.createdAt != null ? #temporals.format(app.createdAt, 'yyyy-MM-dd HH:mm') : '-'}"
-          >
-            2026-02-27 10:00
-          </td>
-          <td style="padding: 0.5rem; border-bottom: 1px solid #f0f0f0;" th:text="${app.clubName}">Math Club</td>
-          <td style="padding: 0.5rem; border-bottom: 1px solid #f0f0f0;" th:text="${app.studentFullName}">John Doe</td>
-          <td style="padding: 0.5rem; border-bottom: 1px solid #f0f0f0;" th:text="${app.studentEmail}">john@school.edu</td>
-          <td
-                  style="padding: 0.5rem; border-bottom: 1px solid #f0f0f0;"
-                  th:text="${app.status != null ? app.status.name() : '-'}"
-          >
-            STATUS
-          </td>
-          <td style="padding: 0.5rem; border-bottom: 1px solid #f0f0f0;" th:text="${app.motivationText}">
-            I want to join.
-          </td>
-          <td style="padding: 0.5rem; border-bottom: 1px solid #f0f0f0;">
-            <div th:if="${app.status == pendingStatus}">
-              <button
-                      type="button"
-                      class="membership-action membership-action--approve js-membership-action"
-                      th:attr="
-                        data-id=${app.id},
-                        data-action='approve',
-                        data-student=${app.studentFullName},
-                        data-club=${app.clubName},
-                        data-action-label='approve'
-                      "
+          <tr th:each="app : ${applications}" data-app-row="true" th:with="statusName=${app.status != null ? app.status.name() : ''}">
+            <td th:text="${app.createdAt != null ? #temporals.format(app.createdAt, 'yyyy-MM-dd HH:mm') : '-'}">2026-02-27 10:00</td>
+            <td th:text="${app.clubName}">Math Club</td>
+            <td th:text="${app.studentFullName}">John Doe</td>
+            <td th:text="${app.studentEmail}">john@school.edu</td>
+            <td class="membership-col-status">
+              <span
+                class="status-chip"
+                th:classappend="${app.status == pendingStatus} ? ' status-chip--pending' : (${statusName == approvedStatusName} ? ' status-chip--approved' : (${statusName == rejectedStatusName} ? ' status-chip--rejected' : ' status-chip--neutral'))"
+                th:text="${statusName != '' ? statusName : 'UNKNOWN'}"
               >
-                Approve
-              </button>
-              <button
-                      type="button"
-                      class="membership-action membership-action--reject js-membership-action"
-                      th:attr="
-                        data-id=${app.id},
-                        data-action='reject',
-                        data-student=${app.studentFullName},
-                        data-club=${app.clubName},
-                        data-action-label='reject'
-                      "
-              >
-                Reject
-              </button>
-            </div>
-            <span th:if="${app.status != pendingStatus}">
-              Decided
-            </span>
-          </td>
-        </tr>
-        </tbody>
-      </table>
-    </div>
+                STATUS
+              </span>
+            </td>
+            <td th:text="${app.motivationText}">I want to join.</td>
+            <td class="membership-col-actions">
+              <div class="membership-action-group" th:if="${app.status == pendingStatus}">
+                <button
+                  type="button"
+                  class="membership-action membership-action--approve js-membership-action"
+                  th:attr="
+                    data-id=${app.id},
+                    data-action='approve',
+                    data-student=${app.studentFullName},
+                    data-club=${app.clubName},
+                    data-action-label='approve'
+                  "
+                >
+                  Approve
+                </button>
+                <button
+                  type="button"
+                  class="membership-action membership-action--reject js-membership-action"
+                  th:attr="
+                    data-id=${app.id},
+                    data-action='reject',
+                    data-student=${app.studentFullName},
+                    data-club=${app.clubName},
+                    data-action-label='reject'
+                  "
+                >
+                  Reject
+                </button>
+              </div>
+              <span class="status-chip status-chip--decided" th:if="${app.status != pendingStatus}">
+                Decided
+              </span>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
   </div>
 
-  <div id="membershipActionModal" class="membership-modal" hidden>
-    <div class="membership-modal__content" role="dialog" aria-modal="true" aria-labelledby="membershipModalTitle">
-      <h3 id="membershipModalTitle" style="margin-top: 0;">Confirm action</h3>
-      <p id="membershipModalMessage" style="margin-top: 0;">Are you sure?</p>
-      <p style="margin: 0.35rem 0;">Student: <strong id="membershipModalStudent">-</strong></p>
-      <p style="margin: 0.35rem 0;">Club: <strong id="membershipModalClub">-</strong></p>
+  <div id="membershipActionModal" class="membership-modal" hidden aria-hidden="true">
+    <div
+      class="membership-modal__content"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="membershipModalTitle"
+      aria-describedby="membershipModalMessage"
+      tabindex="-1"
+    >
+      <div class="membership-modal__header">
+        <div>
+          <p class="membership-modal__kicker">ClubsHub</p>
+          <h3 id="membershipModalTitle" class="membership-modal__title">Confirm action</h3>
+        </div>
+        <img class="membership-modal__logo" th:src="@{/assets/logo.png}" alt="ClubsHub logo" />
+      </div>
+      <p id="membershipModalMessage" class="membership-modal__message">Are you sure?</p>
+      <dl class="membership-modal__summary">
+        <div class="membership-modal__summary-row">
+          <dt>Student</dt>
+          <dd id="membershipModalStudent">-</dd>
+        </div>
+        <div class="membership-modal__summary-row">
+          <dt>Club</dt>
+          <dd id="membershipModalClub">-</dd>
+        </div>
+      </dl>
       <div class="membership-modal__actions">
-        <button id="membershipModalCancel" type="button">Cancel</button>
-        <button id="membershipModalConfirm" type="button">Confirm</button>
+        <button id="membershipModalCancel" class="modal-btn modal-btn--secondary" type="button">Cancel</button>
+        <button id="membershipModalConfirm" class="modal-btn modal-btn--primary" type="button">Confirm</button>
       </div>
     </div>
   </div>
 
-  <div id="toastContainer" class="toast-container" th:attr="data-logo-url=@{/assets/logo.png}"></div>
+  <div
+    id="toastContainer"
+    class="toast-container"
+    aria-live="polite"
+    aria-atomic="true"
+    th:attr="data-logo-url=@{/assets/logo.png}"
+  ></div>
 </th:block>
 
 <th:block th:fragment="pageScripts">
@@ -268,14 +205,16 @@
       const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute("content");
       const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute("content");
       const logoUrl = toastContainer?.dataset.logoUrl || "/assets/logo.png";
+      const hasDataRows = document.querySelectorAll("#membershipAppsTable tbody tr[data-app-row='true']").length > 0;
 
       let pendingAction = null;
+      let lastFocusedElement = null;
 
       if (table && window.jQuery && window.jQuery.fn && window.jQuery.fn.DataTable) {
         $("#membershipAppsTable").DataTable({
-          paging: true,
-          searching: true,
-          ordering: true,
+          paging: hasDataRows,
+          searching: hasDataRows,
+          ordering: hasDataRows,
           pageLength: 10,
           lengthMenu: [10, 25, 50, 100],
           order: [[0, "desc"]],
@@ -299,14 +238,18 @@
           };
 
           modalMessage.textContent =
-            "Are you sure you want to " + actionLabel + " this membership application?";
+            "You are about to " + actionLabel + " this membership application.";
           modalStudent.textContent = pendingAction.student;
           modalClub.textContent = pendingAction.club;
           openModal();
         });
       });
 
-      modalCancel?.addEventListener("click", closeModal);
+      modalCancel?.addEventListener("click", function (event) {
+        event.preventDefault();
+        closeModal();
+      });
+
       modal?.addEventListener("click", function (event) {
         if (event.target === modal) {
           closeModal();
@@ -321,9 +264,7 @@
         }
 
         try {
-          const headers = {
-            "Accept": "application/json"
-          };
+          const headers = { "Accept": "application/json" };
           if (csrfToken && csrfHeader) {
             headers[csrfHeader] = csrfToken;
           }
@@ -334,14 +275,11 @@
             "/" +
             encodeURIComponent(pendingAction.action);
 
-          const response = await fetch(
-            endpoint,
-            {
-              method: "POST",
-              credentials: "same-origin",
-              headers: headers
-            }
-          );
+          const response = await fetch(endpoint, {
+            method: "POST",
+            credentials: "same-origin",
+            headers: headers
+          });
 
           if (!response.ok) {
             throw new Error(await readErrorMessage(response));
@@ -362,17 +300,74 @@
         if (!modal) {
           return;
         }
+
+        lastFocusedElement = document.activeElement;
         modal.hidden = false;
         modal.classList.add("is-open");
+        modal.setAttribute("aria-hidden", "false");
+        modalConfirm?.classList.remove("is-approve", "is-reject");
+        if (pendingAction?.action === "approve") {
+          modalConfirm?.classList.add("is-approve");
+          modalConfirm.textContent = "Confirm Approval";
+        } else if (pendingAction?.action === "reject") {
+          modalConfirm?.classList.add("is-reject");
+          modalConfirm.textContent = "Confirm Rejection";
+        } else {
+          modalConfirm.textContent = "Confirm";
+        }
+
+        document.addEventListener("keydown", handleModalKeydown);
+        window.setTimeout(function () {
+          modalConfirm?.focus();
+        }, 0);
       }
 
       function closeModal() {
         if (!modal) {
           return;
         }
+
         modal.classList.remove("is-open");
         modal.hidden = true;
+        modal.setAttribute("aria-hidden", "true");
         pendingAction = null;
+        modalConfirm?.classList.remove("is-approve", "is-reject");
+        modalConfirm.textContent = "Confirm";
+        document.removeEventListener("keydown", handleModalKeydown);
+        if (lastFocusedElement && typeof lastFocusedElement.focus === "function") {
+          lastFocusedElement.focus();
+        }
+      }
+
+      function handleModalKeydown(event) {
+        if (!modal || modal.hidden) {
+          return;
+        }
+
+        if (event.key === "Escape") {
+          event.preventDefault();
+          closeModal();
+          return;
+        }
+
+        if (event.key !== "Tab") {
+          return;
+        }
+
+        const focusable = [modalCancel, modalConfirm].filter((node) => node && !node.disabled);
+        if (!focusable.length) {
+          return;
+        }
+
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
       }
 
       async function readErrorMessage(response) {
@@ -405,15 +400,30 @@
           return;
         }
 
+        const tone = ["success", "error", "warning", "info"].includes(type) ? type : "info";
+        const title = tone === "success"
+          ? "Success"
+          : tone === "error"
+            ? "Error"
+            : tone === "warning"
+              ? "Warning"
+              : "Info";
+
         const toast = document.createElement("div");
-        toast.className = "toast-item " + (type === "success" ? "toast-item--success" : "toast-item--error");
+        toast.className = "toast-item toast-item--" + tone;
         toast.innerHTML =
           '<img class="toast-item__logo" src="' + escapeHtml(logoUrl) + '" alt="Logo" />' +
-          "<div>" + escapeHtml(message) + "</div>";
+          '<div class="toast-item__body">' +
+          '<p class="toast-item__title">' + escapeHtml(title) + "</p>" +
+          '<p class="toast-item__text">' + escapeHtml(message) + "</p>" +
+          "</div>";
         toastContainer.appendChild(toast);
 
         window.setTimeout(function () {
-          toast.remove();
+          toast.classList.add("is-hiding");
+          window.setTimeout(function () {
+            toast.remove();
+          }, 230);
         }, 3000);
       }
 
