@@ -36,10 +36,24 @@ public interface MembershipApplicationClient {
             @RequestParam(required = false) String q
     );
 
-    @PatchMapping("/admin/membership-applications/{id}")
+    @PostMapping("/admin/membership-applications/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     MembershipApplicationDto adminUpdateApplicationStatus(
             @PathVariable Long id,
             @RequestBody UpdateMembershipApplicationStatusRequest request
     );
+
+    default MembershipApplicationDto adminApprove(Long id) {
+        return adminUpdateApplicationStatus(
+                id,
+                new UpdateMembershipApplicationStatusRequest(MembershipRequestStatus.APPROVED)
+        );
+    }
+
+    default MembershipApplicationDto adminReject(Long id) {
+        return adminUpdateApplicationStatus(
+                id,
+                new UpdateMembershipApplicationStatusRequest(MembershipRequestStatus.REJECTED)
+        );
+    }
 }

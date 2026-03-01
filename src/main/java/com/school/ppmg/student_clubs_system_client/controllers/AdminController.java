@@ -4,10 +4,14 @@ import com.school.ppmg.student_clubs_system_client.clients.MembershipApplication
 import com.school.ppmg.student_clubs_system_client.dtos.club.MembershipApplicationDto;
 import com.school.ppmg.student_clubs_system_client.enums.MembershipRequestStatus;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.Collections;
 import java.util.List;
@@ -42,6 +46,9 @@ public class AdminController {
         model.addAttribute("clubId", clubId);
         model.addAttribute("q", q == null ? "" : q.trim());
         model.addAttribute("statusValues", MembershipRequestStatus.values());
+        model.addAttribute("pendingStatus", MembershipRequestStatus.PENDING);
+        model.addAttribute("approvedStatusName", MembershipRequestStatus.APPROVED.name());
+        model.addAttribute("rejectedStatusName", MembershipRequestStatus.REJECTED.name());
         return "admin/membership-applications";
     }
 
@@ -63,6 +70,20 @@ public class AdminController {
                 "Track engagement and activity across clubs and events.",
                 "Admin analytics dashboards are coming soon."
         );
+    }
+
+    @PostMapping("/admin/membership-applications/{id}/approve")
+    @ResponseBody
+    public ResponseEntity<Void> approveMembershipApplication(@PathVariable Long id) {
+        membershipApplicationClient.adminApprove(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/admin/membership-applications/{id}/reject")
+    @ResponseBody
+    public ResponseEntity<Void> rejectMembershipApplication(@PathVariable Long id) {
+        membershipApplicationClient.adminReject(id);
+        return ResponseEntity.ok().build();
     }
 
     private String placeholder(

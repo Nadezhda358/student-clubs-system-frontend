@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Membership Applications | ClubsHub Admin</title>
   <link th:href="@{/assets/logo.png}" rel="icon" type="image/png" />
+  <meta name="_csrf" th:content="${_csrf.token}" />
+  <meta name="_csrf_header" th:content="${_csrf.headerName}" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -20,6 +22,98 @@
           type="text/css"
           href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css"
   />
+  <style>
+    .membership-action {
+      border: 1px solid #d0d0d0;
+      border-radius: 999px;
+      padding: 0.25rem 0.7rem;
+      font-size: 0.85rem;
+      cursor: pointer;
+      background: #fff;
+      margin-right: 0.35rem;
+    }
+
+    .membership-action--approve {
+      border-color: #7ad3b6;
+      color: #0f766e;
+      background: #ecfdf5;
+    }
+
+    .membership-action--reject {
+      border-color: #f3a6a6;
+      color: #b91c1c;
+      background: #fef2f2;
+    }
+
+    .membership-modal {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.42);
+      z-index: 1500;
+      padding: 1rem;
+    }
+
+    .membership-modal.is-open {
+      display: flex;
+    }
+
+    .membership-modal__content {
+      width: min(480px, 100%);
+      background: #fff;
+      border-radius: 12px;
+      padding: 1rem;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+    }
+
+    .membership-modal__actions {
+      margin-top: 1rem;
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.5rem;
+    }
+
+    .toast-container {
+      position: fixed;
+      right: 1rem;
+      bottom: 1rem;
+      z-index: 1600;
+      display: grid;
+      gap: 0.5rem;
+      width: min(360px, calc(100vw - 2rem));
+    }
+
+    .toast-item {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: center;
+      gap: 0.6rem;
+      border-radius: 10px;
+      padding: 0.6rem 0.7rem;
+      border: 1px solid transparent;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .toast-item--success {
+      background: #ecfdf5;
+      color: #065f46;
+      border-color: #9ee7d0;
+    }
+
+    .toast-item--error {
+      background: #fef2f2;
+      color: #991b1b;
+      border-color: #f7b8b8;
+    }
+
+    .toast-item__logo {
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+    }
+  </style>
 </head>
 
 <body
@@ -72,11 +166,12 @@
           <th style="text-align: left; border-bottom: 1px solid #ddd; padding: 0.5rem;">Student Email</th>
           <th style="text-align: left; border-bottom: 1px solid #ddd; padding: 0.5rem;">Status</th>
           <th style="text-align: left; border-bottom: 1px solid #ddd; padding: 0.5rem;">Motivation Text</th>
+          <th style="text-align: left; border-bottom: 1px solid #ddd; padding: 0.5rem;">Actions</th>
         </tr>
         </thead>
         <tbody>
         <tr th:if="${#lists.isEmpty(applications)}">
-          <td colspan="6" style="padding: 0.75rem; color: #666;">No membership applications found.</td>
+          <td colspan="7" style="padding: 0.75rem; color: #666;">No membership applications found.</td>
         </tr>
 
         <tr th:each="app : ${applications}">
@@ -93,16 +188,64 @@
                   style="padding: 0.5rem; border-bottom: 1px solid #f0f0f0;"
                   th:text="${app.status != null ? app.status.name() : '-'}"
           >
-            PENDING
+            STATUS
           </td>
           <td style="padding: 0.5rem; border-bottom: 1px solid #f0f0f0;" th:text="${app.motivationText}">
             I want to join.
+          </td>
+          <td style="padding: 0.5rem; border-bottom: 1px solid #f0f0f0;">
+            <div th:if="${app.status == pendingStatus}">
+              <button
+                      type="button"
+                      class="membership-action membership-action--approve js-membership-action"
+                      th:attr="
+                        data-id=${app.id},
+                        data-action='approve',
+                        data-student=${app.studentFullName},
+                        data-club=${app.clubName},
+                        data-action-label='approve'
+                      "
+              >
+                Approve
+              </button>
+              <button
+                      type="button"
+                      class="membership-action membership-action--reject js-membership-action"
+                      th:attr="
+                        data-id=${app.id},
+                        data-action='reject',
+                        data-student=${app.studentFullName},
+                        data-club=${app.clubName},
+                        data-action-label='reject'
+                      "
+              >
+                Reject
+              </button>
+            </div>
+            <span th:if="${app.status != pendingStatus}">
+              Decided
+            </span>
           </td>
         </tr>
         </tbody>
       </table>
     </div>
   </div>
+
+  <div id="membershipActionModal" class="membership-modal" hidden>
+    <div class="membership-modal__content" role="dialog" aria-modal="true" aria-labelledby="membershipModalTitle">
+      <h3 id="membershipModalTitle" style="margin-top: 0;">Confirm action</h3>
+      <p id="membershipModalMessage" style="margin-top: 0;">Are you sure?</p>
+      <p style="margin: 0.35rem 0;">Student: <strong id="membershipModalStudent">-</strong></p>
+      <p style="margin: 0.35rem 0;">Club: <strong id="membershipModalClub">-</strong></p>
+      <div class="membership-modal__actions">
+        <button id="membershipModalCancel" type="button">Cancel</button>
+        <button id="membershipModalConfirm" type="button">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastContainer" class="toast-container" th:attr="data-logo-url=@{/assets/logo.png}"></div>
 </th:block>
 
 <th:block th:fragment="pageScripts">
@@ -115,21 +258,172 @@
   <script th:inline="none">
     document.addEventListener("DOMContentLoaded", function () {
       const table = document.getElementById("membershipAppsTable");
-      const hasRows =
-        table &&
-        table.tBodies &&
-        table.tBodies[0] &&
-        table.tBodies[0].rows.length > 0;
+      const modal = document.getElementById("membershipActionModal");
+      const modalMessage = document.getElementById("membershipModalMessage");
+      const modalStudent = document.getElementById("membershipModalStudent");
+      const modalClub = document.getElementById("membershipModalClub");
+      const modalCancel = document.getElementById("membershipModalCancel");
+      const modalConfirm = document.getElementById("membershipModalConfirm");
+      const toastContainer = document.getElementById("toastContainer");
+      const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute("content");
+      const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute("content");
+      const logoUrl = toastContainer?.dataset.logoUrl || "/assets/logo.png";
 
-      if (hasRows) {
+      let pendingAction = null;
+
+      if (table && window.jQuery && window.jQuery.fn && window.jQuery.fn.DataTable) {
         $("#membershipAppsTable").DataTable({
+          paging: true,
+          searching: true,
+          ordering: true,
           pageLength: 10,
           lengthMenu: [10, 25, 50, 100],
           order: [[0, "desc"]],
           columnDefs: [
-            { targets: 5, orderable: false }
+            { targets: 5, orderable: false },
+            { targets: 6, orderable: false }
           ]
         });
+      }
+
+      document.querySelectorAll(".js-membership-action").forEach((btn) => {
+        btn.addEventListener("click", function (event) {
+          event.preventDefault();
+          const actionLabel = btn.dataset.actionLabel || "update";
+          pendingAction = {
+            id: btn.dataset.id || "",
+            action: btn.dataset.action || "",
+            actionLabel: actionLabel,
+            student: btn.dataset.student || "-",
+            club: btn.dataset.club || "-"
+          };
+
+          modalMessage.textContent =
+            "Are you sure you want to " + actionLabel + " this membership application?";
+          modalStudent.textContent = pendingAction.student;
+          modalClub.textContent = pendingAction.club;
+          openModal();
+        });
+      });
+
+      modalCancel?.addEventListener("click", closeModal);
+      modal?.addEventListener("click", function (event) {
+        if (event.target === modal) {
+          closeModal();
+        }
+      });
+
+      modalConfirm?.addEventListener("click", async function (event) {
+        event.preventDefault();
+        if (!pendingAction || !pendingAction.id || !pendingAction.action) {
+          closeModal();
+          return;
+        }
+
+        try {
+          const headers = {
+            "Accept": "application/json"
+          };
+          if (csrfToken && csrfHeader) {
+            headers[csrfHeader] = csrfToken;
+          }
+
+          const endpoint =
+            "/admin/membership-applications/" +
+            encodeURIComponent(pendingAction.id) +
+            "/" +
+            encodeURIComponent(pendingAction.action);
+
+          const response = await fetch(
+            endpoint,
+            {
+              method: "POST",
+              credentials: "same-origin",
+              headers: headers
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error(await readErrorMessage(response));
+          }
+
+          closeModal();
+          showToast("success", "Membership application updated successfully.");
+          window.setTimeout(function () {
+            window.location.reload();
+          }, 300);
+        } catch (error) {
+          closeModal();
+          showToast("error", error?.message || "Unable to update membership application.");
+        }
+      });
+
+      function openModal() {
+        if (!modal) {
+          return;
+        }
+        modal.hidden = false;
+        modal.classList.add("is-open");
+      }
+
+      function closeModal() {
+        if (!modal) {
+          return;
+        }
+        modal.classList.remove("is-open");
+        modal.hidden = true;
+        pendingAction = null;
+      }
+
+      async function readErrorMessage(response) {
+        const fallback = "Unable to update membership application.";
+        const text = await response.text();
+        if (!text || !text.trim()) {
+          return fallback;
+        }
+        try {
+          const parsed = JSON.parse(text);
+          if (parsed && typeof parsed === "object") {
+            if (typeof parsed.message === "string" && parsed.message.trim()) {
+              return parsed.message.trim();
+            }
+            if (typeof parsed.error === "string" && parsed.error.trim()) {
+              return parsed.error.trim();
+            }
+            if (typeof parsed.detail === "string" && parsed.detail.trim()) {
+              return parsed.detail.trim();
+            }
+          }
+        } catch (_e) {
+          // Ignore JSON parse errors and use raw text.
+        }
+        return text.trim();
+      }
+
+      function showToast(type, message) {
+        if (!toastContainer) {
+          return;
+        }
+
+        const toast = document.createElement("div");
+        toast.className = "toast-item " + (type === "success" ? "toast-item--success" : "toast-item--error");
+        toast.innerHTML =
+          '<img class="toast-item__logo" src="' + escapeHtml(logoUrl) + '" alt="Logo" />' +
+          "<div>" + escapeHtml(message) + "</div>";
+        toastContainer.appendChild(toast);
+
+        window.setTimeout(function () {
+          toast.remove();
+        }, 3000);
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
       }
     });
   </script>
