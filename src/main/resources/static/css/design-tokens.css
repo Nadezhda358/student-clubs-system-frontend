@@ -1,0 +1,28 @@
+:root {
+  /* Baseline extracted from clubs/index visual scale */
+  --scale-container-max: 1200px;
+  --scale-container-pad-x: 64px;
+
+  --scale-font-base: 1.03rem;
+  --scale-font-body: 1.1rem;
+  --scale-font-ui: 1rem;
+  --scale-font-label: 0.82rem;
+
+  --scale-heading-xl: clamp(2.8rem, 4.6vw, 4.2rem);
+  --scale-heading-lg: clamp(2rem, 3vw, 2.8rem);
+  --scale-heading-md: 1.4rem;
+
+  --scale-section-gap: 2rem;
+  --scale-section-gap-lg: 2.5rem;
+  --scale-grid-gap: 2rem;
+
+  --scale-card-radius: 15px;
+  --scale-card-pad-y: 1.4rem;
+  --scale-card-pad-x: 1.6rem;
+
+  --scale-control-height: 3.8rem;
+  --scale-button-height: 3.6rem;
+  --scale-button-pad-x: 1.6rem;
+  --scale-input-pad-x: 1rem;
+  --scale-chip-height: 3rem;
+}

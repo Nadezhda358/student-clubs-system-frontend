@@ -36,7 +36,6 @@ public class ClubController {
 
     @GetMapping("/clubs")
     public String clubsPage(
-            @RequestParam(required = false) Boolean active,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "9") int size,
             @RequestParam(required = false) String sort,
@@ -47,13 +46,12 @@ public class ClubController {
             sort = "name,asc";
         }
 
-        PageResponse<ClubListDto> result = clubClient.getAll(active, page, PAGE_SIZE, sort);
+        PageResponse<ClubListDto> result = clubClient.getAll(true, page, PAGE_SIZE, sort);
 
         model.addAttribute("page", result);
         model.addAttribute("clubs", result.getContent());
 
         // keep query params for pagination links
-        model.addAttribute("active", active);
         model.addAttribute("sort", sort);
         model.addAttribute("size", PAGE_SIZE);
 

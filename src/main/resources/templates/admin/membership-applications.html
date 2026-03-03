@@ -14,6 +14,7 @@
     rel="stylesheet"
   />
   <link rel="stylesheet" th:href="@{/css/site-chrome.css}" />
+  <link rel="stylesheet" th:href="@{/css/design-tokens.css}" />
   <link rel="stylesheet" th:href="@{/css/admin-shell.css}" />
 
   <!-- DataTables CSS -->
@@ -29,160 +30,162 @@
   th:replace="~{fragments/admin-shell :: adminShell('admin-membership-applications-page', ~{::adminPageContent}, ~{::pageScripts})}"
 >
 <th:block th:fragment="adminPageContent">
-  <div class="container admin-membership-page">
-    <section class="membership-surface">
-      <header class="membership-page-header">
-        <p class="membership-page-kicker">Admin Workspace</p>
-        <h1>Club Membership Applications</h1>
-        <p class="membership-page-subtitle">
-          Review pending requests quickly, approve eligible students, and keep membership decisions consistent.
-        </p>
-      </header>
+  <main class="me-page">
+    <div class="container admin-membership-page">
+      <section class="membership-surface">
+        <header class="membership-page-header">
+          <p class="membership-page-kicker">Admin Workspace</p>
+          <h1>Club Membership Applications</h1>
+          <p class="membership-page-subtitle">
+            Review pending requests quickly, approve eligible students, and keep membership decisions consistent.
+          </p>
+        </header>
 
-      <form method="get" th:action="@{/admin/membership-applications}" class="membership-filters">
-        <label class="membership-filter">
-          <span class="membership-filter-label">Status</span>
-          <select class="membership-filter-control" name="status">
-            <option value="" th:selected="${status == null}">All</option>
-            <option
-              th:each="s : ${statusValues}"
-              th:value="${s.name()}"
-              th:selected="${status != null and status == s}"
-              th:text="${s.name()}"
-            ></option>
-          </select>
-        </label>
+        <form method="get" th:action="@{/admin/membership-applications}" class="membership-filters">
+          <label class="membership-filter">
+            <span class="membership-filter-label">Status</span>
+            <select class="membership-filter-control" name="status">
+              <option value="" th:selected="${status == null}">All</option>
+              <option
+                th:each="s : ${statusValues}"
+                th:value="${s.name()}"
+                th:selected="${status != null and status == s}"
+                th:text="${s.name()}"
+              ></option>
+            </select>
+          </label>
 
-        <label class="membership-filter">
-          <span class="membership-filter-label">Club ID</span>
-          <input class="membership-filter-control" type="number" min="1" name="clubId" th:value="${clubId}" />
-        </label>
+          <label class="membership-filter">
+            <span class="membership-filter-label">Club ID</span>
+            <input class="membership-filter-control" type="number" min="1" name="clubId" th:value="${clubId}" />
+          </label>
 
-        <label class="membership-filter membership-filter--search">
-          <span class="membership-filter-label">Search</span>
-          <input class="membership-filter-control" type="text" name="q" th:value="${q}" />
-        </label>
+          <label class="membership-filter membership-filter--search">
+            <span class="membership-filter-label">Search</span>
+            <input class="membership-filter-control" type="text" name="q" th:value="${q}" />
+          </label>
 
-        <div class="membership-filter-actions">
-          <button class="membership-filter-btn membership-filter-btn--apply" type="submit">Apply</button>
-          <a class="membership-filter-btn membership-filter-btn--reset" th:href="@{/admin/membership-applications}">Reset</a>
-        </div>
-      </form>
+          <div class="membership-filter-actions">
+            <button class="membership-filter-btn membership-filter-btn--apply" type="submit">Apply</button>
+            <a class="membership-filter-btn membership-filter-btn--reset" th:href="@{/admin/membership-applications}">Reset</a>
+          </div>
+        </form>
 
-      <div class="membership-table-wrap">
-        <table id="membershipAppsTable" class="display membership-table">
-          <thead>
-          <tr>
-            <th>Created At</th>
-            <th>Club Name</th>
-            <th>Student Full Name</th>
-            <th>Student Email</th>
-            <th>Status</th>
-            <th>Motivation Text</th>
-            <th>Actions</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr class="membership-empty-row" th:if="${#lists.isEmpty(applications)}">
-            <td colspan="7">No membership applications found.</td>
-          </tr>
+        <div class="membership-table-wrap">
+          <table id="membershipAppsTable" class="display membership-table">
+            <thead>
+            <tr>
+              <th>Created At</th>
+              <th>Club Name</th>
+              <th>Student Full Name</th>
+              <th>Student Email</th>
+              <th>Status</th>
+              <th>Motivation Text</th>
+              <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr class="membership-empty-row" th:if="${#lists.isEmpty(applications)}">
+              <td colspan="7">No membership applications found.</td>
+            </tr>
 
-          <tr th:each="app : ${applications}" data-app-row="true" th:with="statusName=${app.status != null ? app.status.name() : ''}">
-            <td th:text="${app.createdAt != null ? #temporals.format(app.createdAt, 'yyyy-MM-dd HH:mm') : '-'}">2026-02-27 10:00</td>
-            <td th:text="${app.clubName}">Math Club</td>
-            <td th:text="${app.studentFullName}">John Doe</td>
-            <td th:text="${app.studentEmail}">john@school.edu</td>
-            <td class="membership-col-status">
-              <span
-                class="status-chip"
-                th:classappend="${app.status == pendingStatus} ? ' status-chip--pending' : (${statusName == approvedStatusName} ? ' status-chip--approved' : (${statusName == rejectedStatusName} ? ' status-chip--rejected' : ' status-chip--neutral'))"
-                th:text="${statusName != '' ? statusName : 'UNKNOWN'}"
-              >
-                STATUS
-              </span>
-            </td>
-            <td th:text="${app.motivationText}">I want to join.</td>
-            <td class="membership-col-actions">
-              <div class="membership-action-group" th:if="${app.status == pendingStatus}">
-                <button
-                  type="button"
-                  class="membership-action membership-action--approve js-membership-action"
-                  th:attr="
-                    data-id=${app.id},
-                    data-action='approve',
-                    data-student=${app.studentFullName},
-                    data-club=${app.clubName},
-                    data-action-label='approve'
-                  "
+            <tr th:each="app : ${applications}" data-app-row="true" th:with="statusName=${app.status != null ? app.status.name() : ''}">
+              <td th:text="${app.createdAt != null ? #temporals.format(app.createdAt, 'yyyy-MM-dd HH:mm') : '-'}">2026-02-27 10:00</td>
+              <td th:text="${app.clubName}">Math Club</td>
+              <td th:text="${app.studentFullName}">John Doe</td>
+              <td th:text="${app.studentEmail}">john@school.edu</td>
+              <td class="membership-col-status">
+                <span
+                  class="status-chip"
+                  th:classappend="${app.status == pendingStatus} ? ' status-chip--pending' : (${statusName == approvedStatusName} ? ' status-chip--approved' : (${statusName == rejectedStatusName} ? ' status-chip--rejected' : ' status-chip--neutral'))"
+                  th:text="${statusName != '' ? statusName : 'UNKNOWN'}"
                 >
-                  Approve
-                </button>
-                <button
-                  type="button"
-                  class="membership-action membership-action--reject js-membership-action"
-                  th:attr="
-                    data-id=${app.id},
-                    data-action='reject',
-                    data-student=${app.studentFullName},
-                    data-club=${app.clubName},
-                    data-action-label='reject'
-                  "
-                >
-                  Reject
-                </button>
-              </div>
-              <span class="status-chip status-chip--decided" th:if="${app.status != pendingStatus}">
-                Decided
-              </span>
-            </td>
-          </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-  </div>
+                  STATUS
+                </span>
+              </td>
+              <td th:text="${app.motivationText}">I want to join.</td>
+              <td class="membership-col-actions">
+                <div class="membership-action-group" th:if="${app.status == pendingStatus}">
+                  <button
+                    type="button"
+                    class="membership-action membership-action--approve js-membership-action"
+                    th:attr="
+                      data-id=${app.id},
+                      data-action='approve',
+                      data-student=${app.studentFullName},
+                      data-club=${app.clubName},
+                      data-action-label='approve'
+                    "
+                  >
+                    Approve
+                  </button>
+                  <button
+                    type="button"
+                    class="membership-action membership-action--reject js-membership-action"
+                    th:attr="
+                      data-id=${app.id},
+                      data-action='reject',
+                      data-student=${app.studentFullName},
+                      data-club=${app.clubName},
+                      data-action-label='reject'
+                    "
+                  >
+                    Reject
+                  </button>
+                </div>
+                <span class="status-chip status-chip--decided" th:if="${app.status != pendingStatus}">
+                  Decided
+                </span>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
 
-  <div id="membershipActionModal" class="membership-modal" hidden aria-hidden="true">
-    <div
-      class="membership-modal__content"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="membershipModalTitle"
-      aria-describedby="membershipModalMessage"
-      tabindex="-1"
-    >
-      <div class="membership-modal__header">
-        <div>
-          <p class="membership-modal__kicker">ClubsHub</p>
-          <h3 id="membershipModalTitle" class="membership-modal__title">Confirm action</h3>
+    <div id="membershipActionModal" class="membership-modal" hidden aria-hidden="true">
+      <div
+        class="membership-modal__content"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="membershipModalTitle"
+        aria-describedby="membershipModalMessage"
+        tabindex="-1"
+      >
+        <div class="membership-modal__header">
+          <div>
+            <p class="membership-modal__kicker">ClubsHub</p>
+            <h3 id="membershipModalTitle" class="membership-modal__title">Confirm action</h3>
+          </div>
+          <img class="membership-modal__logo" th:src="@{/assets/logo.png}" alt="ClubsHub logo" />
         </div>
-        <img class="membership-modal__logo" th:src="@{/assets/logo.png}" alt="ClubsHub logo" />
-      </div>
-      <p id="membershipModalMessage" class="membership-modal__message">Are you sure?</p>
-      <dl class="membership-modal__summary">
-        <div class="membership-modal__summary-row">
-          <dt>Student</dt>
-          <dd id="membershipModalStudent">-</dd>
+        <p id="membershipModalMessage" class="membership-modal__message">Are you sure?</p>
+        <dl class="membership-modal__summary">
+          <div class="membership-modal__summary-row">
+            <dt>Student</dt>
+            <dd id="membershipModalStudent">-</dd>
+          </div>
+          <div class="membership-modal__summary-row">
+            <dt>Club</dt>
+            <dd id="membershipModalClub">-</dd>
+          </div>
+        </dl>
+        <div class="membership-modal__actions">
+          <button id="membershipModalCancel" class="modal-btn modal-btn--secondary" type="button">Cancel</button>
+          <button id="membershipModalConfirm" class="modal-btn modal-btn--primary" type="button">Confirm</button>
         </div>
-        <div class="membership-modal__summary-row">
-          <dt>Club</dt>
-          <dd id="membershipModalClub">-</dd>
-        </div>
-      </dl>
-      <div class="membership-modal__actions">
-        <button id="membershipModalCancel" class="modal-btn modal-btn--secondary" type="button">Cancel</button>
-        <button id="membershipModalConfirm" class="modal-btn modal-btn--primary" type="button">Confirm</button>
       </div>
     </div>
-  </div>
 
-  <div
-    id="toastContainer"
-    class="toast-container"
-    aria-live="polite"
-    aria-atomic="true"
-    th:attr="data-logo-url=@{/assets/logo.png}"
-  ></div>
+    <div
+      id="toastContainer"
+      class="toast-container"
+      aria-live="polite"
+      aria-atomic="true"
+      th:attr="data-logo-url=@{/assets/logo.png}"
+    ></div>
+  </main>
 </th:block>
 
 <th:block th:fragment="pageScripts">
