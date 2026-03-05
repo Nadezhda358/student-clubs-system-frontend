@@ -26,9 +26,18 @@
           th:with="
             hasHeroImage=${club.mainImageUrl != null and !#strings.isEmpty(club.mainImageUrl)},
             isStudent=${sessionUser != null and sessionUser.role == T(com.school.ppmg.student_clubs_system_client.enums.UserRole).STUDENT},
-            isClubMember=${isClubMember != null and isClubMember},
-            pendingApplication=${(membershipApplicationPending != null and membershipApplicationPending) or (membershipApplicationSubmitted != null and membershipApplicationSubmitted)},
-            formDisabled=${pendingApplication}
+            isAdminOrTeacher=${
+              sessionUser != null and (
+                sessionUser.role == T(com.school.ppmg.student_clubs_system_client.enums.UserRole).ADMIN or
+                sessionUser.role == T(com.school.ppmg.student_clubs_system_client.enums.UserRole).TEACHER
+              )
+            },
+            isApplicationPending=${isStudent and myApplicationStatus == T(com.school.ppmg.student_clubs_system_client.enums.MembershipRequestStatus).PENDING},
+            isApplicationApproved=${isStudent and myApplicationStatus == T(com.school.ppmg.student_clubs_system_client.enums.MembershipRequestStatus).APPROVED},
+            isApplicationRejected=${isStudent and myApplicationStatus == T(com.school.ppmg.student_clubs_system_client.enums.MembershipRequestStatus).REJECTED},
+            showApplicationStatusBadge=${isApplicationPending or isApplicationApproved or isApplicationRejected},
+            applyButtonDisabled=${isApplicationPending or isApplicationApproved},
+            canOpenApplyModal=${isStudent and !applyButtonDisabled}
           "
         >
           <div class="club-general">
@@ -57,25 +66,26 @@
 
                       <div class="club-hero__cta">
                         <span
-                          class="status-badge status-badge--member"
-                          th:if="${isClubMember}"
-                        >
-                          Member
-                        </span>
-                        <span
-                          class="status-badge status-badge--pending"
-                          th:if="${!isClubMember and formDisabled}"
+                          class="status-badge"
+                          th:if="${showApplicationStatusBadge}"
+                          th:classappend="${isApplicationPending ? ' status-badge--pending' : (isApplicationApproved ? ' status-badge--member' : ' status-badge--rejected')}"
+                          th:text="${isApplicationPending ? 'Application pending' : (isApplicationApproved ? 'You are a member' : 'Application rejected')}"
                         >
                           Application pending
                         </span>
                         <button
                           type="button"
                           class="club-hero__apply-button"
-                          data-open-apply-modal
-                          aria-controls="club-apply-modal"
-                          th:if="${!isClubMember and !formDisabled}"
+                          th:if="${isStudent}"
+                          th:disabled="${applyButtonDisabled}"
+                          th:text="${isApplicationPending ? 'Pending' : (isApplicationApproved ? 'Member' : (isApplicationRejected ? 'Apply again' : 'Apply'))}"
+                          th:attr="
+                            data-open-apply-modal=${canOpenApplyModal ? 'true' : null},
+                            aria-controls=${canOpenApplyModal ? 'club-apply-modal' : null},
+                            title=${isApplicationPending ? 'Application pending review.' : (isApplicationApproved ? 'You are already a member.' : null)}
+                          "
                         >
-                          Apply to join
+                          Apply
                         </button>
                       </div>
                     </div>
@@ -93,7 +103,7 @@
                 <div class="club-hero__chips">
                   <span
                     class="club-chip"
-                    th:if="${club.isActive != null}"
+                    th:if="${club.isActive != null and isAdminOrTeacher}"
                     th:classappend="${club.isActive} ? ' club-chip--active' : ' club-chip--inactive'"
                     th:text="${club.isActive} ? 'Active' : 'Inactive'"
                   >
@@ -265,7 +275,7 @@
             data-club-apply-modal
             aria-hidden="true"
             hidden
-            th:attr="data-open-on-load=${membershipApplyErrorMessage != null and !formDisabled and !isClubMember}"
+            th:attr="data-open-on-load=${membershipApplyErrorMessage != null and canOpenApplyModal}"
           >
             <div class="club-apply-modal__backdrop" data-close-apply-modal aria-hidden="true"></div>
 
@@ -308,30 +318,31 @@
                   Unable to submit your application right now.
                 </div>
 
-                <div class="membership-panel__empty" th:if="${isClubMember}">
-                  <p class="membership-panel__empty-text">
-                    You are already a member of this club.
-                  </p>
-                </div>
-
-                <div class="membership-panel__empty" th:if="${!isClubMember and !isStudent}">
+                <div class="membership-panel__empty" th:if="${!isStudent}">
                   <p class="membership-panel__empty-text">Only students can apply.</p>
                   <p class="membership-panel__empty-text" th:if="${sessionUser == null}">
                     <a th:href="@{/login}">Sign in</a> with a student account to continue.
                   </p>
                 </div>
 
-                <div class="membership-panel__empty" th:if="${!isClubMember and isStudent and formDisabled}">
+                <div class="membership-panel__empty" th:if="${isStudent and applyButtonDisabled}">
                   <p class="membership-panel__empty-text">
-                    You already have a pending application for this club.
+                    <span th:if="${isApplicationPending}">
+                      You already have a pending application for this club.
+                    </span>
+                    <span th:if="${isApplicationApproved}">
+                      You are already a member of this club.
+                    </span>
                   </p>
-                  <p class="membership-panel__empty-text">We will notify you when it is reviewed.</p>
+                  <p class="membership-panel__empty-text" th:if="${isApplicationPending}">
+                    We will notify you when it is reviewed.
+                  </p>
                 </div>
 
                 <form
                   class="membership-form"
                   method="post"
-                  th:if="${!isClubMember and isStudent and !formDisabled}"
+                  th:if="${canOpenApplyModal}"
                   th:action="@{/clubs/{id}/membership-applications/apply(id=${club.id})}"
                 >
                   <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
@@ -370,7 +381,7 @@
                   </div>
                 </form>
 
-                <div class="club-apply-modal__actions" th:if="${isClubMember or !isStudent or formDisabled}">
+                <div class="club-apply-modal__actions" th:if="${!canOpenApplyModal}">
                   <button
                     type="button"
                     class="club-apply-modal__button club-apply-modal__button--ghost"

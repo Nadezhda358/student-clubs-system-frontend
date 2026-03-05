@@ -184,6 +184,20 @@ body.club-modal-open {
   filter: saturate(1.05);
 }
 
+.club-hero__apply-button[disabled] {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.14));
+  border-color: rgba(255, 255, 255, 0.42);
+  color: rgba(255, 255, 255, 0.88);
+  cursor: not-allowed;
+  transform: none;
+  filter: none;
+}
+
+.club-hero__apply-button[disabled]:hover {
+  transform: none;
+  filter: none;
+}
+
 .club-hero__apply-button:focus-visible,
 .club-apply-modal__close:focus-visible,
 .club-apply-modal__button:focus-visible,
@@ -410,6 +424,12 @@ body.club-modal-open {
   background: rgba(16, 185, 129, 0.14);
   border: 1px solid rgba(16, 185, 129, 0.24);
   color: #d1fae5;
+}
+
+.status-badge--rejected {
+  background: rgba(239, 68, 68, 0.18);
+  border: 1px solid rgba(239, 68, 68, 0.32);
+  color: #fee2e2;
 }
 
 .membership-panel__empty {

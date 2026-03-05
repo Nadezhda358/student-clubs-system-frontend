@@ -6,6 +6,7 @@ import com.school.ppmg.student_clubs_system_client.dtos.auth.AuthUserDto;
 import com.school.ppmg.student_clubs_system_client.dtos.club.ClubDto;
 import com.school.ppmg.student_clubs_system_client.dtos.club.ClubListDto;
 import com.school.ppmg.student_clubs_system_client.dtos.club.CreateMembershipApplicationRequest;
+import com.school.ppmg.student_clubs_system_client.dtos.club.MembershipApplicationDto;
 import com.school.ppmg.student_clubs_system_client.dtos.club.MediaDto;
 import com.school.ppmg.student_clubs_system_client.dtos.club.UpsertClubDto;
 import com.school.ppmg.student_clubs_system_client.dtos.common.PageResponse;
@@ -26,6 +27,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Comparator;
 
 @Controller
 @RequiredArgsConstructor
@@ -277,19 +279,16 @@ public class ClubController {
             ClubDto club = clubClient.getById(id);
             model.addAttribute("club", club);
 
-            boolean hasPendingApplication = false;
+            MembershipRequestStatus myApplicationStatus = null;
             if (isStudent(sessionUser)) {
                 try {
-                    hasPendingApplication = membershipApplicationClient
-                            .getMyApplications(MembershipRequestStatus.PENDING)
-                            .stream()
-                            .anyMatch(application -> application.clubId() != null && application.clubId().equals(id));
+                    myApplicationStatus = resolveMyApplicationStatus(id);
                 } catch (RuntimeException ignored) {
                     // Club page should still render even if membership status lookup fails.
                 }
             }
 
-            model.addAttribute("membershipApplicationPending", hasPendingApplication);
+            model.addAttribute("myApplicationStatus", myApplicationStatus);
             return "clubs/details";
         } catch (FeignException.NotFound ex) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -443,6 +442,24 @@ public class ClubController {
 
     private boolean isStudent(AuthUserDto sessionUser) {
         return sessionUser != null && sessionUser.role() == UserRole.STUDENT;
+    }
+
+    private MembershipRequestStatus resolveMyApplicationStatus(Long clubId) {
+        return membershipApplicationClient
+                .getMyApplications(null)
+                .stream()
+                .filter(application -> application.clubId() != null && application.clubId().equals(clubId))
+                .max(Comparator
+                        .comparing(
+                                MembershipApplicationDto::createdAt,
+                                Comparator.nullsLast(Comparator.naturalOrder())
+                        )
+                        .thenComparing(
+                                MembershipApplicationDto::id,
+                                Comparator.nullsLast(Comparator.naturalOrder())
+                        ))
+                .map(MembershipApplicationDto::status)
+                .orElse(null);
     }
 
     private void addMembershipApplyErrorFlash(RedirectAttributes redirectAttributes, FeignException ex) {
