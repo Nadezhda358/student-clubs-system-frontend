@@ -1,8 +1,10 @@
 package com.school.ppmg.student_clubs_system_client.controllers;
 
+import com.school.ppmg.student_clubs_system_client.clients.AdminTeacherClient;
 import com.school.ppmg.student_clubs_system_client.clients.ClubClient;
 import com.school.ppmg.student_clubs_system_client.clients.MembershipApplicationClient;
 import com.school.ppmg.student_clubs_system_client.dtos.auth.AuthUserDto;
+import com.school.ppmg.student_clubs_system_client.dtos.auth.UserDto;
 import com.school.ppmg.student_clubs_system_client.dtos.club.ClubDto;
 import com.school.ppmg.student_clubs_system_client.dtos.club.ClubListDto;
 import com.school.ppmg.student_clubs_system_client.dtos.club.CreateClubRequest;
@@ -29,14 +31,14 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
 
 @Controller
 @RequiredArgsConstructor
 public class ClubController {
+    private final AdminTeacherClient adminTeacherClient;
     private final ClubClient clubClient;
     private final MembershipApplicationClient membershipApplicationClient;
     private static final int PAGE_SIZE = 9;
@@ -443,7 +445,20 @@ public class ClubController {
                 isActive
         );
 
-        List<TeacherDto> teacherOptions = resolveTeacherOptions();
+        List<TeacherDto> teacherOptions;
+        try {
+            teacherOptions = adminTeacherClient.getAllTeachers().stream()
+                    .filter(teacher -> teacher != null && teacher.id() != null)
+                    .map(teacher -> new TeacherDto(
+                            teacher.id(),
+                            buildTeacherOptionLabel(teacher),
+                            null
+                    ))
+                    .toList();
+        } catch (RuntimeException ex) {
+            teacherOptions = List.of();
+        }
+
         model.addAttribute("teacherOptions", teacherOptions);
         model.addAttribute("selectedTeacherId", teacherId);
         model.addAttribute("selectedTeacherIsPrimary", teacherIsPrimary);
@@ -642,59 +657,20 @@ public class ClubController {
         return value == null ? "" : value;
     }
 
-    private List<TeacherDto> resolveTeacherOptions() {
-        try {
-            LinkedHashMap<Long, TeacherDto> teachersById = new LinkedHashMap<>();
-            int currentPage = 0;
-
-            while (true) {
-                PageResponse<ClubListDto> page = clubClient.getAll(null, currentPage, 100, "name,asc");
-                if (page == null || page.getContent() == null || page.getContent().isEmpty()) {
-                    break;
-                }
-
-                collectTeachers(page.getContent(), teachersById);
-                currentPage++;
-                if (currentPage >= Math.max(page.getTotalPages(), 1)) {
-                    break;
-                }
-            }
-
-            return teachersById.values().stream()
-                    .sorted(Comparator
-                            .comparing(
-                                    TeacherDto::fullName,
-                                    Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)
-                            )
-                            .thenComparing(TeacherDto::id, Comparator.nullsLast(Comparator.naturalOrder())))
-                    .toList();
-        } catch (RuntimeException ex) {
-            return List.of();
+    private String buildTeacherOptionLabel(UserDto teacher) {
+        String firstName = nonNull(teacher.firstName()).trim();
+        String lastName = nonNull(teacher.lastName()).trim();
+        String fullName = (firstName + " " + lastName).trim();
+        if (!fullName.isEmpty()) {
+            return fullName;
         }
-    }
 
-    private void collectTeachers(List<ClubListDto> clubs, Map<Long, TeacherDto> teachersById) {
-        for (ClubListDto clubSummary : clubs) {
-            if (clubSummary == null || clubSummary.id() == null) {
-                continue;
-            }
-
-            try {
-                ClubDto club = clubClient.getById(clubSummary.id());
-                if (club.teachers() == null) {
-                    continue;
-                }
-
-                for (TeacherDto teacher : club.teachers()) {
-                    if (teacher == null || teacher.id() == null) {
-                        continue;
-                    }
-                    teachersById.putIfAbsent(teacher.id(), teacher);
-                }
-            } catch (RuntimeException ignored) {
-                // Skip teacher discovery failures so the create form can still render.
-            }
+        String email = nonNull(teacher.email()).trim();
+        if (!email.isEmpty()) {
+            return email;
         }
+
+        return "Teacher #" + teacher.id();
     }
 
     private List<MultipartFile> normalizeFiles(List<MultipartFile> files) {
