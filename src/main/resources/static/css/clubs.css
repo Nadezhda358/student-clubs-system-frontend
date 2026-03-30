@@ -309,12 +309,24 @@
         display: flex;
         flex-direction: column;
         gap: 0.85rem;
+        flex: 1;
       }
 
       .club-card__body h3 {
         margin: 0;
         font-size: 1.4rem;
         color: var(--deep-brown);
+      }
+
+      .club-card__name-link {
+        color: var(--deep-brown);
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      .club-card__name-link:hover,
+      .club-card__name-link:focus-visible {
+        text-decoration: underline;
       }
 
       .club-room {
@@ -335,6 +347,51 @@
 
       .club-room span:last-child {
         font-size: 1.05rem;
+      }
+
+      .club-card__footer {
+        margin-top: auto;
+        display: flex;
+        justify-content: flex-end;
+      }
+
+      .club-card__more-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.35rem;
+        min-width: 100px;
+        min-height: 38px;
+        padding: 0.58rem 1.9rem;
+        border-radius: 6px;
+        border: 1px solid var(--royal-purple);
+        background: rgba(107, 63, 160, 0.08);
+        color: var(--royal-purple);
+        font-size: 0.88rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        cursor: pointer;
+        line-height: 1;
+        box-shadow: 0 3px 9px rgba(107, 63, 160, 0.14);
+        transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .club-card__more-button:hover {
+        background: var(--royal-purple);
+        border-color: var(--royal-purple);
+        color: #fff;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 13px rgba(107, 63, 160, 0.22);
+      }
+
+      .club-card__more-button:active {
+        transform: translateY(0);
+      }
+
+      .club-card__more-button:focus-visible {
+        outline: 2px solid rgba(107, 63, 160, 0.35);
+        outline-offset: 2px;
       }
 
       .club-empty {

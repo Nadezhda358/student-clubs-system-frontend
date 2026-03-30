@@ -56,10 +56,9 @@
           </div>
 
           <div class="club-grid">
-            <a
-              class="club-card club-card-link"
+            <article
+              class="club-card"
               th:each="club : ${clubs}"
-              th:href="@{/clubs/{id}(id=${club.id})}"
             >
               <div
                 class="club-card__media"
@@ -79,13 +78,29 @@
                 </span>
               </div>
               <div class="club-card__body">
-                <h3 th:text="${club.name}">Club Name</h3>
+                <h3>
+                  <a
+                    class="club-card__name-link"
+                    th:href="@{/clubs/{id}(id=${club.id})}"
+                    th:text="${club.name}"
+                  >
+                    Club Name
+                  </a>
+                </h3>
                 <p class="club-room">
                   <span>Room</span>
                   <span th:text="${club.room != null and !#strings.isEmpty(club.room) ? club.room : 'TBD'}">A-204</span>
                 </p>
+                <div class="club-card__footer">
+                  <a
+                    class="club-card__more-button"
+                    th:href="@{/clubs/{id}(id=${club.id})}"
+                  >
+                    More
+                  </a>
+                </div>
               </div>
-            </a>
+            </article>
             <div class="club-empty" th:if="${#lists.isEmpty(clubs)}">
               <p>No clubs available yet. Check back soon!</p>
             </div>
@@ -98,7 +113,7 @@
             <a
               class="page-button"
               th:classappend="${page.first} ? ' disabled' : ''"
-              th:href="${page.first} ? '#' : (@{/clubs(page=0, size=${size}, sort=${sort}, active=${active})} + '#clubs-section')"
+              th:href="${page.first} ? '#' : (@{/clubs(page=0, size=${size}, sort=${sort})} + '#clubs-section')"
               th:attr="aria-disabled=${page.first}"
             >
               First
@@ -106,7 +121,7 @@
             <a
               class="page-button"
               th:classappend="${page.first} ? ' disabled' : ''"
-              th:href="${page.first} ? '#' : (@{/clubs(page=${page.number - 1}, size=${size}, sort=${sort}, active=${active})} + '#clubs-section')"
+              th:href="${page.first} ? '#' : (@{/clubs(page=${page.number - 1}, size=${size}, sort=${sort})} + '#clubs-section')"
               th:attr="aria-disabled=${page.first}"
             >
               Previous
@@ -115,7 +130,6 @@
             <form class="page-input" th:action="@{/clubs#clubs-section}" method="get">
               <input type="hidden" name="size" th:value="${size}" />
               <input type="hidden" name="sort" th:value="${sort}" />
-              <input type="hidden" name="active" th:value="${active}" />
               <label class="sr-only" for="pageNumber">Page</label>
               <input
                 id="pageNumber"
@@ -132,7 +146,7 @@
             <a
               class="page-button"
               th:classappend="${page.last} ? ' disabled' : ''"
-              th:href="${page.last} ? '#' : (@{/clubs(page=${page.number + 1}, size=${size}, sort=${sort}, active=${active})} + '#clubs-section')"
+              th:href="${page.last} ? '#' : (@{/clubs(page=${page.number + 1}, size=${size}, sort=${sort})} + '#clubs-section')"
               th:attr="aria-disabled=${page.last}"
             >
               Next
@@ -140,7 +154,7 @@
             <a
               class="page-button"
               th:classappend="${page.last} ? ' disabled' : ''"
-              th:href="${page.last} ? '#' : (@{/clubs(page=${lastIndex}, size=${size}, sort=${sort}, active=${active})} + '#clubs-section')"
+              th:href="${page.last} ? '#' : (@{/clubs(page=${lastIndex}, size=${size}, sort=${sort})} + '#clubs-section')"
               th:attr="aria-disabled=${page.last}"
             >
               Last

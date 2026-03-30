@@ -2,11 +2,14 @@ package com.school.ppmg.student_clubs_system_client.clients;
 
 import com.school.ppmg.student_clubs_system_client.dtos.club.ClubListDto;
 import com.school.ppmg.student_clubs_system_client.dtos.club.ClubDto;
+import com.school.ppmg.student_clubs_system_client.dtos.club.CreateClubRequest;
 import com.school.ppmg.student_clubs_system_client.dtos.club.MediaDto;
 import com.school.ppmg.student_clubs_system_client.dtos.club.UpsertClubDto;
 import com.school.ppmg.student_clubs_system_client.dtos.common.PageResponse;
 import jakarta.validation.Valid;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -39,8 +42,8 @@ public interface ClubClient {
     @GetMapping("/{id}/announcements")
     List<Map<String, Object>> getAnnouncements(@PathVariable Long id);
 
-    @PostMapping
-    ClubDto create(@Valid @RequestBody UpsertClubDto dto);
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    ClubDto create(@Valid @ModelAttribute CreateClubRequest request);
 
     @PutMapping("/{id}")
     ClubDto update(

@@ -41,6 +41,7 @@
           class="club-form"
           novalidate
           method="post"
+          th:attr="enctype=${mode == 'create'} ? 'multipart/form-data' : null"
           th:action="${mode == 'edit'} ? @{/admin/clubs/{id}/edit(id=${clubId})} : @{/admin/clubs/create}"
         >
           <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
@@ -60,10 +61,11 @@
             </label>
 
             <label class="club-field club-field--full" for="club-description">
-              <span>Description</span>
+              <span>Description <strong>*</strong></span>
               <textarea
                 id="club-description"
                 name="description"
+                required
                 maxlength="5000"
                 th:text="${clubDescription}"
               ></textarea>
@@ -116,6 +118,77 @@
             </label>
           </div>
 
+          <th:block th:if="${mode == 'create'}">
+            <div class="club-form-grid club-form-grid--uploads">
+              <label class="club-field" for="club-mainImage">
+                <span>Main Image</span>
+                <input
+                  id="club-mainImage"
+                  name="mainImage"
+                  type="file"
+                  accept="image/*"
+                />
+                <small class="club-field__hint">Upload a single main image for the club.</small>
+              </label>
+
+              <label class="club-field" for="club-teacherId">
+                <span>Teacher</span>
+                <select
+                  id="club-teacherId"
+                  name="teacherId"
+                  th:disabled="${!teacherOptionsAvailable}"
+                >
+                  <option value="">No teacher selected</option>
+                  <option
+                    th:each="teacher : ${teacherOptions}"
+                    th:value="${teacher.id}"
+                    th:selected="${selectedTeacherId != null and selectedTeacherId == teacher.id}"
+                    th:text="${teacher.fullName}"
+                  >
+                    Teacher Name
+                  </option>
+                </select>
+                <small class="club-field__hint" th:if="${teacherOptionsAvailable}">
+                  Teacher assignment is optional during club creation.
+                </small>
+                <small class="club-field__hint" th:unless="${teacherOptionsAvailable}">
+                  Teacher options are not available right now. You can still create the club without assigning one.
+                </small>
+              </label>
+
+              <label class="club-field club-field--full" for="club-mediaFiles">
+                <span>Club Media</span>
+                <input
+                  id="club-mediaFiles"
+                  name="mediaFiles"
+                  type="file"
+                  multiple
+                />
+                <small class="club-field__hint">Add any extra images or files to upload during creation.</small>
+              </label>
+            </div>
+
+            <label class="club-switch-row" for="club-teacherIsPrimary-toggle">
+              <span class="club-switch-row__label">Teacher Is Primary</span>
+              <span class="club-switch">
+                <input
+                  id="club-teacherIsPrimary"
+                  name="teacherIsPrimary"
+                  type="hidden"
+                  th:value="${selectedTeacherId != null ? (selectedTeacherIsPrimary ? 'true' : 'false') : ''}"
+                />
+                <input
+                  id="club-teacherIsPrimary-toggle"
+                  type="checkbox"
+                  th:checked="${selectedTeacherIsPrimary}"
+                />
+                <span class="club-switch__track">
+                  <span class="club-switch__thumb"></span>
+                </span>
+              </span>
+            </label>
+          </th:block>
+
           <label class="club-switch-row" for="club-isActive">
             <span class="club-switch-row__label">Is Active</span>
             <span class="club-switch">
@@ -147,6 +220,37 @@
       </div>
     </th:block>
 
-    <th:block th:fragment="pageScripts"></th:block>
+    <th:block th:fragment="pageScripts">
+      <script th:if="${mode == 'create'}">
+        (() => {
+          const teacherSelect = document.getElementById("club-teacherId");
+          const teacherPrimaryToggle = document.getElementById("club-teacherIsPrimary-toggle");
+          const teacherPrimaryField = document.getElementById("club-teacherIsPrimary");
+
+          if (!teacherSelect || !teacherPrimaryToggle || !teacherPrimaryField) {
+            return;
+          }
+
+          const syncTeacherPrimary = () => {
+            const hasTeacher = teacherSelect.value.trim() !== "";
+
+            teacherPrimaryToggle.disabled = !hasTeacher;
+            teacherPrimaryField.disabled = !hasTeacher;
+
+            if (!hasTeacher) {
+              teacherPrimaryField.value = "";
+              return;
+            }
+
+            teacherPrimaryField.value = teacherPrimaryToggle.checked ? "true" : "false";
+          };
+
+          teacherSelect.addEventListener("change", syncTeacherPrimary);
+          teacherPrimaryToggle.addEventListener("change", syncTeacherPrimary);
+
+          syncTeacherPrimary();
+        })();
+      </script>
+    </th:block>
   </body>
 </html>

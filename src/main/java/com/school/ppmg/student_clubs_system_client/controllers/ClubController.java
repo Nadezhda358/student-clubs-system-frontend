@@ -1,11 +1,21 @@
 package com.school.ppmg.student_clubs_system_client.controllers;
 
+import com.school.ppmg.student_clubs_system_client.clients.AdminTeacherClient;
 import com.school.ppmg.student_clubs_system_client.clients.ClubClient;
+import com.school.ppmg.student_clubs_system_client.clients.MembershipApplicationClient;
+import com.school.ppmg.student_clubs_system_client.dtos.auth.AuthUserDto;
+import com.school.ppmg.student_clubs_system_client.dtos.auth.UserDto;
 import com.school.ppmg.student_clubs_system_client.dtos.club.ClubDto;
 import com.school.ppmg.student_clubs_system_client.dtos.club.ClubListDto;
+import com.school.ppmg.student_clubs_system_client.dtos.club.CreateClubRequest;
+import com.school.ppmg.student_clubs_system_client.dtos.club.CreateMembershipApplicationRequest;
+import com.school.ppmg.student_clubs_system_client.dtos.club.MembershipApplicationDto;
 import com.school.ppmg.student_clubs_system_client.dtos.club.MediaDto;
+import com.school.ppmg.student_clubs_system_client.dtos.club.TeacherDto;
 import com.school.ppmg.student_clubs_system_client.dtos.club.UpsertClubDto;
 import com.school.ppmg.student_clubs_system_client.dtos.common.PageResponse;
+import com.school.ppmg.student_clubs_system_client.enums.MembershipRequestStatus;
+import com.school.ppmg.student_clubs_system_client.enums.UserRole;
 import feign.FeignException;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -13,22 +23,28 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
 @Controller
 @RequiredArgsConstructor
 public class ClubController {
+    private final AdminTeacherClient adminTeacherClient;
     private final ClubClient clubClient;
+    private final MembershipApplicationClient membershipApplicationClient;
     private static final int PAGE_SIZE = 9;
 
     @GetMapping("/clubs")
     public String clubsPage(
-            @RequestParam(required = false) Boolean active,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "9") int size,
             @RequestParam(required = false) String sort,
@@ -39,13 +55,12 @@ public class ClubController {
             sort = "name,asc";
         }
 
-        PageResponse<ClubListDto> result = clubClient.getAll(active, page, PAGE_SIZE, sort);
+        PageResponse<ClubListDto> result = clubClient.getAll(true, page, PAGE_SIZE, sort);
 
         model.addAttribute("page", result);
         model.addAttribute("clubs", result.getContent());
 
         // keep query params for pagination links
-        model.addAttribute("active", active);
         model.addAttribute("sort", sort);
         model.addAttribute("size", PAGE_SIZE);
 
@@ -75,81 +90,88 @@ public class ClubController {
 
     @GetMapping("/admin/clubs/create")
     public String createClubPage(Model model) {
-        populateFormModel(
-                model,
-                "create",
-                null,
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                true
-        );
+        populateCreateFormModel(model, "", "", "", "", "", "", true, null, true);
         return "admin/club-form";
     }
 
     @PostMapping("/admin/clubs/create")
     public String createClub(
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String description,
-            @RequestParam(required = false) String scheduleText,
-            @RequestParam(required = false) String room,
-            @RequestParam(required = false) String contactEmail,
-            @RequestParam(required = false) String contactPhone,
-            @RequestParam(defaultValue = "false") boolean isActive,
+            @ModelAttribute CreateClubRequest request,
             Model model
     ) {
-        String normalizedName = normalizeRequiredText(name);
-        String normalizedDescription = normalizeOptionalText(description);
-        String normalizedScheduleText = normalizeOptionalText(scheduleText);
-        String normalizedRoom = normalizeOptionalText(room);
-        String normalizedContactEmail = normalizeOptionalText(contactEmail);
-        String normalizedContactPhone = normalizeOptionalText(contactPhone);
+        String normalizedName = normalizeRequiredText(request.getName());
+        String normalizedDescription = normalizeRequiredText(request.getDescription());
+        String normalizedScheduleText = normalizeOptionalText(request.getScheduleText());
+        String normalizedRoom = normalizeOptionalText(request.getRoom());
+        String normalizedContactEmail = normalizeOptionalText(request.getContactEmail());
+        String normalizedContactPhone = normalizeOptionalText(request.getContactPhone());
+        boolean isActive = Boolean.TRUE.equals(request.getIsActive());
+        Long teacherId = request.getTeacherId();
+        boolean teacherIsPrimary = request.getTeacherIsPrimary() == null || request.getTeacherIsPrimary();
 
         if (normalizedName.isBlank()) {
-            populateFormModel(
+            populateCreateFormModel(
                     model,
-                    "create",
-                    null,
                     normalizedName,
                     normalizedDescription,
                     normalizedScheduleText,
                     normalizedRoom,
                     normalizedContactEmail,
                     normalizedContactPhone,
-                    isActive
+                    isActive,
+                    teacherId,
+                    teacherIsPrimary
             );
             model.addAttribute("errorMessage", "Club Name is required.");
             return "admin/club-form";
         }
 
-        try {
-            clubClient.create(new UpsertClubDto(
+        if (normalizedDescription.isBlank()) {
+            populateCreateFormModel(
+                    model,
                     normalizedName,
                     normalizedDescription,
                     normalizedScheduleText,
                     normalizedRoom,
                     normalizedContactEmail,
                     normalizedContactPhone,
-                    isActive
-            ));
+                    isActive,
+                    teacherId,
+                    teacherIsPrimary
+            );
+            model.addAttribute("errorMessage", "Description is required.");
+            return "admin/club-form";
+        }
+
+        request.setName(normalizedName);
+        request.setDescription(normalizedDescription);
+        request.setScheduleText(normalizedScheduleText);
+        request.setRoom(normalizedRoom);
+        request.setContactEmail(normalizedContactEmail);
+        request.setContactPhone(normalizedContactPhone);
+        request.setIsActive(isActive);
+        request.setTeacherId(teacherId);
+        request.setTeacherIsPrimary(teacherId == null ? null : teacherIsPrimary);
+        request.setMainImage(hasFile(request.getMainImage()) ? request.getMainImage() : null);
+        request.setMediaFiles(normalizeFiles(request.getMediaFiles()));
+
+        try {
+            clubClient.create(request);
             return "redirect:/admin/clubs?success=created";
         } catch (FeignException ex) {
-            populateFormModel(
+            populateCreateFormModel(
                     model,
-                    "create",
-                    null,
                     normalizedName,
                     normalizedDescription,
                     normalizedScheduleText,
                     normalizedRoom,
                     normalizedContactEmail,
                     normalizedContactPhone,
-                    isActive
+                    isActive,
+                    teacherId,
+                    teacherId == null ? true : teacherIsPrimary
             );
-            model.addAttribute("errorMessage", toClubSaveErrorMessage(ex));
+            model.addAttribute("errorMessage", toCreateClubSaveErrorMessage(ex, request));
             return "admin/club-form";
         }
     }
@@ -263,17 +285,73 @@ public class ClubController {
     @GetMapping("/clubs/{id}")
     public String clubDetails(
             @PathVariable Long id,
+            @ModelAttribute("sessionUser") AuthUserDto sessionUser,
             Model model,
             HttpServletResponse response
     ) {
         try {
             ClubDto club = clubClient.getById(id);
             model.addAttribute("club", club);
+
+            MembershipRequestStatus myApplicationStatus = null;
+            if (isStudent(sessionUser)) {
+                try {
+                    myApplicationStatus = resolveMyApplicationStatus(id);
+                } catch (RuntimeException ignored) {
+                    // Club page should still render even if membership status lookup fails.
+                }
+            }
+
+            model.addAttribute("myApplicationStatus", myApplicationStatus);
             return "clubs/details";
         } catch (FeignException.NotFound ex) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             model.addAttribute("missingClubId", id);
             return "errors/404";
+        }
+    }
+
+    @PostMapping("/clubs/{id}/membership-applications/apply")
+    public String applyForMembership(
+            @PathVariable("id") Long clubId,
+            @RequestParam(required = false) String motivationText,
+            @ModelAttribute("sessionUser") AuthUserDto sessionUser,
+            RedirectAttributes redirectAttributes
+    ) {
+        if (sessionUser == null) {
+            redirectAttributes.addFlashAttribute("success", "Please sign in to apply for club membership.");
+            return "redirect:/login";
+        }
+
+        if (!isStudent(sessionUser)) {
+            redirectAttributes.addFlashAttribute("membershipApplyWarningMessage", "Only students can apply.");
+            return "redirect:/clubs/" + clubId;
+        }
+
+        String normalizedMotivation = normalizeMembershipMotivation(motivationText);
+        if (normalizedMotivation != null && normalizedMotivation.length() > 2000) {
+            redirectAttributes.addFlashAttribute(
+                    "membershipApplyErrorMessage",
+                    "Motivation text must be 2000 characters or fewer."
+            );
+            redirectAttributes.addFlashAttribute("membershipApplyDraft", normalizedMotivation);
+            return "redirect:/clubs/" + clubId;
+        }
+
+        try {
+            membershipApplicationClient.apply(clubId, new CreateMembershipApplicationRequest(normalizedMotivation));
+            redirectAttributes.addFlashAttribute("membershipApplySuccessMessage", "Application submitted.");
+            redirectAttributes.addFlashAttribute("membershipApplicationSubmitted", true);
+            return "redirect:/clubs/" + clubId;
+        } catch (FeignException ex) {
+            if (ex.status() == HttpStatus.UNAUTHORIZED.value()) {
+                redirectAttributes.addFlashAttribute("success", "Please sign in to apply for club membership.");
+                return "redirect:/login";
+            }
+
+            redirectAttributes.addFlashAttribute("membershipApplyDraft", normalizedMotivation == null ? "" : normalizedMotivation);
+            addMembershipApplyErrorFlash(redirectAttributes, ex);
+            return "redirect:/clubs/" + clubId;
         }
     }
 
@@ -342,6 +420,51 @@ public class ClubController {
         model.addAttribute("submitLabel", isEdit ? "Save Changes" : "Create Club");
     }
 
+    private void populateCreateFormModel(
+            Model model,
+            String name,
+            String description,
+            String scheduleText,
+            String room,
+            String contactEmail,
+            String contactPhone,
+            boolean isActive,
+            Long teacherId,
+            boolean teacherIsPrimary
+    ) {
+        populateFormModel(
+                model,
+                "create",
+                null,
+                name,
+                description,
+                scheduleText,
+                room,
+                contactEmail,
+                contactPhone,
+                isActive
+        );
+
+        List<TeacherDto> teacherOptions;
+        try {
+            teacherOptions = adminTeacherClient.getAllTeachers().stream()
+                    .filter(teacher -> teacher != null && teacher.id() != null)
+                    .map(teacher -> new TeacherDto(
+                            teacher.id(),
+                            buildTeacherOptionLabel(teacher),
+                            null
+                    ))
+                    .toList();
+        } catch (RuntimeException ex) {
+            teacherOptions = List.of();
+        }
+
+        model.addAttribute("teacherOptions", teacherOptions);
+        model.addAttribute("selectedTeacherId", teacherId);
+        model.addAttribute("selectedTeacherIsPrimary", teacherIsPrimary);
+        model.addAttribute("teacherOptionsAvailable", !teacherOptions.isEmpty());
+    }
+
     private String successMessage(String success) {
         if (success == null || success.isBlank()) {
             return null;
@@ -365,6 +488,98 @@ public class ClubController {
     private String normalizeOptionalText(String value) {
         String normalized = normalizeRequiredText(value);
         return normalized.isEmpty() ? null : normalized;
+    }
+
+    private String normalizeMembershipMotivation(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        String normalized = value.trim();
+        return normalized.isEmpty() ? null : normalized;
+    }
+
+    private boolean isStudent(AuthUserDto sessionUser) {
+        return sessionUser != null && sessionUser.role() == UserRole.STUDENT;
+    }
+
+    private MembershipRequestStatus resolveMyApplicationStatus(Long clubId) {
+        return membershipApplicationClient
+                .getMyApplications(null)
+                .stream()
+                .filter(application -> application.clubId() != null && application.clubId().equals(clubId))
+                .max(Comparator
+                        .comparing(
+                                MembershipApplicationDto::createdAt,
+                                Comparator.nullsLast(Comparator.naturalOrder())
+                        )
+                        .thenComparing(
+                                MembershipApplicationDto::id,
+                                Comparator.nullsLast(Comparator.naturalOrder())
+                        ))
+                .map(MembershipApplicationDto::status)
+                .orElse(null);
+    }
+
+    private void addMembershipApplyErrorFlash(RedirectAttributes redirectAttributes, FeignException ex) {
+        HttpStatus status = HttpStatus.resolve(ex.status());
+        if (status == null) {
+            status = HttpStatus.BAD_GATEWAY;
+        }
+
+        String message = switch (status) {
+            case CONFLICT -> "You already have a pending application for this club.";
+            case FORBIDDEN -> "Only students can apply.";
+            case NOT_FOUND -> "This club was not found.";
+            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> firstNonBlank(
+                    extractUserMessage(ex),
+                    "Please review your motivation text and try again."
+            );
+            default -> firstNonBlank(
+                    extractUserMessage(ex),
+                    "Unable to submit your application right now. Please try again."
+            );
+        };
+
+        if (status == HttpStatus.CONFLICT || status == HttpStatus.FORBIDDEN) {
+            redirectAttributes.addFlashAttribute("membershipApplyWarningMessage", message);
+            return;
+        }
+
+        redirectAttributes.addFlashAttribute("membershipApplyErrorMessage", message);
+    }
+
+    private String extractUserMessage(FeignException ex) {
+        String content = ex.contentUTF8();
+        if (content == null || content.isBlank()) {
+            return "";
+        }
+
+        String extracted = extractJsonField(content, "message");
+        if (!extracted.isBlank()) {
+            return extracted;
+        }
+
+        extracted = extractJsonField(content, "error");
+        if (!extracted.isBlank()) {
+            return extracted;
+        }
+
+        extracted = extractJsonField(content, "detail");
+        if (!extracted.isBlank()) {
+            return extracted;
+        }
+
+        String compact = content.trim();
+        if (!compact.startsWith("<") && compact.length() <= 220) {
+            return compact;
+        }
+
+        return "";
+    }
+
+    private String firstNonBlank(String primary, String fallback) {
+        return primary != null && !primary.isBlank() ? primary : fallback;
     }
 
     private String toClubSaveErrorMessage(FeignException ex) {
@@ -399,9 +614,18 @@ public class ClubController {
         return switch (status) {
             case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Please review the club details and try again.";
             case UNAUTHORIZED, FORBIDDEN -> "You are not authorized to perform this action.";
-            case NOT_FOUND -> "Club not found.";
+            case NOT_FOUND -> "Requested resource not found.";
             default -> "Unable to save the club right now. Please try again.";
         };
+    }
+
+    private String toCreateClubSaveErrorMessage(FeignException ex, CreateClubRequest request) {
+        String message = toClubSaveErrorMessage(ex);
+        if (!hasFile(request.getMainImage()) && normalizeFiles(request.getMediaFiles()).isEmpty()) {
+            return message;
+        }
+
+        return message + " Please re-select any files before trying again.";
     }
 
     private String extractJsonField(String json, String fieldName) {
@@ -431,5 +655,39 @@ public class ClubController {
 
     private String nonNull(String value) {
         return value == null ? "" : value;
+    }
+
+    private String buildTeacherOptionLabel(UserDto teacher) {
+        String firstName = nonNull(teacher.firstName()).trim();
+        String lastName = nonNull(teacher.lastName()).trim();
+        String fullName = (firstName + " " + lastName).trim();
+        if (!fullName.isEmpty()) {
+            return fullName;
+        }
+
+        String email = nonNull(teacher.email()).trim();
+        if (!email.isEmpty()) {
+            return email;
+        }
+
+        return "Teacher #" + teacher.id();
+    }
+
+    private List<MultipartFile> normalizeFiles(List<MultipartFile> files) {
+        if (files == null || files.isEmpty()) {
+            return List.of();
+        }
+
+        List<MultipartFile> normalized = new ArrayList<>();
+        for (MultipartFile file : files) {
+            if (hasFile(file)) {
+                normalized.add(file);
+            }
+        }
+        return normalized;
+    }
+
+    private boolean hasFile(MultipartFile file) {
+        return file != null && !file.isEmpty();
     }
 }

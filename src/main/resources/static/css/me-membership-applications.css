@@ -1,0 +1,211 @@
+.me-applications-page,
+body {
+  font-family: "Sora", sans-serif;
+  color: var(--ink);
+}
+
+body {
+  margin: 0;
+}
+
+.me-applications-page {
+  padding: 2.6rem 0 4rem;
+}
+
+.me-applications-hero {
+  margin-bottom: 1.4rem;
+}
+
+.me-applications-title {
+  margin: 0;
+  font-family: "Playfair Display", serif;
+  font-size: clamp(2.1rem, 3.4vw, 2.8rem);
+  color: var(--deep-brown);
+}
+
+.me-applications-subtitle {
+  margin: 0.55rem 0 0;
+  color: rgba(34, 22, 28, 0.66);
+  max-width: 56ch;
+}
+
+.me-applications-alert {
+  margin-bottom: 0.9rem;
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.me-applications-alert--warning {
+  color: #b45309;
+  border-color: rgba(245, 158, 11, 0.18);
+  background: rgba(245, 158, 11, 0.07);
+}
+
+.me-applications-alert--error {
+  color: #b91c1c;
+  border-color: rgba(239, 68, 68, 0.16);
+  background: rgba(239, 68, 68, 0.06);
+}
+
+.me-applications-panel {
+  border-radius: 12px;
+  border: 1px solid rgba(34, 22, 28, 0.08);
+  background: rgba(255, 255, 255, 0.72);
+  padding: 1rem 1.1rem 1.15rem;
+}
+
+.me-applications-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.95rem;
+}
+
+.me-applications-filter__label {
+  font-weight: 600;
+  color: var(--deep-brown);
+}
+
+.me-applications-filter__select {
+  min-width: 200px;
+  border-radius: 999px;
+  border: 1px solid rgba(34, 22, 28, 0.14);
+  background: rgba(255, 255, 255, 0.95);
+  padding: 0.55rem 0.9rem;
+  font: inherit;
+  color: var(--ink);
+}
+
+.me-applications-filter__select:focus {
+  outline: none;
+  border-color: rgba(107, 63, 160, 0.32);
+  box-shadow: 0 0 0 3px rgba(107, 63, 160, 0.07);
+}
+
+.me-applications-filter__button {
+  border-radius: 999px;
+  border: 1px solid rgba(34, 22, 28, 0.14);
+  background: rgba(255, 255, 255, 0.9);
+  padding: 0.55rem 0.9rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+.me-applications-empty {
+  border-radius: 10px;
+  border: 1px dashed rgba(34, 22, 28, 0.12);
+  padding: 1.15rem 1.1rem;
+  color: rgba(34, 22, 28, 0.65);
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.me-applications-table-wrap {
+  overflow-x: auto;
+}
+
+.me-applications-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.me-applications-table th,
+.me-applications-table td {
+  text-align: left;
+  vertical-align: top;
+  padding: 0.85rem 0.75rem;
+  border-top: 1px solid rgba(34, 22, 28, 0.08);
+}
+
+.me-applications-table thead th {
+  border-top: none;
+  color: rgba(34, 22, 28, 0.58);
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.me-applications-club {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.me-applications-club__primary {
+  font-weight: 600;
+  color: var(--deep-brown);
+}
+
+.me-applications-club__secondary {
+  font-size: 0.82rem;
+  color: rgba(34, 22, 28, 0.55);
+}
+
+.membership-status-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  border: 1px solid rgba(34, 22, 28, 0.08);
+  background: rgba(255, 255, 255, 0.8);
+  color: rgba(34, 22, 28, 0.7);
+}
+
+.membership-status-badge.is-pending {
+  color: #b45309;
+  background: rgba(245, 158, 11, 0.08);
+  border-color: rgba(245, 158, 11, 0.16);
+}
+
+.membership-status-badge.is-approved {
+  color: #047857;
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.16);
+}
+
+.membership-status-badge.is-rejected {
+  color: #b91c1c;
+  background: rgba(239, 68, 68, 0.07);
+  border-color: rgba(239, 68, 68, 0.15);
+}
+
+.membership-status-badge.is-cancelled {
+  color: rgba(34, 22, 28, 0.65);
+  background: rgba(34, 22, 28, 0.04);
+  border-color: rgba(34, 22, 28, 0.12);
+}
+
+.me-applications-motivation {
+  min-width: 240px;
+  max-width: 460px;
+  white-space: pre-line;
+}
+
+.me-applications-muted {
+  color: rgba(34, 22, 28, 0.55);
+}
+
+@media (max-width: 900px) {
+  .me-applications-page {
+    padding-top: 2rem;
+  }
+
+  .me-applications-panel {
+    padding: 0.85rem 0.8rem 1rem;
+  }
+
+  .me-applications-table th,
+  .me-applications-table td {
+    padding-left: 0.55rem;
+    padding-right: 0.55rem;
+  }
+
+  .me-applications-motivation {
+    min-width: 200px;
+  }
+}

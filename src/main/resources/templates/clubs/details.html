@@ -19,123 +19,378 @@
 
     <main class="club-details">
       <div class="container">
-        <section class="club-details__header">
-          <div>
-            <h1 class="club-details__title" th:text="${club.name}">Club Name</h1>
-            <p
-              class="club-details__description"
-              th:if="${club.description != null and !#strings.isEmpty(club.description)}"
-              th:text="${club.description}"
+        <section
+          id="tab-general"
+          class="tab-panel is-active"
+          data-tab-panel="general"
+          th:with="
+            hasHeroImage=${club.mainImageUrl != null and !#strings.isEmpty(club.mainImageUrl)},
+            isStudent=${sessionUser != null and sessionUser.role == T(com.school.ppmg.student_clubs_system_client.enums.UserRole).STUDENT},
+            isAdminOrTeacher=${
+              sessionUser != null and (
+                sessionUser.role == T(com.school.ppmg.student_clubs_system_client.enums.UserRole).ADMIN or
+                sessionUser.role == T(com.school.ppmg.student_clubs_system_client.enums.UserRole).TEACHER
+              )
+            },
+            isApplicationPending=${isStudent and myApplicationStatus == T(com.school.ppmg.student_clubs_system_client.enums.MembershipRequestStatus).PENDING},
+            isApplicationApproved=${isStudent and myApplicationStatus == T(com.school.ppmg.student_clubs_system_client.enums.MembershipRequestStatus).APPROVED},
+            isApplicationRejected=${isStudent and myApplicationStatus == T(com.school.ppmg.student_clubs_system_client.enums.MembershipRequestStatus).REJECTED},
+            showApplicationStatusBadge=${isApplicationPending or isApplicationApproved or isApplicationRejected},
+            applyButtonDisabled=${isApplicationPending or isApplicationApproved},
+            canOpenApplyModal=${isStudent and !applyButtonDisabled}
+          "
+        >
+          <div class="club-general">
+            <section
+              class="club-hero"
+              th:classappend="${hasHeroImage} ? ' has-image' : ' is-placeholder'"
             >
-              Club description goes here.
-            </p>
+              <div
+                class="club-hero__image"
+                th:if="${hasHeroImage}"
+                th:style="|background-image: url('${club.mainImageUrl}');|"
+                aria-hidden="true"
+              ></div>
+              <div
+                class="club-hero__image club-hero__image--placeholder"
+                th:unless="${hasHeroImage}"
+                aria-hidden="true"
+              ></div>
+              <div class="club-hero__overlay" aria-hidden="true"></div>
+
+              <div class="club-hero__content">
+                <div class="club-hero__top">
+                  <div class="club-hero__copy">
+                    <div class="club-hero__title-row">
+                      <h1 class="club-hero__title" th:text="${club.name}">Club Name</h1>
+
+                      <div class="club-hero__cta">
+                        <span
+                          class="status-badge"
+                          th:if="${showApplicationStatusBadge}"
+                          th:classappend="${isApplicationPending ? ' status-badge--pending' : (isApplicationApproved ? ' status-badge--member' : ' status-badge--rejected')}"
+                          th:text="${isApplicationPending ? 'Application pending' : (isApplicationApproved ? 'You are a member' : 'Application rejected')}"
+                        >
+                          Application pending
+                        </span>
+                        <button
+                          type="button"
+                          class="club-hero__apply-button"
+                          th:if="${isStudent}"
+                          th:disabled="${applyButtonDisabled}"
+                          th:text="${isApplicationPending ? 'Pending' : (isApplicationApproved ? 'Member' : (isApplicationRejected ? 'Apply again' : 'Apply'))}"
+                          th:attr="
+                            data-open-apply-modal=${canOpenApplyModal ? 'true' : null},
+                            aria-controls=${canOpenApplyModal ? 'club-apply-modal' : null},
+                            title=${isApplicationPending ? 'Application pending review.' : (isApplicationApproved ? 'You are already a member.' : null)}
+                          "
+                        >
+                          Apply
+                        </button>
+                      </div>
+                    </div>
+
+                    <p
+                      class="club-hero__tagline"
+                      th:if="${club.description != null and !#strings.isEmpty(club.description)}"
+                      th:text="${club.description}"
+                    >
+                      Club description preview goes here.
+                    </p>
+                  </div>
+                </div>
+
+                <div class="club-hero__chips">
+                  <span
+                    class="club-chip"
+                    th:if="${club.isActive != null and isAdminOrTeacher}"
+                    th:classappend="${club.isActive} ? ' club-chip--active' : ' club-chip--inactive'"
+                    th:text="${club.isActive} ? 'Active' : 'Inactive'"
+                  >
+                    Active
+                  </span>
+                  <span
+                    class="club-chip"
+                    th:if="${club.room != null and !#strings.isEmpty(club.room)}"
+                  >
+                    <span class="club-chip__label">Room</span>
+                    <span th:text="${club.room}">A-101</span>
+                  </span>
+                  <span
+                    class="club-chip"
+                    th:if="${club.scheduleText != null and !#strings.isEmpty(club.scheduleText)}"
+                  >
+                    <span class="club-chip__label">Schedule</span>
+                    <span th:text="${club.scheduleText}">Mondays 15:00</span>
+                  </span>
+                </div>
+              </div>
+            </section>
+
+            <div class="club-tabs club-tabs--under-hero" role="tablist" aria-label="Club tabs">
+              <button
+                class="tab-button is-active"
+                type="button"
+                data-tab-button="general"
+                aria-controls="tab-general"
+                aria-selected="true"
+              >
+                General
+              </button>
+              <button
+                class="tab-button"
+                type="button"
+                data-tab-button="events"
+                aria-controls="tab-events"
+                aria-selected="false"
+              >
+                Events
+              </button>
+              <button
+                class="tab-button"
+                type="button"
+                data-tab-button="media"
+                aria-controls="tab-media"
+                aria-selected="false"
+              >
+                Media
+              </button>
+              <button
+                class="tab-button"
+                type="button"
+                data-tab-button="announcements"
+                aria-controls="tab-announcements"
+                aria-selected="false"
+              >
+                Announcements
+              </button>
+            </div>
+
+            <div class="club-general__content">
+              <section
+                class="club-section"
+                th:if="${club.description != null and !#strings.isEmpty(club.description)}"
+              >
+                <div class="club-section__heading">
+                  <h2 class="club-section__title">About</h2>
+                </div>
+                <p class="club-section__text" th:text="${club.description}">
+                  Club description goes here.
+                </p>
+              </section>
+
+              <section
+                class="club-section"
+                th:if="${
+                  (club.scheduleText != null and !#strings.isEmpty(club.scheduleText)) or
+                  (club.room != null and !#strings.isEmpty(club.room)) or
+                  (club.contactEmail != null and !#strings.isEmpty(club.contactEmail)) or
+                  (club.contactPhone != null and !#strings.isEmpty(club.contactPhone))
+                }"
+              >
+                <div class="club-section__heading">
+                  <h2 class="club-section__title">Details</h2>
+                </div>
+
+                <div class="club-details-grid">
+                  <div
+                    class="club-detail-block"
+                    th:if="${club.scheduleText != null and !#strings.isEmpty(club.scheduleText)}"
+                  >
+                    <span class="club-detail-block__label">Schedule</span>
+                    <span class="club-detail-block__value" th:text="${club.scheduleText}">
+                      Mondays 15:00
+                    </span>
+                  </div>
+
+                  <div
+                    class="club-detail-block"
+                    th:if="${club.room != null and !#strings.isEmpty(club.room)}"
+                  >
+                    <span class="club-detail-block__label">Room</span>
+                    <span class="club-detail-block__value" th:text="${club.room}">A-101</span>
+                  </div>
+
+                  <div
+                    class="club-detail-block"
+                    th:if="${club.contactEmail != null and !#strings.isEmpty(club.contactEmail)}"
+                  >
+                    <span class="club-detail-block__label">Contact Email</span>
+                    <span class="club-detail-block__value">
+                      <a th:href="'mailto:' + ${club.contactEmail}" th:text="${club.contactEmail}">
+                        contact@school.bg
+                      </a>
+                    </span>
+                  </div>
+
+                  <div
+                    class="club-detail-block"
+                    th:if="${club.contactPhone != null and !#strings.isEmpty(club.contactPhone)}"
+                  >
+                    <span class="club-detail-block__label">Contact Phone</span>
+                    <span class="club-detail-block__value">
+                      <a th:href="'tel:' + ${club.contactPhone}" th:text="${club.contactPhone}">
+                        +1 555-123-4567
+                      </a>
+                    </span>
+                  </div>
+                </div>
+              </section>
+
+              <section
+                class="club-section"
+                th:if="${club.teachers != null and !#lists.isEmpty(club.teachers)}"
+              >
+                <div class="club-section__heading">
+                  <h2 class="club-section__title">Teachers</h2>
+                </div>
+
+                <div class="teacher-list" role="list">
+                  <div class="teacher-pill" role="listitem" th:each="teacher : ${club.teachers}">
+                    <span
+                      class="teacher-pill__avatar"
+                      th:text="${
+                        teacher.fullName != null and !#strings.isEmpty(teacher.fullName)
+                          ? #strings.substring(teacher.fullName, 0, 1)
+                          : 'T'
+                      }"
+                    >
+                      T
+                    </span>
+                    <span
+                      class="teacher-pill__name"
+                      th:text="${teacher.fullName != null and !#strings.isEmpty(teacher.fullName) ? teacher.fullName : 'Teacher'}"
+                    >
+                      Teacher Name
+                    </span>
+                  </div>
+                </div>
+              </section>
+            </div>
           </div>
-        </section>
 
-        <div class="club-tabs" role="tablist" aria-label="Club tabs">
-          <button
-            class="tab-button is-active"
-            type="button"
-            data-tab-button="general"
-            aria-controls="tab-general"
-            aria-selected="true"
+          <div
+            id="club-apply-modal"
+            class="club-apply-modal"
+            data-club-apply-modal
+            aria-hidden="true"
+            hidden
+            th:attr="data-open-on-load=${membershipApplyErrorMessage != null and canOpenApplyModal}"
           >
-            General
-          </button>
-          <button
-            class="tab-button"
-            type="button"
-            data-tab-button="events"
-            aria-controls="tab-events"
-            aria-selected="false"
-          >
-            Events
-          </button>
-          <button
-            class="tab-button"
-            type="button"
-            data-tab-button="media"
-            aria-controls="tab-media"
-            aria-selected="false"
-          >
-            Media
-          </button>
-          <button
-            class="tab-button"
-            type="button"
-            data-tab-button="announcements"
-            aria-controls="tab-announcements"
-            aria-selected="false"
-          >
-            Announcements
-          </button>
-        </div>
+            <div class="club-apply-modal__backdrop" data-close-apply-modal aria-hidden="true"></div>
 
-        <section id="tab-general" class="tab-panel is-active" data-tab-panel="general">
-          <div class="detail-grid">
-            <div class="detail-row" th:if="${club.name != null and !#strings.isEmpty(club.name)}">
-              <span class="detail-label">Name</span>
-              <span class="detail-value" th:text="${club.name}">Club Name</span>
-            </div>
             <div
-              class="detail-row"
-              th:if="${club.description != null and !#strings.isEmpty(club.description)}"
+              class="club-apply-modal__dialog"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="club-apply-modal-title"
+              data-club-apply-dialog
             >
-              <span class="detail-label">Description</span>
-              <span class="detail-value" th:text="${club.description}">Description</span>
-            </div>
-            <div
-              class="detail-row"
-              th:if="${club.scheduleText != null and !#strings.isEmpty(club.scheduleText)}"
-            >
-              <span class="detail-label">Schedule</span>
-              <span class="detail-value" th:text="${club.scheduleText}">Schedule</span>
-            </div>
-            <div class="detail-row" th:if="${club.room != null and !#strings.isEmpty(club.room)}">
-              <span class="detail-label">Room</span>
-              <span class="detail-value" th:text="${club.room}">Room</span>
-            </div>
-            <div
-              class="detail-row"
-              th:if="${club.contactEmail != null and !#strings.isEmpty(club.contactEmail)}"
-            >
-              <span class="detail-label">Contact Email</span>
-              <span class="detail-value">
-                <a th:href="'mailto:' + ${club.contactEmail}" th:text="${club.contactEmail}">
-                  contact@school.bg
-                </a>
-              </span>
-            </div>
-            <div
-              class="detail-row"
-              th:if="${club.contactPhone != null and !#strings.isEmpty(club.contactPhone)}"
-            >
-              <span class="detail-label">Contact Phone</span>
-              <span class="detail-value">
-                <a th:href="'tel:' + ${club.contactPhone}" th:text="${club.contactPhone}">
-                  +1 555-123-4567
-                </a>
-              </span>
-            </div>
-            <div class="detail-row" th:if="${club.isActive != null}">
-              <span class="detail-label">Status</span>
-              <span class="detail-value">
-                <span
-                  class="status-badge"
-                  th:classappend="${club.isActive} ? ' is-active' : ' is-inactive'"
-                  th:text="${club.isActive} ? 'Active' : 'Inactive'"
+              <div class="club-apply-modal__header">
+                <h2 id="club-apply-modal-title" class="club-apply-modal__title">
+                  Apply to join <span th:text="${club.name}">Club Name</span>
+                </h2>
+                <button
+                  type="button"
+                  class="club-apply-modal__close"
+                  data-close-apply-modal
+                  aria-label="Close application form"
                 >
-                  Active
-                </span>
-              </span>
-            </div>
-            <div class="detail-row" th:if="${club.createdAt != null}">
-              <span class="detail-label">Created</span>
-              <span class="detail-value" th:text="${club.createdAt}">2026-02-01T12:30:00Z</span>
-            </div>
-            <div class="detail-row" th:if="${club.updatedAt != null}">
-              <span class="detail-label">Updated</span>
-              <span class="detail-value" th:text="${club.updatedAt}">2026-02-05T09:45:00Z</span>
+                  X
+                </button>
+              </div>
+
+              <div class="club-apply-modal__body">
+                <div
+                  class="membership-alert membership-alert--warning"
+                  role="alert"
+                  th:if="${membershipApplyWarningMessage}"
+                  th:text="${membershipApplyWarningMessage}"
+                >
+                  Only students can apply.
+                </div>
+                <div
+                  class="membership-alert membership-alert--error"
+                  role="alert"
+                  th:if="${membershipApplyErrorMessage}"
+                  th:text="${membershipApplyErrorMessage}"
+                >
+                  Unable to submit your application right now.
+                </div>
+
+                <div class="membership-panel__empty" th:if="${!isStudent}">
+                  <p class="membership-panel__empty-text">Only students can apply.</p>
+                  <p class="membership-panel__empty-text" th:if="${sessionUser == null}">
+                    <a th:href="@{/login}">Sign in</a> with a student account to continue.
+                  </p>
+                </div>
+
+                <div class="membership-panel__empty" th:if="${isStudent and applyButtonDisabled}">
+                  <p class="membership-panel__empty-text">
+                    <span th:if="${isApplicationPending}">
+                      You already have a pending application for this club.
+                    </span>
+                    <span th:if="${isApplicationApproved}">
+                      You are already a member of this club.
+                    </span>
+                  </p>
+                  <p class="membership-panel__empty-text" th:if="${isApplicationPending}">
+                    We will notify you when it is reviewed.
+                  </p>
+                </div>
+
+                <form
+                  class="membership-form"
+                  method="post"
+                  th:if="${canOpenApplyModal}"
+                  th:action="@{/clubs/{id}/membership-applications/apply(id=${club.id})}"
+                >
+                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                  <label class="membership-form__label" for="applyMotivationText">
+                    Motivation (optional)
+                  </label>
+                  <textarea
+                    id="applyMotivationText"
+                    name="motivationText"
+                    class="membership-form__textarea"
+                    rows="6"
+                    maxlength="2000"
+                    placeholder="Tell the club why you want to join (optional)."
+                    th:text="${membershipApplyDraft}"
+                  ></textarea>
+
+                  <div class="membership-form__meta">
+                    <p class="membership-form__hint">Maximum 2000 characters.</p>
+                  </div>
+
+                  <div class="club-apply-modal__actions">
+                    <button
+                      type="button"
+                      class="club-apply-modal__button club-apply-modal__button--ghost"
+                      data-close-apply-modal
+                    >
+                      Close
+                    </button>
+                    <button
+                      type="submit"
+                      class="club-apply-modal__button club-apply-modal__button--primary"
+                    >
+                      Submit application
+                    </button>
+                  </div>
+                </form>
+
+                <div class="club-apply-modal__actions" th:if="${!canOpenApplyModal}">
+                  <button
+                    type="button"
+                    class="club-apply-modal__button club-apply-modal__button--ghost"
+                    data-close-apply-modal
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -176,6 +431,21 @@
     </main>
 
     <footer th:replace="fragments/site-chrome :: siteFooter"></footer>
+
+    <div
+      id="club-toast"
+      class="club-toast"
+      th:if="${!#strings.isEmpty(membershipApplySuccessMessage)
+        or !#strings.isEmpty(membershipApplyWarningMessage)
+        or !#strings.isEmpty(membershipApplyErrorMessage)}"
+      th:attr="
+        data-type=${!#strings.isEmpty(membershipApplySuccessMessage) ? 'success'
+          : (!#strings.isEmpty(membershipApplyWarningMessage) ? 'warning' : 'error')},
+        data-message=${!#strings.isEmpty(membershipApplySuccessMessage) ? membershipApplySuccessMessage
+          : (!#strings.isEmpty(membershipApplyWarningMessage) ? membershipApplyWarningMessage : membershipApplyErrorMessage)}
+      "
+      hidden
+    ></div>
 
     <script>
       (() => {
@@ -233,6 +503,87 @@
         const initialTab = params.get("tab");
         if (initialTab && panelMap.has(initialTab)) {
           setActiveTab(initialTab);
+        }
+
+        const applyModal = document.querySelector("[data-club-apply-modal]");
+        if (applyModal) {
+          const modalDialog = applyModal.querySelector("[data-club-apply-dialog]");
+          const openApplyButtons = Array.from(
+            document.querySelectorAll("[data-open-apply-modal]")
+          );
+          const closeApplyButtons = Array.from(
+            applyModal.querySelectorAll("[data-close-apply-modal]")
+          );
+
+          const openApplyModal = () => {
+            applyModal.hidden = false;
+            applyModal.classList.add("is-open");
+            applyModal.setAttribute("aria-hidden", "false");
+            document.body.classList.add("club-modal-open");
+
+            const focusTarget = applyModal.querySelector(
+              "textarea, button[type='submit'], button[data-close-apply-modal], a"
+            );
+            if (focusTarget instanceof HTMLElement) {
+              window.requestAnimationFrame(() => focusTarget.focus());
+            }
+          };
+
+          const closeApplyModal = () => {
+            applyModal.classList.remove("is-open");
+            applyModal.setAttribute("aria-hidden", "true");
+            applyModal.hidden = true;
+            document.body.classList.remove("club-modal-open");
+          };
+
+          openApplyButtons.forEach((button) => {
+            button.addEventListener("click", (event) => {
+              event.preventDefault();
+              openApplyModal();
+            });
+          });
+
+          closeApplyButtons.forEach((button) => {
+            button.addEventListener("click", (event) => {
+              event.preventDefault();
+              closeApplyModal();
+            });
+          });
+
+          document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape" && !applyModal.hidden) {
+              closeApplyModal();
+            }
+          });
+
+          if (applyModal.dataset.openOnLoad === "true" && modalDialog) {
+            openApplyModal();
+          }
+        }
+
+        const toast = document.getElementById("club-toast");
+
+        if (toast) {
+          const type = toast.dataset.type;
+          const message = toast.dataset.message || "";
+
+          toast.classList.add(`club-toast--${type}`);
+
+          toast.innerHTML = `
+            <img src="/assets/logo.png" alt="ClubsHub" class="club-toast__logo">
+            <span>${message}</span>
+          `;
+
+          toast.hidden = false;
+
+          requestAnimationFrame(() => {
+            toast.classList.add("is-visible");
+          });
+
+          setTimeout(() => {
+            toast.classList.remove("is-visible");
+            setTimeout(() => toast.remove(), 300);
+          }, 3000);
         }
       })();
     </script>

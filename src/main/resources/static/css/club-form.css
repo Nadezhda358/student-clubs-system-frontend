@@ -103,7 +103,8 @@
   color: #b91c1c;
 }
 
-.club-field input,
+.club-field input:not([type="file"]),
+.club-field select,
 .club-field textarea {
   width: 100%;
   border: 0;
@@ -115,7 +116,8 @@
   transition: outline-color 0.2s ease, background-color 0.2s ease;
 }
 
-.club-field input {
+.club-field input:not([type="file"]),
+.club-field select {
   height: 46px;
   padding: 0 14px;
 }
@@ -127,11 +129,51 @@
   line-height: 1.5;
 }
 
-.club-field input:focus,
+.club-field input:not([type="file"]):focus,
+.club-field select:focus,
 .club-field textarea:focus {
   outline: 2px solid rgba(107, 63, 160, 0.32);
   outline-offset: 0;
   background: #ffffff;
+}
+
+.club-field input[type="file"] {
+  width: 100%;
+  padding: 12px 14px;
+  border: 0;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.88);
+  font: inherit;
+  font-size: 14px;
+  color: var(--deep-brown);
+}
+
+.club-field input[type="file"]:focus {
+  outline: 2px solid rgba(107, 63, 160, 0.32);
+  outline-offset: 0;
+  background: #ffffff;
+}
+
+.club-field input[type="file"]::file-selector-button {
+  margin-right: 12px;
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(120deg, rgba(107, 63, 160, 0.16), rgba(217, 97, 69, 0.18));
+  color: var(--deep-brown);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.club-field__hint {
+  font-size: 12px;
+  line-height: 1.5;
+  color: rgba(34, 22, 28, 0.62);
+}
+
+.club-form-grid--uploads {
+  margin-top: 16px;
 }
 
 .club-switch-row {
@@ -157,7 +199,7 @@
   align-items: center;
 }
 
-.club-switch input {
+.club-switch input[type="checkbox"] {
   position: absolute;
   opacity: 0;
   pointer-events: none;
@@ -183,11 +225,15 @@
   transition: transform 0.2s ease;
 }
 
-.club-switch input:checked + .club-switch__track {
+.club-switch input[type="checkbox"]:checked + .club-switch__track {
   background: linear-gradient(120deg, #16a34a, #14b8a6);
 }
 
-.club-switch input:checked + .club-switch__track .club-switch__thumb {
+.club-switch input[type="checkbox"]:disabled + .club-switch__track {
+  opacity: 0.55;
+}
+
+.club-switch input[type="checkbox"]:checked + .club-switch__track .club-switch__thumb {
   transform: translateX(22px);
 }
 
