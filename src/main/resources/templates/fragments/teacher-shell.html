@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+  <body th:fragment="teacherShell(pageBodyClass, content, pageScripts)" th:classappend="${pageBodyClass}">
+    <header th:replace="fragments/site-chrome :: siteHeader"></header>
+
+    <main class="admin-shell">
+      <div class="admin-shell__container">
+        <div class="admin-shell__grid">
+          <aside class="admin-sidebar" aria-label="Teacher navigation">
+            <details
+              class="admin-sidebar__details"
+              open
+              th:with="
+                path=${currentPath != null ? currentPath : ''},
+                clubsActive=${path == '/teacher' or path == '/teacher/clubs' or #strings.startsWith(path, '/teacher/clubs/')},
+                clubAppsActive=${path == '/teacher/membership-applications'}
+              "
+            >
+              <summary class="admin-sidebar__toggle">Teacher Menu</summary>
+
+              <div class="admin-sidebar__panel">
+                <div class="admin-sidebar__heading">
+                  <p class="admin-sidebar__eyebrow">Teacher Workspace</p>
+                  <h2>Manage</h2>
+                </div>
+
+                <nav class="admin-sidebar__nav">
+                  <a
+                    class="admin-sidebar__link"
+                    th:classappend="${clubsActive} ? ' is-active' : ''"
+                    th:attr="aria-current=${clubsActive} ? 'page' : null"
+                    th:href="@{/teacher/clubs}"
+                  >
+                    My Clubs
+                  </a>
+                  <a
+                    class="admin-sidebar__link"
+                    th:classappend="${clubAppsActive} ? ' is-active' : ''"
+                    th:attr="aria-current=${clubAppsActive} ? 'page' : null"
+                    th:href="@{/teacher/membership-applications}"
+                  >
+                    Club Membership Applications
+                  </a>
+                </nav>
+              </div>
+            </details>
+          </aside>
+
+          <section class="admin-shell__content">
+            <th:block th:replace="${content}"></th:block>
+          </section>
+        </div>
+      </div>
+    </main>
+
+    <footer th:replace="fragments/site-chrome :: siteFooter"></footer>
+    <th:block th:if="${pageScripts != null}" th:replace="${pageScripts}"></th:block>
+  </body>
+</html>

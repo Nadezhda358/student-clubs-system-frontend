@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Membership Applications | ClubsHub Teacher</title>
+  <link th:href="@{/assets/logo.png}" rel="icon" type="image/png" />
+  <meta name="_csrf" th:content="${_csrf.token}" />
+  <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Sora:wght@300;400;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" th:href="@{/css/site-chrome.css}" />
+  <link rel="stylesheet" th:href="@{/css/design-tokens.css}" />
+  <link rel="stylesheet" th:href="@{/css/admin-shell.css}" />
+  <link
+    rel="stylesheet"
+    type="text/css"
+    href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css"
+  />
+  <link rel="stylesheet" th:href="@{/css/admin-membership-applications.css}" />
+</head>
+
+<body
+  th:replace="~{fragments/teacher-shell :: teacherShell('admin-membership-applications-page', ~{::teacherPageContent}, ~{::pageScripts})}"
+>
+<th:block th:fragment="teacherPageContent" th:replace="~{fragments/membership-applications :: pageContent}"></th:block>
+
+<th:block th:fragment="pageScripts" th:replace="~{fragments/membership-applications :: pageScripts}"></th:block>
+</body>
+</html>

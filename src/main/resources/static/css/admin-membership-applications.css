@@ -234,6 +234,21 @@
   margin-bottom: 1.15rem;
 }
 
+.membership-alert {
+  margin: 0 0 1rem;
+  padding: 0.95rem 1.1rem;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.membership-alert--error {
+  color: #991b1b;
+  border-color: rgba(239, 68, 68, 0.24);
+  background: linear-gradient(90deg, rgba(254, 242, 242, 0.92), rgba(255, 244, 244, 0.84));
+}
+
 .membership-filter {
   display: grid;
   gap: 0.35rem;

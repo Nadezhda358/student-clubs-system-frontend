@@ -22,21 +22,11 @@ import java.util.function.Consumer;
 
 @Controller
 @RequiredArgsConstructor
-public class AdminController {
+public class TeacherMembershipApplicationsController {
     private final MembershipApplicationClient membershipApplicationClient;
 
-    @GetMapping("/admin/events")
-    public String adminEvents(Model model) {
-        return placeholder(
-                model,
-                "Events",
-                "Manage admin event workflows from one place.",
-                "Event administration screens are being added here."
-        );
-    }
-
-    @GetMapping({"/admin/applications/clubs", "/admin/membership-applications"})
-    public String adminClubMembershipApplications(
+    @GetMapping("/teacher/membership-applications")
+    public String teacherMembershipApplications(
             @RequestParam(required = false) MembershipRequestStatus status,
             @RequestParam(required = false) Long clubId,
             @RequestParam(required = false) String q,
@@ -50,20 +40,20 @@ public class AdminController {
         model.addAttribute("pendingStatus", MembershipRequestStatus.PENDING);
         model.addAttribute("approvedStatusName", MembershipRequestStatus.APPROVED.name());
         model.addAttribute("rejectedStatusName", MembershipRequestStatus.REJECTED.name());
-        model.addAttribute("membershipWorkspaceLabel", "Admin Workspace");
+        model.addAttribute("membershipWorkspaceLabel", "Teacher Workspace");
         model.addAttribute("membershipPageTitle", "Club Membership Applications");
         model.addAttribute(
                 "membershipPageSubtitle",
-                "Review pending requests quickly, approve eligible students, and keep membership decisions consistent."
+                "Review requests for the clubs you manage, approve eligible students, and keep membership decisions moving."
         );
-        model.addAttribute("membershipFilterAction", "/admin/membership-applications");
-        model.addAttribute("membershipResetAction", "/admin/membership-applications");
-        model.addAttribute("membershipActionBasePath", "/admin/membership-applications");
-        model.addAttribute("membershipEmptyMessage", "No membership applications found.");
+        model.addAttribute("membershipFilterAction", "/teacher/membership-applications");
+        model.addAttribute("membershipResetAction", "/teacher/membership-applications");
+        model.addAttribute("membershipActionBasePath", "/teacher/membership-applications");
+        model.addAttribute("membershipEmptyMessage", "No membership applications found for your clubs.");
 
         try {
             List<MembershipApplicationDto> applications =
-                    membershipApplicationClient.adminGetAll(status, clubId, normalizeQuery(q));
+                    membershipApplicationClient.teacherGetAllApplications(status, clubId, normalizeQuery(q));
             model.addAttribute("applications", applications == null ? Collections.emptyList() : applications);
         } catch (FeignException ex) {
             if (ex.status() == HttpStatus.UNAUTHORIZED.value()) {
@@ -73,59 +63,19 @@ public class AdminController {
             model.addAttribute("loadErrorMessage", toMembershipApplicationLoadErrorMessage(ex));
         }
 
-        return "admin/membership-applications";
+        return "teacher/membership-applications";
     }
 
-    @GetMapping({"/admin/applications/events", "/admin/event-applications"})
-    public String adminEventApplications(Model model) {
-        return placeholder(
-                model,
-                "Event Applications",
-                "Review participation requests and approvals for events.",
-                "Event application management is coming soon."
-        );
-    }
-
-    @GetMapping("/admin/stats")
-    public String adminStats(Model model) {
-        return placeholder(
-                model,
-                "Stats",
-                "Track engagement and activity across clubs and events.",
-                "Admin analytics dashboards are coming soon."
-        );
-    }
-
-    @PostMapping("/admin/membership-applications/{id}/approve")
+    @PostMapping("/teacher/membership-applications/{id}/approve")
     @ResponseBody
     public ResponseEntity<?> approveMembershipApplication(@PathVariable Long id) {
-        return updateMembershipApplication(id, membershipApplicationClient::adminApprove);
+        return updateMembershipApplication(id, membershipApplicationClient::teacherApprove);
     }
 
-    @PostMapping("/admin/membership-applications/{id}/reject")
+    @PostMapping("/teacher/membership-applications/{id}/reject")
     @ResponseBody
     public ResponseEntity<?> rejectMembershipApplication(@PathVariable Long id) {
-        return updateMembershipApplication(id, membershipApplicationClient::adminReject);
-    }
-
-    private String placeholder(
-            Model model,
-            String pageTitle,
-            String pageSubtitle,
-            String comingSoonMessage
-    ) {
-        model.addAttribute("pageTitle", pageTitle);
-        model.addAttribute("pageSubtitle", pageSubtitle);
-        model.addAttribute("comingSoonMessage", comingSoonMessage);
-        return "admin/placeholder";
-    }
-
-    private String normalizeQuery(String q) {
-        if (q == null) {
-            return null;
-        }
-        String normalized = q.trim();
-        return normalized.isEmpty() ? null : normalized;
+        return updateMembershipApplication(id, membershipApplicationClient::teacherReject);
     }
 
     private ResponseEntity<?> updateMembershipApplication(Long id, Consumer<Long> action) {
@@ -138,6 +88,15 @@ public class AdminController {
                     .status(status)
                     .body(Map.of("message", toMembershipApplicationUpdateErrorMessage(ex)));
         }
+    }
+
+    private String normalizeQuery(String q) {
+        if (q == null) {
+            return null;
+        }
+
+        String normalized = q.trim();
+        return normalized.isEmpty() ? null : normalized;
     }
 
     private HttpStatus resolveStatus(FeignException ex) {
@@ -154,7 +113,7 @@ public class AdminController {
         return switch (resolveStatus(ex)) {
             case NOT_FOUND -> "Membership applications endpoint is not available.";
             case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Please review the filters and try again.";
-            case FORBIDDEN -> "You are not authorized to view membership applications.";
+            case FORBIDDEN -> "You are not authorized to view membership applications for these clubs.";
             default -> "Unable to load membership applications right now. Please try again.";
         };
     }

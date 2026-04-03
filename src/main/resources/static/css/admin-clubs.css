@@ -87,6 +87,11 @@
   color: #0f766e;
 }
 
+.admin-alert--error {
+  background: linear-gradient(90deg, rgba(239, 68, 68, 0.14), rgba(245, 158, 11, 0.18));
+  color: #991b1b;
+}
+
 .admin-clubs__list {
   display: grid;
   gap: 1rem;

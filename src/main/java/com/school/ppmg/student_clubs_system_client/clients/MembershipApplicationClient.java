@@ -56,4 +56,33 @@ public interface MembershipApplicationClient {
                 new UpdateMembershipApplicationStatusRequest(MembershipRequestStatus.REJECTED)
         );
     }
+
+    @GetMapping("/teacher/membership-applications")
+    @PreAuthorize("hasRole('TEACHER')")
+    List<MembershipApplicationDto> teacherGetAllApplications(
+            @RequestParam(required = false) MembershipRequestStatus status,
+            @RequestParam(required = false) Long clubId,
+            @RequestParam(required = false) String q
+    );
+
+    @PostMapping("/teacher/membership-applications/{id}")
+    @PreAuthorize("hasRole('TEACHER')")
+    MembershipApplicationDto teacherUpdateApplicationStatus(
+            @PathVariable Long id,
+            @RequestBody UpdateMembershipApplicationStatusRequest request
+    );
+
+    default MembershipApplicationDto teacherApprove(Long id) {
+        return teacherUpdateApplicationStatus(
+                id,
+                new UpdateMembershipApplicationStatusRequest(MembershipRequestStatus.APPROVED)
+        );
+    }
+
+    default MembershipApplicationDto teacherReject(Long id) {
+        return teacherUpdateApplicationStatus(
+                id,
+                new UpdateMembershipApplicationStatusRequest(MembershipRequestStatus.REJECTED)
+        );
+    }
 }
