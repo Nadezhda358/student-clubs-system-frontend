@@ -25,16 +25,6 @@ import java.util.function.Consumer;
 public class AdminController {
     private final MembershipApplicationClient membershipApplicationClient;
 
-    @GetMapping("/admin/events")
-    public String adminEvents(Model model) {
-        return placeholder(
-                model,
-                "Events",
-                "Manage admin event workflows from one place.",
-                "Event administration screens are being added here."
-        );
-    }
-
     @GetMapping({"/admin/applications/clubs", "/admin/membership-applications"})
     public String adminClubMembershipApplications(
             @RequestParam(required = false) MembershipRequestStatus status,
@@ -74,16 +64,6 @@ public class AdminController {
         }
 
         return "admin/membership-applications";
-    }
-
-    @GetMapping({"/admin/applications/events", "/admin/event-applications"})
-    public String adminEventApplications(Model model) {
-        return placeholder(
-                model,
-                "Event Applications",
-                "Review participation requests and approvals for events.",
-                "Event application management is coming soon."
-        );
     }
 
     @GetMapping("/admin/stats")
