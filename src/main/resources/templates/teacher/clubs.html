@@ -49,6 +49,7 @@
               </div>
               <div class="admin-club-row__actions">
                 <a class="ghost-link" th:href="@{/clubs/{id}(id=${club.id})}">View</a>
+                <a class="ghost-link" th:href="@{/teacher/events(clubId=${club.id})}">Events</a>
                 <a class="primary-link" th:href="@{/teacher/clubs/{id}/edit(id=${club.id})}">Edit</a>
               </div>
             </article>

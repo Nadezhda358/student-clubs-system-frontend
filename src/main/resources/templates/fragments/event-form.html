@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+  <body>
+    <th:block th:fragment="pageContent">
+      <div class="event-form-layout">
+        <section class="event-form-hero">
+          <div>
+            <p class="event-form-hero__tag" th:text="${workspaceLabel}">Workspace</p>
+            <h1 th:text="${pageTitle}">Create Event</h1>
+            <p class="event-form-hero__subtitle" th:text="${pageSubtitle}">
+              Configure event timing, capacity, and visibility.
+            </p>
+          </div>
+        </section>
+
+        <div class="admin-alert admin-alert--success" th:if="${successMessage}" th:text="${successMessage}"></div>
+        <div class="admin-alert admin-alert--error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
+        <form class="event-form-surface" method="post" th:action="${formAction}" th:object="${form}">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+          <div class="event-form__grid">
+            <div class="event-form__field event-form__field--wide">
+              <label for="clubId">Club</label>
+              <select id="clubId" class="event-form__select" th:field="*{clubId}">
+                <option value="">Choose a club</option>
+                <option
+                  th:each="club : ${clubOptions}"
+                  th:value="${club.id}"
+                  th:text="${club.name}"
+                ></option>
+              </select>
+            </div>
+
+            <div class="event-form__field event-form__field--wide">
+              <label for="title">Title</label>
+              <input id="title" class="event-form__input" type="text" maxlength="200" th:field="*{title}" />
+            </div>
+
+            <div class="event-form__field event-form__field--wide">
+              <label for="description">Description</label>
+              <textarea
+                id="description"
+                class="event-form__textarea"
+                maxlength="5000"
+                th:field="*{description}"
+              ></textarea>
+              <p class="event-form__hint">Keep the description clear and specific so students understand what to expect.</p>
+            </div>
+
+            <div class="event-form__field">
+              <label for="startAt">Start</label>
+              <input id="startAt" class="event-form__input" type="datetime-local" th:field="*{startAt}" />
+            </div>
+
+            <div class="event-form__field">
+              <label for="endAt">End</label>
+              <input id="endAt" class="event-form__input" type="datetime-local" th:field="*{endAt}" />
+            </div>
+
+            <div class="event-form__field">
+              <label for="registrationDeadline">Registration Deadline</label>
+              <input
+                id="registrationDeadline"
+                class="event-form__input"
+                type="datetime-local"
+                th:field="*{registrationDeadline}"
+              />
+            </div>
+
+            <div class="event-form__field">
+              <label for="capacity">Capacity</label>
+              <input id="capacity" class="event-form__input" type="number" min="1" th:field="*{capacity}" />
+            </div>
+
+            <div class="event-form__field">
+              <label for="status">Status</label>
+              <select id="status" class="event-form__select" th:field="*{status}">
+                <option value="">Choose a status</option>
+                <option
+                  th:each="status : ${statusValues}"
+                  th:value="${status.name()}"
+                  th:text="${T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatLabel(status)}"
+                ></option>
+              </select>
+            </div>
+
+            <div class="event-form__field">
+              <label for="audience">Audience</label>
+              <select id="audience" class="event-form__select" th:field="*{audience}">
+                <option value="">Choose visibility</option>
+                <option
+                  th:each="audience : ${audienceValues}"
+                  th:value="${audience.name()}"
+                  th:text="${T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatLabel(audience)}"
+                ></option>
+              </select>
+            </div>
+
+            <div class="event-form__field event-form__field--wide">
+              <label for="location">Location</label>
+              <input id="location" class="event-form__input" type="text" maxlength="200" th:field="*{location}" />
+            </div>
+          </div>
+
+          <div class="event-form__actions" style="margin-top: 1.1rem;">
+            <button class="events-button events-button--primary" type="submit" th:text="${submitLabel}">Save</button>
+            <a class="events-link events-link--ghost" th:href="${cancelHref}">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </th:block>
+  </body>
+</html>

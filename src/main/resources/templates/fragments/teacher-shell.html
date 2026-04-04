@@ -13,6 +13,7 @@
               th:with="
                 path=${currentPath != null ? currentPath : ''},
                 clubsActive=${path == '/teacher' or path == '/teacher/clubs' or #strings.startsWith(path, '/teacher/clubs/')},
+                eventsActive=${path == '/teacher/events' or path == '/teacher/events/create' or #strings.startsWith(path, '/teacher/events/')},
                 clubAppsActive=${path == '/teacher/membership-applications'}
               "
             >
@@ -32,6 +33,14 @@
                     th:href="@{/teacher/clubs}"
                   >
                     My Clubs
+                  </a>
+                  <a
+                    class="admin-sidebar__link"
+                    th:classappend="${eventsActive} ? ' is-active' : ''"
+                    th:attr="aria-current=${eventsActive} ? 'page' : null"
+                    th:href="@{/teacher/events}"
+                  >
+                    Events
                   </a>
                   <a
                     class="admin-sidebar__link"
