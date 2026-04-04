@@ -2,7 +2,9 @@ package com.school.ppmg.student_clubs_system_client.controllers;
 
 import com.school.ppmg.student_clubs_system_client.clients.AdminTeacherClient;
 import com.school.ppmg.student_clubs_system_client.clients.ClubClient;
+import com.school.ppmg.student_clubs_system_client.clients.EventClient;
 import com.school.ppmg.student_clubs_system_client.clients.MembershipApplicationClient;
+import com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport;
 import com.school.ppmg.student_clubs_system_client.dtos.auth.AuthUserDto;
 import com.school.ppmg.student_clubs_system_client.dtos.auth.UserDto;
 import com.school.ppmg.student_clubs_system_client.dtos.club.ClubDto;
@@ -14,6 +16,7 @@ import com.school.ppmg.student_clubs_system_client.dtos.club.MediaDto;
 import com.school.ppmg.student_clubs_system_client.dtos.club.TeacherDto;
 import com.school.ppmg.student_clubs_system_client.dtos.club.UpsertClubDto;
 import com.school.ppmg.student_clubs_system_client.dtos.common.PageResponse;
+import com.school.ppmg.student_clubs_system_client.dtos.event.EventListDto;
 import com.school.ppmg.student_clubs_system_client.enums.MembershipRequestStatus;
 import com.school.ppmg.student_clubs_system_client.enums.UserRole;
 import feign.FeignException;
@@ -40,6 +43,7 @@ import java.util.Map;
 public class ClubController {
     private final AdminTeacherClient adminTeacherClient;
     private final ClubClient clubClient;
+    private final EventClient eventClient;
     private final MembershipApplicationClient membershipApplicationClient;
     private static final int PAGE_SIZE = 9;
 
@@ -358,8 +362,18 @@ public class ClubController {
     @GetMapping("/clubs/{id}/tabs/events")
     public String clubEventsTab(@PathVariable Long id, Model model) {
         try {
-            List<Map<String, Object>> events = clubClient.getEvents(id);
-            model.addAttribute("events", events);
+            PageResponse<EventListDto> result = eventClient.getPublicEvents(
+                    id,
+                    null,
+                    null,
+                    null,
+                    null,
+                    0,
+                    EventViewSupport.TAB_PAGE_SIZE,
+                    EventViewSupport.EVENT_SORT
+            );
+            model.addAttribute("events", result.getContent() == null ? List.of() : result.getContent());
+            model.addAttribute("clubId", id);
         } catch (Exception ex) {
             model.addAttribute("error", "Events are not available yet.");
         }

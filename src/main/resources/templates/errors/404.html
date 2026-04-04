@@ -21,10 +21,14 @@
       <div class="container">
         <section class="error-panel">
           <p class="error-code">404</p>
-          <h1 class="error-title">Club not found</h1>
+          <h1 class="error-title" th:text="${missingResourceType != null ? #strings.capitalize(missingResourceType) + ' not found' : 'Club not found'}">
+            Club not found
+          </h1>
           <p class="error-text">
-            We could not find a club with ID
-            <span th:text="${missingClubId}">0</span>.
+            We could not find
+            <span th:text="${missingResourceType != null ? 'the requested ' + missingResourceType : 'a club'}">a club</span>
+            with ID
+            <span th:text="${missingResourceId != null ? missingResourceId : missingClubId}">0</span>.
           </p>
           <a class="ghost-button" th:href="@{/clubs}">Back to clubs</a>
         </section>

@@ -22,11 +22,24 @@
               Clubs
             </a>
             <a
+              th:href="@{/events}"
+              th:classappend="${currentPath != null and #strings.startsWith(currentPath, '/events')} ? ' active' : ''"
+            >
+              Events
+            </a>
+            <a
               th:if="${sessionUser != null and sessionUser.role == T(com.school.ppmg.student_clubs_system_client.enums.UserRole).ADMIN}"
               th:href="@{/admin/clubs}"
               th:classappend="${currentPath != null and #strings.startsWith(currentPath, '/admin')} ? ' active' : ''"
             >
               Admin
+            </a>
+            <a
+              th:if="${sessionUser != null and sessionUser.role == T(com.school.ppmg.student_clubs_system_client.enums.UserRole).STUDENT}"
+              th:href="@{/me/events}"
+              th:classappend="${currentPath != null and #strings.startsWith(currentPath, '/me/events')} ? ' active' : ''"
+            >
+              My Events
             </a>
             <a
               th:if="${sessionUser != null and sessionUser.role == T(com.school.ppmg.student_clubs_system_client.enums.UserRole).STUDENT}"

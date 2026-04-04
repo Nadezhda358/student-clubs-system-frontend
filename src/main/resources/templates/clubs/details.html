@@ -13,6 +13,7 @@
     />
     <link rel="stylesheet" th:href="@{/css/site-chrome.css}" />
     <link rel="stylesheet" th:href="@{/css/club-details.css}" />
+    <link rel="stylesheet" th:href="@{/css/events.css}" />
   </head>
   <body>
     <header th:replace="fragments/site-chrome :: siteHeader"></header>
@@ -431,6 +432,7 @@
     </main>
 
     <footer th:replace="fragments/site-chrome :: siteFooter"></footer>
+    <script th:src="@{/js/event-browser.js}" defer></script>
 
     <div
       id="club-toast"
@@ -484,6 +486,7 @@
               })
               .then((html) => {
                 activePanel.innerHTML = html;
+                window.ClubsHubEventBrowser?.init(activePanel);
               })
               .catch(() => {
                 activePanel.innerHTML =

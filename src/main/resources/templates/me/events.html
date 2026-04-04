@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Events | ClubsHub</title>
+    <link th:href="@{/assets/logo.png}" rel="icon" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Sora:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" th:href="@{/css/site-chrome.css}" />
+    <link rel="stylesheet" th:href="@{/css/design-tokens.css}" />
+    <link rel="stylesheet" th:href="@{/css/me-events.css}" />
+  </head>
+  <body>
+    <header th:replace="fragments/site-chrome :: siteHeader"></header>
+
+    <main class="me-events-page">
+      <div class="container">
+        <section class="me-events-hero">
+          <h1>My Events</h1>
+          <p>Track your registrations, review current statuses, and cancel participation before the deadline when needed.</p>
+        </section>
+
+        <div class="me-events-alert me-events-alert--warning" th:if="${accessMessage}" th:text="${accessMessage}"></div>
+        <div class="me-events-alert me-events-alert--success" th:if="${eventActionSuccessMessage}" th:text="${eventActionSuccessMessage}"></div>
+        <div class="me-events-alert me-events-alert--warning" th:if="${eventActionWarningMessage}" th:text="${eventActionWarningMessage}"></div>
+        <div class="me-events-alert me-events-alert--error" th:if="${eventActionErrorMessage}" th:text="${eventActionErrorMessage}"></div>
+        <div class="me-events-alert me-events-alert--error" th:if="${loadErrorMessage}" th:text="${loadErrorMessage}"></div>
+
+        <section class="me-events-panel" th:if="${accessMessage == null}">
+          <form method="get" th:action="@{/me/events}" class="me-events-filter">
+            <div class="me-events-filter__field">
+              <label for="myEventStatus">Registration Status</label>
+              <select id="myEventStatus" class="me-events-filter__control" name="status">
+                <option value="" th:selected="${selectedStatus == null}">All statuses</option>
+                <option
+                  th:each="status : ${T(com.school.ppmg.student_clubs_system_client.enums.RegistrationStatus).values()}"
+                  th:value="${status.name()}"
+                  th:selected="${selectedStatus != null and selectedStatus == status}"
+                  th:text="${T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatLabel(status)}"
+                ></option>
+              </select>
+            </div>
+
+            <div class="me-events-filter__field">
+              <label for="myEventSearch">Search</label>
+              <input id="myEventSearch" class="me-events-filter__control" type="text" name="q" th:value="${q}" placeholder="Search your events" />
+            </div>
+
+            <button class="me-events-filter__button" type="submit">Apply</button>
+            <a class="me-events-link" th:href="@{/me/events}">Reset</a>
+          </form>
+
+          <div class="me-events-empty" th:if="${#lists.isEmpty(events) and loadErrorMessage == null}">
+            You do not have any event registrations matching the current filter.
+          </div>
+
+          <div class="me-events-table-wrap" th:if="${!#lists.isEmpty(events)}">
+            <table class="me-events-table">
+              <thead>
+                <tr>
+                  <th>Event</th>
+                  <th>When</th>
+                  <th>Registration</th>
+                  <th>Event Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="event : ${events}">
+                  <td>
+                    <a class="me-events-table__primary" th:href="@{/events/{id}(id=${event.eventId})}" th:text="${event.title}">Event</a>
+                    <span class="me-events-table__secondary" th:text="${event.clubName}">Club</span>
+                  </td>
+                  <td>
+                    <span th:text="${event.startAt != null ? #temporals.format(event.startAt, 'yyyy-MM-dd HH:mm') : '-'}">2026-04-18 16:00</span>
+                    <span class="me-events-table__secondary" th:text="${event.location != null and !#strings.isEmpty(event.location) ? event.location : 'Location pending'}">Hall A</span>
+                  </td>
+                  <td>
+                    <span
+                      class="me-events-status"
+                      th:classappend="${' is-' + #strings.toLowerCase(event.registrationStatus.name())}"
+                      th:text="${T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatLabel(event.registrationStatus)}"
+                    >
+                      Registered
+                    </span>
+                  </td>
+                  <td>
+                    <span
+                      class="me-events-status"
+                      th:classappend="${' is-' + #strings.toLowerCase(event.eventStatus.name())}"
+                      th:text="${T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatLabel(event.eventStatus)}"
+                    >
+                      Published
+                    </span>
+                  </td>
+                  <td>
+                    <div class="me-events-actions">
+                      <a class="me-events-link" th:href="@{/events/{id}(id=${event.eventId})}">View</a>
+                      <form
+                        method="post"
+                        th:if="${event.registrationStatus == T(com.school.ppmg.student_clubs_system_client.enums.RegistrationStatus).REGISTERED}"
+                        th:action="@{/events/{id}/cancel(id=${event.eventId})}"
+                      >
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                        <input type="hidden" name="returnTo" th:value="@{/me/events}" />
+                        <button class="me-events-action" type="submit">Cancel</button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <section
+            class="me-events-pagination"
+            th:if="${eventPage != null and eventPage.totalPages > 1}"
+            th:with="lastIndex=${eventPage.totalPages - 1}"
+          >
+            <a
+              class="me-events-link"
+              th:href="${eventPage.first} ? '#' : @{/me/events(page=0, status=${selectedStatus}, q=${q})}"
+              th:classappend="${eventPage.first} ? ' disabled' : ''"
+            >
+              First
+            </a>
+            <a
+              class="me-events-link"
+              th:href="${eventPage.first} ? '#' : @{/me/events(page=${eventPage.number - 1}, status=${selectedStatus}, q=${q})}"
+              th:classappend="${eventPage.first} ? ' disabled' : ''"
+            >
+              Previous
+            </a>
+            <span class="me-events-pagination__state">
+              Page <strong th:text="${eventPage.number + 1}">1</strong> of
+              <strong th:text="${eventPage.totalPages}">1</strong>
+            </span>
+            <a
+              class="me-events-link"
+              th:href="${eventPage.last} ? '#' : @{/me/events(page=${eventPage.number + 1}, status=${selectedStatus}, q=${q})}"
+              th:classappend="${eventPage.last} ? ' disabled' : ''"
+            >
+              Next
+            </a>
+            <a
+              class="me-events-link"
+              th:href="${eventPage.last} ? '#' : @{/me/events(page=${lastIndex}, status=${selectedStatus}, q=${q})}"
+              th:classappend="${eventPage.last} ? ' disabled' : ''"
+            >
+              Last
+            </a>
+          </section>
+        </section>
+      </div>
+    </main>
+
+    <footer th:replace="fragments/site-chrome :: siteFooter"></footer>
+  </body>
+</html>

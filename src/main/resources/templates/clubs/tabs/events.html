@@ -3,14 +3,77 @@
     Events are not available yet.
   </div>
 
-  <div th:if="${error == null}">
-    <div class="tab-message" th:if="${events == null or #lists.isEmpty(events)}">
+  <div class="club-events-tab" th:if="${error == null}" data-event-browser data-default-view="list">
+    <div class="club-events-tab__header">
+      <p class="club-events-tab__tag">Club Schedule</p>
+      <h2 class="club-events-tab__title">Club Events</h2>
+      <p class="club-events-tab__subtitle">Switch between list and calendar views to explore this club's scheduled events.</p>
+    </div>
+
+    <div class="club-events-tab__toolbar">
+      <div class="club-events-tab__actions">
+        <a class="events-link events-link--ghost" th:href="@{/events(clubId=${clubId})}">Open All Club Events</a>
+      </div>
+
+      <div class="events-view-toggle" role="group" aria-label="Switch club event view">
+        <button class="events-view-toggle__button" type="button" data-event-view-btn="list">List</button>
+        <button class="events-view-toggle__button" type="button" data-event-view-btn="calendar">Calendar</button>
+      </div>
+    </div>
+
+    <div class="events-empty" th:if="${events == null or #lists.isEmpty(events)}">
       No events scheduled yet.
     </div>
-    <ul class="tab-list" th:if="${events != null and !#lists.isEmpty(events)}">
-      <li th:each="event : ${events}">
-        <span th:text="${event}">Event</span>
-      </li>
-    </ul>
+
+    <section class="events-pane" data-event-pane="list">
+      <div class="events-grid" th:if="${events != null and !#lists.isEmpty(events)}">
+        <article class="event-card" th:each="event : ${events}">
+          <header class="event-card__header">
+            <span class="event-card__club" th:text="${event.clubName}">Club</span>
+            <h3 class="event-card__title">
+              <a th:href="@{/events/{id}(id=${event.id})}" th:text="${event.title}">Event</a>
+            </h3>
+            <p class="event-card__description" th:text="${event.description}">Description</p>
+          </header>
+
+          <div class="event-card__chips">
+            <span class="event-chip" th:text="${T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatLabel(event.audience)}">All students</span>
+            <span
+              class="event-chip"
+              th:classappend="${event.status.name() == 'CANCELLED'} ? ' event-chip--cancelled' : (${event.registrationOpen} ? ' event-chip--open' : ' event-chip--closed')"
+              th:text="${event.status.name() == 'CANCELLED' ? 'Cancelled' : (event.registrationOpen ? 'Registration open' : 'Registration closed')}"
+            >
+              Registration open
+            </span>
+          </div>
+
+          <div class="event-card__meta">
+            <span th:text="${event.startAt != null ? #temporals.format(event.startAt, 'yyyy-MM-dd HH:mm') : '-'}">2026-04-18 16:00</span>
+            <span th:text="${event.location != null and !#strings.isEmpty(event.location) ? event.location : 'Location to be announced'}">Hall A</span>
+          </div>
+
+          <footer class="event-card__footer">
+            <span class="event-card__capacity" th:text="${event.availableSpots != null ? event.availableSpots + ' spots left' : 'Capacity flexible'}">12 spots left</span>
+            <a class="events-link events-link--ghost" th:href="@{/events/{id}(id=${event.id})}">View Details</a>
+          </footer>
+        </article>
+      </div>
+    </section>
+
+    <section class="events-pane" data-event-pane="calendar" hidden>
+      <div data-event-calendar>
+        <span
+          th:each="event : ${events}"
+          data-event-calendar-seed
+          th:attr="
+            data-title=${event.title},
+            data-club=${event.clubName},
+            data-location=${event.location},
+            data-start=${event.startAt},
+            data-href=@{/events/{id}(id=${event.id})}
+          "
+        ></span>
+      </div>
+    </section>
   </div>
 </div>
