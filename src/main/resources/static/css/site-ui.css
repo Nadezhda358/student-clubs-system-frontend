@@ -1,0 +1,796 @@
+:root {
+  --ui-surface-top: rgba(255, 255, 255, 0.98);
+  --ui-surface-bottom: rgba(246, 242, 251, 0.92);
+  --ui-surface-soft: linear-gradient(180deg, var(--ui-surface-top), var(--ui-surface-bottom));
+  --ui-border: rgba(59, 42, 44, 0.09);
+  --ui-divider: rgba(59, 42, 44, 0.08);
+  --ui-copy: rgba(34, 22, 28, 0.74);
+  --ui-muted: rgba(34, 22, 28, 0.64);
+  --ui-label: rgba(59, 42, 44, 0.62);
+  --ui-shadow: 0 12px 23px rgba(59, 42, 44, 0.12);
+  --ui-shadow-strong: 0 16px 30px rgba(59, 42, 44, 0.12);
+  --ui-shadow-hover: 0 18px 32px rgba(59, 42, 44, 0.16);
+  --ui-focus: 0 0 0 3px rgba(107, 63, 160, 0.08), 0 8px 18px rgba(107, 63, 160, 0.08);
+  --ui-control-border: rgba(59, 42, 44, 0.16);
+  --ui-control-hover: rgba(59, 42, 44, 0.24);
+  --ui-view-border: var(--royal-purple);
+  --ui-view-bg: rgba(107, 63, 160, 0.08);
+  --ui-view-shadow: 0 3px 9px rgba(107, 63, 160, 0.14);
+  --ui-page-shadow: 0 7px 12px rgba(59, 42, 44, 0.08);
+  --ui-primary-shadow: 0 8px 16px rgba(107, 63, 160, 0.25);
+  --ui-success-bg: rgba(16, 185, 129, 0.08);
+  --ui-success-border: rgba(16, 185, 129, 0.18);
+  --ui-success-ink: #047857;
+  --ui-danger-bg: rgba(239, 68, 68, 0.08);
+  --ui-danger-border: rgba(239, 68, 68, 0.2);
+  --ui-danger-ink: #b91c1c;
+  --ui-warning-bg: rgba(245, 158, 11, 0.08);
+  --ui-warning-border: rgba(245, 158, 11, 0.18);
+  --ui-warning-ink: #b45309;
+  --ui-panel-radius: 19px;
+  --ui-card-radius: var(--scale-card-radius);
+}
+
+body *,
+body *::before,
+body *::after {
+  box-sizing: border-box;
+}
+
+.events-page,
+.event-detail-page,
+.admin-clubs-page,
+.manage-events-page,
+.event-form-page,
+.event-participants-page,
+.me-events-page,
+.me-page,
+.me-applications-page,
+.club-form-page,
+.admin-placeholder-page,
+.club-details {
+  font-size: var(--scale-font-base);
+}
+
+.admin-clubs,
+.manage-events,
+.event-form-layout,
+.event-participants,
+.me-events-panel,
+.membership-surface,
+.admin-placeholder {
+  gap: var(--scale-section-gap);
+}
+
+.admin-clubs__hero,
+.manage-events__hero,
+.event-form-hero,
+.event-participants__hero,
+.club-form-header,
+.membership-page-header,
+.me-events-hero,
+.me-applications-hero,
+.admin-placeholder__header {
+  margin-bottom: var(--scale-section-gap);
+}
+
+.admin-clubs__tag,
+.manage-events__tag,
+.event-form-hero__tag,
+.event-participants__tag,
+.club-form-tag,
+.membership-page-kicker,
+.admin-placeholder__tag,
+.me-events-filter__field label,
+.membership-filter-label,
+.me-applications-filter__label,
+.club-field > span,
+.admin-invites .form-label {
+  font-size: var(--scale-font-label);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--ui-label);
+}
+
+.admin-clubs__hero h1,
+.manage-events__hero h1,
+.event-form-hero h1,
+.event-participants__hero h1,
+.club-form-header h1,
+.membership-page-header h1,
+.me-events-hero h1,
+.me-applications-title,
+.admin-placeholder__header h1,
+.admin-invites .invite-panel__header h1 {
+  margin: 0 0 0.6rem;
+  font-family: "Playfair Display", serif;
+  font-size: var(--scale-heading-lg);
+  color: var(--deep-brown);
+}
+
+.admin-clubs__subtitle,
+.manage-events__subtitle,
+.event-form-hero__subtitle,
+.event-participants__subtitle,
+.club-form-subtitle,
+.membership-page-subtitle,
+.me-events-hero p,
+.me-applications-subtitle,
+.admin-placeholder__subtitle,
+.admin-invites .invite-panel__header p {
+  margin: 0;
+  max-width: 58ch;
+  font-size: var(--scale-font-body);
+  line-height: 1.55;
+  color: var(--ui-copy);
+}
+
+.events-filters,
+.events-browser,
+.event-detail__hero,
+.event-detail__panel,
+.club-events-tab__topbar,
+.club-events-tab__panel,
+.manage-events__filters,
+.event-form-surface,
+.event-participants__filters,
+.event-participants__event-panel,
+.event-participants__table-wrap,
+.me-events-panel,
+.me-applications-panel,
+.membership-surface,
+.admin-invites .invite-panel,
+.admin-placeholder__panel,
+.club-form {
+  border-radius: var(--ui-panel-radius);
+  border: 1px solid var(--ui-border);
+  background: var(--ui-surface-soft);
+  box-shadow: var(--ui-shadow);
+}
+
+.event-card,
+.admin-club-row,
+.manage-event-row,
+.admin-clubs__empty,
+.manage-events__empty,
+.events-empty,
+.me-events-empty,
+.me-applications-empty,
+.club-switch-row {
+  border-radius: var(--ui-card-radius);
+  border: 1px solid var(--ui-border);
+  background: var(--ui-surface-soft);
+  box-shadow: var(--ui-shadow);
+}
+
+.event-card,
+.admin-club-row,
+.manage-event-row {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.event-card:hover,
+.admin-club-row:hover,
+.manage-event-row:hover {
+  transform: translateY(-2px);
+  border-color: rgba(107, 63, 160, 0.16);
+  box-shadow: var(--ui-shadow-hover);
+}
+
+.events-browser__meta,
+.event-card__description,
+.event-card__meta,
+.manage-event-row__subtitle,
+.manage-event-stat__label,
+.me-events-table__secondary,
+.me-applications-muted,
+.membership-empty-row td,
+.event-detail__panel p,
+.event-detail__panel li,
+.event-detail__side-copy,
+.admin-club-row__main p,
+.admin-clubs__empty p,
+.manage-events__empty,
+.me-events-empty,
+.me-applications-empty,
+.admin-placeholder__panel p,
+.club-field__hint,
+.admin-invites .form-text {
+  color: var(--ui-muted);
+}
+
+.event-card__title,
+.manage-event-row__title,
+.admin-club-row__main h2,
+.event-participants__event-panel h2,
+.event-detail__panel h2,
+.admin-clubs__empty h2,
+.admin-placeholder__panel h2 {
+  color: var(--deep-brown);
+}
+
+.events-button,
+.events-link,
+.club-button,
+.ghost-link,
+.primary-link,
+.page-link,
+.me-events-filter__button,
+.me-events-link,
+.me-events-action,
+.membership-filter-btn,
+.membership-action,
+.modal-btn,
+.event-status-form__button,
+.admin-clubs__create-button,
+.admin-placeholder__link,
+.admin-invites .btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: var(--scale-button-height);
+  padding: 0 var(--scale-button-pad-x);
+  border: 1px solid transparent;
+  font: inherit;
+  font-size: var(--scale-font-ui);
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.events-button:hover,
+.events-link:hover,
+.club-button:hover,
+.ghost-link:hover,
+.primary-link:hover,
+.page-link:hover,
+.me-events-filter__button:hover,
+.me-events-link:hover,
+.me-events-action:hover,
+.membership-filter-btn:hover,
+.membership-action:hover,
+.modal-btn:hover,
+.event-status-form__button:hover,
+.admin-clubs__create-button:hover,
+.admin-placeholder__link:hover,
+.admin-invites .btn-primary:hover {
+  transform: translateY(-1px);
+}
+
+.events-button:focus-visible,
+.events-link:focus-visible,
+.club-button:focus-visible,
+.ghost-link:focus-visible,
+.primary-link:focus-visible,
+.page-link:focus-visible,
+.me-events-filter__button:focus-visible,
+.me-events-link:focus-visible,
+.me-events-action:focus-visible,
+.membership-filter-btn:focus-visible,
+.membership-action:focus-visible,
+.modal-btn:focus-visible,
+.event-status-form__button:focus-visible,
+.admin-clubs__create-button:focus-visible,
+.admin-placeholder__link:focus-visible,
+.admin-invites .btn-primary:focus-visible {
+  outline: none;
+  box-shadow: var(--ui-focus);
+}
+
+.admin-clubs__create-button,
+.primary-link,
+.events-button--primary,
+.events-link--primary,
+.club-button--primary,
+.me-events-filter__button,
+.membership-filter-btn--apply,
+.modal-btn--primary,
+.event-status-form__button,
+.admin-invites .btn-primary {
+  border-radius: 669px;
+  border-color: var(--royal-purple);
+  background: var(--royal-purple);
+  color: #ffffff;
+  box-shadow: var(--ui-primary-shadow);
+}
+
+.membership-action--approve {
+  border-radius: 669px;
+  border-color: rgba(16, 185, 129, 0.4);
+  background: rgba(236, 253, 245, 0.92);
+  color: var(--ui-success-ink);
+}
+
+.events-button--danger,
+.events-link--danger,
+.me-events-action,
+.membership-action--reject {
+  border-radius: 669px;
+  border-color: var(--ui-danger-border);
+  background: var(--ui-danger-bg);
+  color: var(--ui-danger-ink);
+  box-shadow: none;
+}
+
+.events-button--danger:hover,
+.events-link--danger:hover,
+.me-events-action:hover,
+.membership-action--reject:hover {
+  background: rgba(239, 68, 68, 0.12);
+}
+
+.events-filter-actions .events-link--ghost,
+.manage-events__filter-actions .events-link--ghost,
+.event-participants__filter-actions .events-link--ghost,
+.event-form__actions .events-link--ghost,
+.club-form-actions .club-button--ghost,
+.me-events-filter .me-events-link,
+.membership-filter-btn--reset,
+.admin-pagination .page-link,
+.events-pagination .events-link--ghost,
+.manage-events__pagination .events-link--ghost,
+.event-participants__pagination .events-link--ghost,
+.me-events-pagination .me-events-link,
+.modal-btn--secondary {
+  border-radius: 669px;
+  border-color: rgba(59, 42, 44, 0.15);
+  background: #ffffff;
+  color: var(--deep-brown);
+  box-shadow: var(--ui-page-shadow);
+}
+
+.event-card__footer .events-link--ghost,
+.manage-event-row__actions .events-link--ghost,
+.admin-club-row__actions .ghost-link,
+.club-events-tab__actions .events-link--ghost,
+.event-detail__actions .events-link--ghost,
+.event-participants__hero .events-link--ghost,
+.me-events-actions .me-events-link,
+.admin-placeholder__actions .admin-placeholder__link {
+  min-height: 38px;
+  padding: 0.58rem 1.9rem;
+  border-radius: 6px;
+  border-color: var(--ui-view-border);
+  background: var(--ui-view-bg);
+  color: var(--ui-view-border);
+  font-size: 0.88rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  box-shadow: var(--ui-view-shadow);
+}
+
+.event-card__footer .events-link--ghost:hover,
+.manage-event-row__actions .events-link--ghost:hover,
+.admin-club-row__actions .ghost-link:hover,
+.club-events-tab__actions .events-link--ghost:hover,
+.event-detail__actions .events-link--ghost:hover,
+.event-participants__hero .events-link--ghost:hover,
+.me-events-actions .me-events-link:hover,
+.admin-placeholder__actions .admin-placeholder__link:hover {
+  background: var(--royal-purple);
+  border-color: var(--royal-purple);
+  color: #ffffff;
+  box-shadow: 0 6px 13px rgba(107, 63, 160, 0.22);
+}
+
+.events-link.disabled,
+.events-button.disabled,
+.page-link.disabled,
+.me-events-link.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+  box-shadow: none;
+}
+
+.events-input,
+.events-select,
+.events-textarea,
+.manage-events__input,
+.manage-events__select,
+.event-participants__input,
+.event-participants__select,
+.event-form__input,
+.event-form__select,
+.event-form__textarea,
+.me-events-filter__control,
+.me-applications-filter__select,
+.membership-filter-control,
+.event-status-form__select,
+.club-field input:not([type="file"]),
+.club-field select,
+.club-field textarea,
+.club-field input[type="file"],
+.admin-invites .form-control {
+  width: 100%;
+  min-width: 0;
+  min-height: var(--scale-control-height);
+  border-radius: 12px;
+  border: 1px solid var(--ui-control-border);
+  background: rgba(255, 255, 255, 0.98);
+  color: var(--ink);
+  padding: 0.75rem var(--scale-input-pad-x);
+  font: inherit;
+  font-size: var(--scale-font-ui);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.82), 0 1px 2px rgba(59, 42, 44, 0.04);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.events-textarea,
+.event-form__textarea,
+.club-field textarea,
+.admin-invites .form-control {
+  min-height: 10rem;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  resize: vertical;
+}
+
+.events-input:hover,
+.events-select:hover,
+.events-textarea:hover,
+.manage-events__input:hover,
+.manage-events__select:hover,
+.event-participants__input:hover,
+.event-participants__select:hover,
+.event-form__input:hover,
+.event-form__select:hover,
+.event-form__textarea:hover,
+.me-events-filter__control:hover,
+.me-applications-filter__select:hover,
+.membership-filter-control:hover,
+.event-status-form__select:hover,
+.club-field input:not([type="file"]):hover,
+.club-field select:hover,
+.club-field textarea:hover,
+.club-field input[type="file"]:hover,
+.admin-invites .form-control:hover {
+  border-color: var(--ui-control-hover);
+}
+
+.events-input:focus,
+.events-select:focus,
+.events-textarea:focus,
+.manage-events__input:focus,
+.manage-events__select:focus,
+.event-participants__input:focus,
+.event-participants__select:focus,
+.event-form__input:focus,
+.event-form__select:focus,
+.event-form__textarea:focus,
+.me-events-filter__control:focus,
+.me-applications-filter__select:focus,
+.membership-filter-control:focus,
+.event-status-form__select:focus,
+.club-field input:not([type="file"]):focus,
+.club-field select:focus,
+.club-field textarea:focus,
+.club-field input[type="file"]:focus,
+.admin-invites .form-control:focus {
+  outline: none;
+  border-color: rgba(107, 63, 160, 0.36);
+  box-shadow: var(--ui-focus);
+}
+
+.club-field input[type="file"]::file-selector-button {
+  margin-right: 12px;
+  min-height: 2.8rem;
+  padding: 0 1.25rem;
+  border: 1px solid var(--ui-view-border);
+  border-radius: 6px;
+  background: var(--ui-view-bg);
+  color: var(--ui-view-border);
+  font: inherit;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: var(--ui-view-shadow);
+}
+
+.events-filter-actions,
+.manage-events__filter-actions,
+.event-participants__filter-actions,
+.event-form__actions,
+.club-form-actions,
+.me-events-actions,
+.event-detail__actions,
+.manage-event-row__actions,
+.admin-club-row__actions,
+.membership-filter-actions,
+.membership-modal__actions,
+.admin-placeholder__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.me-events-filter,
+.me-applications-filter,
+.membership-filters {
+  gap: 0.9rem;
+}
+
+.me-events-filter__field,
+.membership-filter {
+  min-width: 220px;
+}
+
+.me-applications-filter {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  margin-bottom: var(--scale-section-gap);
+}
+
+.me-applications-filter__select {
+  min-width: 220px;
+}
+
+.admin-alert,
+.events-alert,
+.me-events-alert,
+.me-applications-alert,
+.membership-alert,
+.club-form-message,
+.admin-invites .alert {
+  margin-bottom: 1rem;
+  padding: 0.95rem 1.2rem;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  box-shadow: 0 8px 14px rgba(59, 42, 44, 0.05);
+  font-size: var(--scale-font-ui);
+  font-weight: 600;
+}
+
+.admin-alert--success,
+.events-alert--success,
+.me-events-alert--success,
+.alert.success,
+.admin-invites .alert-success {
+  background: var(--ui-success-bg);
+  border-color: var(--ui-success-border);
+  color: var(--ui-success-ink);
+}
+
+.events-alert--warning,
+.me-events-alert--warning,
+.me-applications-alert--warning,
+.admin-invites .alert-warning {
+  background: var(--ui-warning-bg);
+  border-color: var(--ui-warning-border);
+  color: var(--ui-warning-ink);
+}
+
+.admin-alert--error,
+.events-alert--error,
+.me-events-alert--error,
+.me-applications-alert--error,
+.membership-alert--error,
+.club-form-message,
+.admin-invites .alert-danger,
+.alert {
+  background: var(--ui-danger-bg);
+  border-color: var(--ui-danger-border);
+  color: var(--ui-danger-ink);
+}
+
+.status-chip,
+.event-chip,
+.manage-event-chip,
+.me-events-status,
+.membership-status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.2rem;
+  padding: 0 0.85rem;
+  border-radius: 999px;
+  border: 1px solid rgba(34, 22, 28, 0.08);
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.events-pagination,
+.manage-events__pagination,
+.event-participants__pagination,
+.me-events-pagination,
+.admin-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.page-state,
+.events-pagination__state,
+.me-events-pagination__state,
+.manage-events__pagination span,
+.event-participants__pagination span,
+.admin-pagination span {
+  color: var(--ui-muted);
+  font-size: var(--scale-font-body);
+}
+
+.me-events-table-wrap,
+.me-applications-table-wrap,
+.event-participants__table-wrap,
+.membership-table-wrap,
+.admin-invites .invite-panel__table {
+  overflow-x: auto;
+}
+
+.me-events-table,
+.me-applications-table,
+.event-participants__table,
+.admin-invites .invite-panel__table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.me-events-table thead th,
+.me-applications-table thead th,
+.event-participants__table thead th,
+.admin-invites .invite-panel__table th,
+.membership-table.dataTable thead th,
+.membership-table.dataTable thead td {
+  border-top: 0;
+  border-bottom: 1px solid var(--ui-divider);
+  padding: 1rem 0.85rem;
+  font-size: var(--scale-font-label);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ui-label);
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.me-events-table td,
+.me-applications-table td,
+.event-participants__table td,
+.admin-invites .invite-panel__table td,
+.membership-table.dataTable tbody td {
+  padding: 1rem 0.85rem;
+  border-top: 1px solid var(--ui-divider);
+  color: var(--ui-copy);
+  vertical-align: top;
+}
+
+.me-events-table tbody tr:hover,
+.me-applications-table tbody tr:hover,
+.event-participants__table tbody tr:hover,
+.admin-invites .invite-panel__table tbody tr:hover,
+.membership-table.dataTable tbody tr:hover {
+  background: rgba(199, 182, 216, 0.14);
+}
+
+.me-events-table__primary,
+.me-applications-club__primary,
+.event-card__title a,
+.manage-event-row__title a {
+  color: var(--deep-brown);
+  text-decoration: none;
+}
+
+.dataTables_wrapper .dataTables_paginate {
+  margin-top: 0.75rem;
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.dataTables_wrapper .paginate_button {
+  min-width: 2.8rem;
+  min-height: var(--scale-button-height);
+  padding: 0 0.95rem !important;
+  border-radius: 669px !important;
+  border: 1px solid rgba(59, 42, 44, 0.15) !important;
+  background: #ffffff !important;
+  color: var(--deep-brown) !important;
+  box-shadow: var(--ui-page-shadow);
+}
+
+.dataTables_wrapper .paginate_button.current,
+.dataTables_wrapper .paginate_button.current:hover {
+  border-color: rgba(107, 63, 160, 0.22) !important;
+  background: rgba(107, 63, 160, 0.08) !important;
+  color: var(--royal-purple) !important;
+}
+
+.dataTables_wrapper .paginate_button:hover {
+  border-color: rgba(59, 42, 44, 0.22) !important;
+  background: #ffffff !important;
+  color: var(--deep-brown) !important;
+}
+
+.dataTables_wrapper .dataTables_length select,
+.dataTables_wrapper .dataTables_filter input {
+  min-height: var(--scale-button-height);
+  border-radius: 12px;
+  border: 1px solid var(--ui-control-border);
+  background: rgba(255, 255, 255, 0.98);
+  color: var(--ink);
+  padding: 0 0.85rem;
+}
+
+@media (max-width: 1040px) {
+  .manage-event-row__stats,
+  .event-detail {
+    grid-template-columns: 1fr;
+  }
+
+  .membership-filter-actions {
+    width: 100%;
+    margin-left: 0;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 720px) {
+  .admin-clubs__hero,
+  .manage-events__hero,
+  .event-form-hero,
+  .event-participants__hero,
+  .club-form-header,
+  .me-events-filter,
+  .me-applications-filter,
+  .membership-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-club-row__actions,
+  .manage-event-row__actions,
+  .event-detail__actions,
+  .event-card__footer,
+  .membership-filter-actions,
+  .club-form-actions {
+    align-items: stretch;
+  }
+
+  .events-filter-actions .events-link--ghost,
+  .manage-events__filter-actions .events-link--ghost,
+  .event-participants__filter-actions .events-link--ghost,
+  .event-form__actions .events-link--ghost,
+  .club-form-actions .club-button--ghost,
+  .me-events-filter .me-events-link,
+  .membership-filter-btn--reset,
+  .admin-pagination .page-link,
+  .events-pagination .events-link--ghost,
+  .manage-events__pagination .events-link--ghost,
+  .event-participants__pagination .events-link--ghost,
+  .me-events-pagination .me-events-link,
+  .modal-btn--secondary,
+  .admin-clubs__create-button,
+  .primary-link,
+  .events-button--primary,
+  .events-link--primary,
+  .club-button--primary,
+  .me-events-filter__button,
+  .membership-filter-btn--apply,
+  .modal-btn--primary,
+  .event-status-form__button,
+  .admin-invites .btn-primary,
+  .events-button--danger,
+  .events-link--danger,
+  .me-events-action,
+  .membership-action--reject {
+    width: 100%;
+  }
+
+  .event-card__footer .events-link--ghost,
+  .manage-event-row__actions .events-link--ghost,
+  .admin-club-row__actions .ghost-link,
+  .club-events-tab__actions .events-link--ghost,
+  .event-detail__actions .events-link--ghost,
+  .event-participants__hero .events-link--ghost,
+  .me-events-actions .me-events-link,
+  .admin-placeholder__actions .admin-placeholder__link {
+    width: 100%;
+  }
+}

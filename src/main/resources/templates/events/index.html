@@ -14,6 +14,7 @@
     <link rel="stylesheet" th:href="@{/css/site-chrome.css}" />
     <link rel="stylesheet" th:href="@{/css/design-tokens.css}" />
     <link rel="stylesheet" th:href="@{/css/events.css}" />
+    <link rel="stylesheet" th:href="@{/css/site-ui.css}" />
   </head>
   <body>
     <header th:replace="fragments/site-chrome :: siteHeader"></header>
@@ -36,12 +37,12 @@
 
           <form method="get" th:action="@{/events}" class="events-filters">
             <div class="events-filters__grid">
-              <div class="events-filter events-filter--wide">
+              <div class="events-filter events-filter--search">
                 <label for="eventsSearch">Search</label>
                 <input id="eventsSearch" class="events-input" type="text" name="q" th:value="${q}" placeholder="Search by title or keyword" />
               </div>
 
-              <div class="events-filter">
+              <div class="events-filter events-filter--club">
                 <label for="eventsClub">Club</label>
                 <select id="eventsClub" class="events-select" name="clubId">
                   <option value="">All clubs</option>
@@ -54,12 +55,12 @@
                 </select>
               </div>
 
-              <div class="events-filter">
+              <div class="events-filter events-filter--date">
                 <label for="eventsFromDate">From</label>
                 <input id="eventsFromDate" class="events-input" type="date" name="fromDate" th:value="${fromDate}" />
               </div>
 
-              <div class="events-filter">
+              <div class="events-filter events-filter--date">
                 <label for="eventsToDate">To</label>
                 <input id="eventsToDate" class="events-input" type="date" name="toDate" th:value="${toDate}" />
               </div>

@@ -12,7 +12,9 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" th:href="@{/css/site-chrome.css}" />
+    <link rel="stylesheet" th:href="@{/css/design-tokens.css}" />
     <link rel="stylesheet" th:href="@{/css/me-membership-applications.css}" />
+    <link rel="stylesheet" th:href="@{/css/site-ui.css}" />
   </head>
   <body>
     <header th:replace="fragments/site-chrome :: siteHeader"></header>
@@ -70,7 +72,7 @@
           </form>
 
           <div class="me-applications-empty" th:if="${#lists.isEmpty(applications) and loadErrorMessage == null}">
-            You dont have any applications yet.
+            You don't have any applications yet.
           </div>
 
           <div

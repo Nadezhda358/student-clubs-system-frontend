@@ -12,9 +12,11 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" th:href="@{/css/site-chrome.css}" />
+    <link rel="stylesheet" th:href="@{/css/design-tokens.css}" />
     <link rel="stylesheet" th:href="@{/css/admin-shell.css}" />
     <link rel="stylesheet" th:href="@{/css/admin-clubs.css}" />
     <link rel="stylesheet" th:href="@{/css/club-form.css}" />
+    <link rel="stylesheet" th:href="@{/css/site-ui.css}" />
   </head>
   <body th:replace="~{fragments/teacher-shell :: teacherShell('club-form-page', ~{::teacherPageContent}, ~{::pageScripts})}">
     <th:block th:fragment="teacherPageContent">

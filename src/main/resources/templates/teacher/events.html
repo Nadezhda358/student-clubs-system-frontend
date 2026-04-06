@@ -17,6 +17,7 @@
     <link rel="stylesheet" th:href="@{/css/admin-clubs.css}" />
     <link rel="stylesheet" th:href="@{/css/events.css}" />
     <link rel="stylesheet" th:href="@{/css/manage-events.css}" />
+    <link rel="stylesheet" th:href="@{/css/site-ui.css}" />
   </head>
   <body th:replace="~{fragments/teacher-shell :: teacherShell('manage-events-page', ~{::teacherPageContent}, ~{::pageScripts})}">
     <th:block th:fragment="teacherPageContent">
@@ -124,7 +125,7 @@
                   <form method="post" th:action="@{/teacher/events/{id}/delete(id=${event.id})}" onsubmit="return confirm('Delete this event?');">
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                     <input type="hidden" name="clubId" th:value="${event.clubId}" />
-                    <button class="events-button events-button--ghost" type="submit">Delete</button>
+                    <button class="events-button events-button--danger" type="submit">Delete</button>
                   </form>
                 </div>
               </article>
