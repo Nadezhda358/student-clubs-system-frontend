@@ -106,7 +106,7 @@
                 <div class="manage-event-row__stats">
                   <div class="manage-event-stat">
                     <span class="manage-event-stat__label">Starts</span>
-                    <span class="manage-event-stat__value" th:text="${event.startAt != null ? #temporals.format(event.startAt, 'yyyy-MM-dd HH:mm') : '-'}">2026-04-18 16:00</span>
+                    <span class="manage-event-stat__value" th:text="${event.startAt != null ? T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatDateTime(event.startAt) : '-'}">2026-04-18 16:00</span>
                   </div>
                   <div class="manage-event-stat">
                     <span class="manage-event-stat__label">Registered</span>

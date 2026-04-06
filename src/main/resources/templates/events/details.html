@@ -51,11 +51,11 @@
               <dl class="event-detail__facts">
                 <div class="event-detail__fact">
                   <dt>Starts</dt>
-                  <dd th:text="${event.startAt != null ? #temporals.format(event.startAt, 'yyyy-MM-dd HH:mm') : '-'}">2026-04-18 16:00</dd>
+                  <dd th:text="${event.startAt != null ? T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatDateTime(event.startAt) : '-'}">2026-04-18 16:00</dd>
                 </div>
                 <div class="event-detail__fact">
                   <dt>Ends</dt>
-                  <dd th:text="${event.endAt != null ? #temporals.format(event.endAt, 'yyyy-MM-dd HH:mm') : 'Not specified'}">2026-04-18 18:00</dd>
+                  <dd th:text="${event.endAt != null ? T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatDateTime(event.endAt) : 'Not specified'}">2026-04-18 18:00</dd>
                 </div>
                 <div class="event-detail__fact">
                   <dt>Location</dt>
@@ -63,7 +63,7 @@
                 </div>
                 <div class="event-detail__fact">
                   <dt>Registration Deadline</dt>
-                  <dd th:text="${event.effectiveRegistrationDeadline != null ? #temporals.format(event.effectiveRegistrationDeadline, 'yyyy-MM-dd HH:mm') : 'Until the event starts'}">2026-04-17 23:59</dd>
+                  <dd th:text="${event.effectiveRegistrationDeadline != null ? T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatDateTime(event.effectiveRegistrationDeadline) : 'Until the event starts'}">2026-04-17 23:59</dd>
                 </div>
               </dl>
             </section>

@@ -35,7 +35,7 @@
 
             <section class="event-participants__event-panel">
               <h2 th:text="${event.title}">Event Title</h2>
-              <p th:text="${event.clubName + ' • ' + (event.startAt != null ? #temporals.format(event.startAt, 'yyyy-MM-dd HH:mm') : 'Schedule pending')}">
+              <p th:text="${event.clubName + ' • ' + (event.startAt != null ? T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatDateTime(event.startAt) : 'Schedule pending')}">
                 Club • schedule
               </p>
             </section>
@@ -90,7 +90,7 @@
                       <strong th:text="${participant.studentFullName}">Student</strong>
                       <div th:text="${participant.studentEmail}">student@example.com</div>
                     </td>
-                    <td th:text="${participant.registeredAt != null ? #temporals.format(participant.registeredAt, 'yyyy-MM-dd HH:mm') : '-'}">2026-04-18 12:00</td>
+                    <td th:text="${participant.registeredAt != null ? T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatDateTime(participant.registeredAt) : '-'}">2026-04-18 12:00</td>
                     <td>
                       <span
                         class="manage-event-chip"

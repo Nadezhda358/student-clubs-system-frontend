@@ -82,7 +82,7 @@
                     data-app-row="true"
                     th:with="statusName=${app.status != null ? app.status.name() : ''}"
                   >
-                    <td th:text="${app.createdAt != null ? #temporals.format(app.createdAt, 'yyyy-MM-dd HH:mm') : '-'}">2026-02-27 10:00</td>
+                    <td th:text="${app.createdAt != null ? T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatDateTime(app.createdAt) : '-'}">2026-02-27 10:00</td>
                     <td th:text="${app.clubName}">Math Club</td>
                     <td th:text="${app.studentFullName}">John Doe</td>
                     <td th:text="${app.studentEmail}">john@school.edu</td>

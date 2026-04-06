@@ -1,4 +1,26 @@
 (function () {
+  const BUSINESS_TIME_ZONE = "Europe/Sofia";
+  const BUSINESS_PARTS_FORMATTER = new Intl.DateTimeFormat("en-GB", {
+    timeZone: BUSINESS_TIME_ZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  });
+  const MONTH_LABEL_FORMATTER = new Intl.DateTimeFormat(undefined, {
+    timeZone: BUSINESS_TIME_ZONE,
+    month: "long",
+    year: "numeric",
+  });
+  const TIME_FORMATTER = new Intl.DateTimeFormat("en-GB", {
+    timeZone: BUSINESS_TIME_ZONE,
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  });
+
   function init(root) {
     const scope = root instanceof Element ? root : document;
     const browsers = [];
@@ -65,25 +87,38 @@
   function initCalendar(container) {
     const seeds = Array.from(container.querySelectorAll("[data-event-calendar-seed]"));
     const events = seeds
-      .map((seed) => ({
-        title: seed.dataset.title || "Event",
-        club: seed.dataset.club || "",
-        location: seed.dataset.location || "",
-        href: seed.dataset.href || "#",
-        start: seed.dataset.start ? new Date(seed.dataset.start) : null,
-      }))
-      .filter((event) => event.start instanceof Date && !Number.isNaN(event.start.getTime()))
+      .map((seed) => {
+        const start = seed.dataset.start ? new Date(seed.dataset.start) : null;
+        const startParts = start instanceof Date && !Number.isNaN(start.getTime())
+          ? getBusinessDateParts(start)
+          : null;
+
+        return {
+          title: seed.dataset.title || "Event",
+          club: seed.dataset.club || "",
+          location: seed.dataset.location || "",
+          href: seed.dataset.href || "#",
+          start,
+          startParts,
+        };
+      })
+      .filter((event) => event.start instanceof Date && !Number.isNaN(event.start.getTime()) && event.startParts !== null)
       .sort((a, b) => a.start - b.start);
 
-    const today = new Date();
-    const baseDate = events.length > 0 ? events[0].start : today;
+    const today = getBusinessDateParts(new Date());
+    const baseMonth = events.length > 0
+      ? { year: events[0].startParts.year, month: events[0].startParts.month }
+      : { year: today.year, month: today.month };
     const state = {
-      currentMonth: new Date(baseDate.getFullYear(), baseDate.getMonth(), 1),
+      currentMonth: { ...baseMonth },
       minMonth:
-        events.length > 0 ? new Date(events[0].start.getFullYear(), events[0].start.getMonth(), 1) : null,
+        events.length > 0 ? { year: events[0].startParts.year, month: events[0].startParts.month } : null,
       maxMonth:
         events.length > 0
-          ? new Date(events[events.length - 1].start.getFullYear(), events[events.length - 1].start.getMonth(), 1)
+          ? {
+            year: events[events.length - 1].startParts.year,
+            month: events[events.length - 1].startParts.month,
+          }
           : null,
       events,
     };
@@ -148,9 +183,8 @@
   function renderCalendar(state, label, grid, empty, prev, next) {
     grid.innerHTML = "";
 
-    const monthStart = new Date(state.currentMonth.getFullYear(), state.currentMonth.getMonth(), 1);
-    const monthEnd = new Date(state.currentMonth.getFullYear(), state.currentMonth.getMonth() + 1, 0);
-    label.textContent = monthStart.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+    const monthStart = state.currentMonth;
+    label.textContent = formatMonthLabel(monthStart.year, monthStart.month);
 
     if (state.minMonth) {
       prev.disabled = isSameMonthOrBefore(state.currentMonth, state.minMonth);
@@ -163,11 +197,11 @@
       next.disabled = true;
     }
 
-    const monthEvents = state.events.filter((event) => isSameMonth(event.start, monthStart));
+    const monthEvents = state.events.filter((event) => isSameMonth(event.startParts, monthStart));
     empty.hidden = monthEvents.length > 0;
 
-    const firstDayOffset = (monthStart.getDay() + 6) % 7;
-    const totalDays = monthEnd.getDate();
+    const firstDayOffset = getFirstDayOffset(monthStart.year, monthStart.month);
+    const totalDays = getDaysInMonth(monthStart.year, monthStart.month);
 
     for (let i = 0; i < firstDayOffset; i += 1) {
       const filler = document.createElement("div");
@@ -176,7 +210,6 @@
     }
 
     for (let day = 1; day <= totalDays; day += 1) {
-      const current = new Date(monthStart.getFullYear(), monthStart.getMonth(), day);
       const dayCell = document.createElement("div");
       dayCell.className = "event-calendar__day";
 
@@ -186,18 +219,18 @@
       dayCell.appendChild(number);
 
       monthEvents
-        .filter((event) => event.start.getDate() === day)
+        .filter((event) => event.startParts.day === day)
         .slice(0, 3)
         .forEach((event) => {
           const link = document.createElement("a");
           link.className = "event-calendar__chip";
           link.href = event.href;
           link.textContent = `${formatTime(event.start)} ${event.title}`;
-          link.title = `${event.title}${event.club ? " • " + event.club : ""}`;
+          link.title = `${event.title}${event.club ? " - " + event.club : ""}`;
           dayCell.appendChild(link);
         });
 
-      const hiddenCount = monthEvents.filter((event) => event.start.getDate() === day).length - 3;
+      const hiddenCount = monthEvents.filter((event) => event.startParts.day === day).length - 3;
       if (hiddenCount > 0) {
         const more = document.createElement("span");
         more.className = "event-calendar__more";
@@ -210,28 +243,56 @@
   }
 
   function shiftMonth(date, delta) {
-    return new Date(date.getFullYear(), date.getMonth() + delta, 1);
+    const absoluteMonth = date.year * 12 + date.month + delta;
+    return {
+      year: Math.floor(absoluteMonth / 12),
+      month: ((absoluteMonth % 12) + 12) % 12,
+    };
   }
 
   function isSameMonth(date, monthDate) {
-    return date.getFullYear() === monthDate.getFullYear() && date.getMonth() === monthDate.getMonth();
+    return date.year === monthDate.year && date.month === monthDate.month;
   }
 
   function isSameMonthOrBefore(left, right) {
-    return left.getFullYear() < right.getFullYear()
-      || (left.getFullYear() === right.getFullYear() && left.getMonth() <= right.getMonth());
+    return left.year < right.year
+      || (left.year === right.year && left.month <= right.month);
   }
 
   function isSameMonthOrAfter(left, right) {
-    return left.getFullYear() > right.getFullYear()
-      || (left.getFullYear() === right.getFullYear() && left.getMonth() >= right.getMonth());
+    return left.year > right.year
+      || (left.year === right.year && left.month >= right.month);
+  }
+
+  function getBusinessDateParts(date) {
+    const values = BUSINESS_PARTS_FORMATTER.formatToParts(date).reduce((accumulator, part) => {
+      if (part.type !== "literal") {
+        accumulator[part.type] = part.value;
+      }
+      return accumulator;
+    }, {});
+
+    return {
+      year: Number.parseInt(values.year, 10),
+      month: Number.parseInt(values.month, 10) - 1,
+      day: Number.parseInt(values.day, 10),
+    };
+  }
+
+  function getDaysInMonth(year, month) {
+    return new Date(Date.UTC(year, month + 1, 0, 12)).getUTCDate();
+  }
+
+  function getFirstDayOffset(year, month) {
+    return (new Date(Date.UTC(year, month, 1, 12)).getUTCDay() + 6) % 7;
+  }
+
+  function formatMonthLabel(year, month) {
+    return MONTH_LABEL_FORMATTER.format(new Date(Date.UTC(year, month, 1, 12)));
   }
 
   function formatTime(date) {
-    return date.toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    return TIME_FORMATTER.format(date);
   }
 
   window.ClubsHubEventBrowser = { init };

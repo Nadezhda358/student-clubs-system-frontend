@@ -16,7 +16,9 @@ public final class EventViewSupport {
     public static final String EVENT_SORT = "startAt,asc";
     public static final String PARTICIPATION_SORT = "registeredAt,desc";
 
+    private static final ZoneId BUSINESS_ZONE = ZoneId.of("Europe/Sofia");
     private static final DateTimeFormatter FORM_DATE_TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+    private static final DateTimeFormatter DISPLAY_DATE_TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     private EventViewSupport() {
     }
@@ -46,7 +48,7 @@ public final class EventViewSupport {
 
         try {
             LocalDateTime localDateTime = LocalDateTime.parse(normalized, FORM_DATE_TIME);
-            return localDateTime.atZone(ZoneId.systemDefault()).toOffsetDateTime();
+            return localDateTime.atZone(BUSINESS_ZONE).toOffsetDateTime();
         } catch (DateTimeParseException ex) {
             return null;
         }
@@ -60,7 +62,7 @@ public final class EventViewSupport {
 
         try {
             LocalDate date = LocalDate.parse(normalized);
-            return date.atStartOfDay(ZoneId.systemDefault()).toOffsetDateTime();
+            return date.atStartOfDay(BUSINESS_ZONE).toOffsetDateTime();
         } catch (DateTimeParseException ex) {
             return null;
         }
@@ -74,7 +76,7 @@ public final class EventViewSupport {
 
         try {
             LocalDate date = LocalDate.parse(normalized);
-            return date.atTime(LocalTime.MAX).atZone(ZoneId.systemDefault()).toOffsetDateTime();
+            return date.atTime(LocalTime.MAX).atZone(BUSINESS_ZONE).toOffsetDateTime();
         } catch (DateTimeParseException ex) {
             return null;
         }
@@ -85,7 +87,7 @@ public final class EventViewSupport {
             return "";
         }
 
-        return value.atZoneSameInstant(ZoneId.systemDefault()).toLocalDate().toString();
+        return value.atZoneSameInstant(BUSINESS_ZONE).toLocalDate().toString();
     }
 
     public static String toDateTimeInput(OffsetDateTime value) {
@@ -93,7 +95,15 @@ public final class EventViewSupport {
             return "";
         }
 
-        return value.atZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime().format(FORM_DATE_TIME);
+        return value.atZoneSameInstant(BUSINESS_ZONE).toLocalDateTime().format(FORM_DATE_TIME);
+    }
+
+    public static String formatDateTime(OffsetDateTime value) {
+        if (value == null) {
+            return "";
+        }
+
+        return value.atZoneSameInstant(BUSINESS_ZONE).toLocalDateTime().format(DISPLAY_DATE_TIME);
     }
 
     public static HttpStatus resolveStatus(FeignException ex) {

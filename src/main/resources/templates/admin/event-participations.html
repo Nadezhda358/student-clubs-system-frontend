@@ -118,7 +118,7 @@
                       <strong th:text="${participation.studentFullName}">Student</strong>
                       <div th:text="${participation.studentEmail}">student@example.com</div>
                     </td>
-                    <td th:text="${participation.registeredAt != null ? #temporals.format(participation.registeredAt, 'yyyy-MM-dd HH:mm') : '-'}">2026-04-18 12:00</td>
+                    <td th:text="${participation.registeredAt != null ? T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatDateTime(participation.registeredAt) : '-'}">2026-04-18 12:00</td>
                     <td>
                       <span
                         class="manage-event-chip"

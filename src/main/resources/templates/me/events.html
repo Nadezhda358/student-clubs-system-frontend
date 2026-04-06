@@ -78,7 +78,7 @@
                     <span class="me-events-table__secondary" th:text="${event.clubName}">Club</span>
                   </td>
                   <td>
-                    <span th:text="${event.startAt != null ? #temporals.format(event.startAt, 'yyyy-MM-dd HH:mm') : '-'}">2026-04-18 16:00</span>
+                    <span th:text="${event.startAt != null ? T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatDateTime(event.startAt) : '-'}">2026-04-18 16:00</span>
                     <span class="me-events-table__secondary" th:text="${event.location != null and !#strings.isEmpty(event.location) ? event.location : 'Location pending'}">Hall A</span>
                   </td>
                   <td>

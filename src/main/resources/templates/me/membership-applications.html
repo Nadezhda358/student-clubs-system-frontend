@@ -107,7 +107,7 @@
                     </span>
                   </td>
                   <td
-                    th:text="${app.createdAt != null ? #temporals.format(app.createdAt, 'yyyy-MM-dd HH:mm') : '-'}"
+                    th:text="${app.createdAt != null ? T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatDateTime(app.createdAt) : '-'}"
                   >
                   </td>
                   <td class="me-applications-motivation" th:with="motivation=${app.motivationText}">
