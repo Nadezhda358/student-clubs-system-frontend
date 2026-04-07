@@ -1,12 +1,10 @@
 package com.school.ppmg.student_clubs_system_client.dtos.club;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 
-public record UpsertClubDto(
+import java.util.List;
+
+public record CreateClubDto(
         @NotBlank @Size(max = 160) String name,
         @NotBlank @Size(max = 5000) String description,
         @Size(max = 2000) String scheduleText,
@@ -17,5 +15,6 @@ public record UpsertClubDto(
                 message = "contactPhone can contain only digits, spaces, parentheses, hyphens, and an optional leading +"
         )
         @Size(max = 40) String contactPhone,
-        @NotNull Boolean isActive
-) {}
+        @NotNull Boolean isActive,
+        List<@Positive Long> teacherIds
+) implements ClubWriteRequest {}

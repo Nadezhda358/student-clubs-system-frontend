@@ -133,6 +133,11 @@
   line-height: 1.5;
 }
 
+.club-field select[multiple] {
+  min-height: 190px;
+  padding: 12px 14px;
+}
+
 .club-field input:not([type="file"]):focus,
 .club-field select:focus,
 .club-field textarea:focus {
@@ -248,6 +253,69 @@
   gap: 10px;
 }
 
+.club-form-section__header {
+  margin-bottom: 18px;
+}
+
+.club-form-section__header h2 {
+  margin: 0;
+  font-family: "Playfair Display", serif;
+  font-size: 28px;
+  color: var(--deep-brown);
+}
+
+.club-form-section__subtitle {
+  margin: 8px 0 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba(34, 22, 28, 0.68);
+}
+
+.club-form-empty {
+  margin: 0;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.78);
+  color: rgba(34, 22, 28, 0.68);
+  font-size: 14px;
+}
+
+.club-teacher-list {
+  display: grid;
+  gap: 12px;
+}
+
+.club-teacher-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.club-teacher-card__body {
+  min-width: 0;
+}
+
+.club-teacher-card__name {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--deep-brown);
+}
+
+.club-teacher-card__meta {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: rgba(34, 22, 28, 0.62);
+}
+
+.club-teacher-card__action {
+  flex-shrink: 0;
+}
+
 .club-button {
   display: inline-flex;
   align-items: center;
@@ -276,6 +344,11 @@
   background: linear-gradient(120deg, #6b3fa0, #d96145);
 }
 
+.club-button--danger {
+  color: #991b1b;
+  background: rgba(254, 226, 226, 0.9);
+}
+
 .club-button--primary:disabled {
   cursor: default;
   opacity: 0.65;
@@ -291,6 +364,15 @@
 @media (max-width: 600px) {
   .club-form {
     padding: 16px;
+  }
+
+  .club-teacher-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .club-teacher-card__action .club-button {
+    width: 100%;
   }
 
   .club-form-actions {

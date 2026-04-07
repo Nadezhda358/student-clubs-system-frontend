@@ -29,30 +29,32 @@ public class CreateClubRequest {
     @Size(max = 255)
     private String contactEmail;
 
+    @Pattern(
+            regexp = "^$|^(?=.*\\d)\\+?[\\d()\\s-]+$",
+            message = "contactPhone can contain only digits, spaces, parentheses, hyphens, and an optional leading +"
+    )
     @Size(max = 40)
     private String contactPhone;
 
     @NotNull
     private Boolean isActive;
 
-    @Positive
-    private Long teacherId;
-
-    private Boolean teacherIsPrimary;
+    private List<@jakarta.validation.constraints.Positive Long> teacherIds;
 
     private MultipartFile mainImage;
 
     private List<MultipartFile> mediaFiles;
 
-    public UpsertClubDto toUpsertDto() {
-        return new UpsertClubDto(
+    public CreateClubDto toCreateClubDto() {
+        return new CreateClubDto(
                 name,
                 description,
                 scheduleText,
                 room,
                 contactEmail,
                 contactPhone,
-                isActive
+                isActive,
+                teacherIds
         );
     }
 }
