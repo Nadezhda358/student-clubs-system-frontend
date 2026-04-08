@@ -12,8 +12,7 @@
               open
               th:with="
                 path=${currentPath != null ? currentPath : ''},
-                clubsActive=${path == '/admin/clubs' or (#strings.startsWith(path, '/admin/clubs/') and path != '/admin/clubs/create')},
-                addClubActive=${path == '/admin/clubs/create'},
+                clubsActive=${path == '/admin/clubs' or #strings.startsWith(path, '/admin/clubs/')},
                 eventsActive=${path == '/admin/events' or path == '/admin/events/create' or #strings.startsWith(path, '/admin/events/')},
                 clubAppsActive=${path == '/admin/applications/clubs' or path == '/admin/membership-applications'},
                 eventAppsActive=${path == '/admin/applications/events' or path == '/admin/event-participations' or path == '/admin/event-applications'},
@@ -37,14 +36,6 @@
                     th:href="@{/admin/clubs}"
                   >
                     Clubs
-                  </a>
-                  <a
-                    class="admin-sidebar__link"
-                    th:classappend="${addClubActive} ? ' is-active' : ''"
-                    th:attr="aria-current=${addClubActive} ? 'page' : null"
-                    th:href="@{/admin/clubs/create}"
-                  >
-                    Add Club
                   </a>
                   <a
                     class="admin-sidebar__link"

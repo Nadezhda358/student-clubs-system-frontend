@@ -112,7 +112,7 @@
                 Your registration is currently marked as cancelled.
               </p>
 
-              <div class="event-detail__actions">
+              <div class="event-detail__actions" th:classappend="${canCancelRegistration} ? ' event-detail__actions--cancel-state'">
                 <a class="events-link events-link--primary" th:if="${sessionUser == null}" th:href="@{/login}">Sign In</a>
                 <form method="post" th:if="${canRegister}" th:action="@{/events/{id}/register(id=${event.id})}">
                   <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
@@ -120,7 +120,7 @@
                   <button class="events-button events-button--primary" type="submit">Register</button>
                 </form>
 
-                <form method="post" th:if="${canCancelRegistration}" th:action="@{/events/{id}/cancel(id=${event.id})}">
+                <form class="event-detail__action-form--cancel" method="post" th:if="${canCancelRegistration}" th:action="@{/events/{id}/cancel(id=${event.id})}">
                   <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                   <input type="hidden" name="returnTo" th:value="@{/events/{id}(id=${event.id})}" />
                   <button class="events-button events-button--danger" type="submit">Cancel Registration</button>

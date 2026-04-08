@@ -40,6 +40,7 @@ import java.util.List;
 @Controller
 @RequiredArgsConstructor
 public class ClubController {
+    private static final long MAX_IMAGE_FILE_SIZE_BYTES = 5L * 1024 * 1024;
     private final AdminTeacherClient adminTeacherClient;
     private final ClubClient clubClient;
     private final EventClient eventClient;
@@ -100,7 +101,8 @@ public class ClubController {
     @PostMapping("/admin/clubs/create")
     public String createClub(
             @ModelAttribute CreateClubRequest request,
-            Model model
+            Model model,
+            RedirectAttributes redirectAttributes
     ) {
         String normalizedName = normalizeRequiredText(request.getName());
         String normalizedDescription = normalizeRequiredText(request.getDescription());
@@ -110,6 +112,8 @@ public class ClubController {
         String normalizedContactPhone = normalizeOptionalText(request.getContactPhone());
         List<Long> teacherIds = normalizeTeacherIds(request.getTeacherIds());
         boolean isActive = Boolean.TRUE.equals(request.getIsActive());
+        MultipartFile mainImage = hasFile(request.getMainImage()) ? request.getMainImage() : null;
+        List<MultipartFile> mediaFiles = normalizeFiles(request.getMediaFiles());
 
         if (normalizedName.isBlank()) {
             populateCreateFormModel(
@@ -143,6 +147,43 @@ public class ClubController {
             return "admin/club-form";
         }
 
+        if (mainImage != null && mainImage.getSize() > MAX_IMAGE_FILE_SIZE_BYTES) {
+            populateCreateFormModel(
+                    model,
+                    normalizedName,
+                    normalizedDescription,
+                    normalizedScheduleText,
+                    normalizedRoom,
+                    normalizedContactEmail,
+                    normalizedContactPhone,
+                    isActive,
+                    teacherIds
+            );
+            model.addAttribute("errorMessage", "Main image must be 5 MB or smaller. Please choose another file.");
+            return "admin/club-form";
+        }
+
+        for (MultipartFile mediaFile : mediaFiles) {
+            if (mediaFile.getSize() > MAX_IMAGE_FILE_SIZE_BYTES) {
+                populateCreateFormModel(
+                        model,
+                        normalizedName,
+                        normalizedDescription,
+                        normalizedScheduleText,
+                        normalizedRoom,
+                        normalizedContactEmail,
+                        normalizedContactPhone,
+                        isActive,
+                        teacherIds
+                );
+                model.addAttribute(
+                        "errorMessage",
+                        "Each uploaded media file must be 5 MB or smaller. Please choose another file."
+                );
+                return "admin/club-form";
+            }
+        }
+
         request.setName(normalizedName);
         request.setDescription(normalizedDescription);
         request.setScheduleText(normalizedScheduleText);
@@ -151,11 +192,29 @@ public class ClubController {
         request.setContactPhone(normalizedContactPhone);
         request.setIsActive(isActive);
         request.setTeacherIds(teacherIds.isEmpty() ? null : teacherIds);
-        request.setMainImage(hasFile(request.getMainImage()) ? request.getMainImage() : null);
-        request.setMediaFiles(normalizeFiles(request.getMediaFiles()));
+        request.setMainImage(mainImage);
+        request.setMediaFiles(mediaFiles);
 
         try {
-            clubClient.createMultipart(request);
+            if (mediaFiles.isEmpty()) {
+                ClubDto createdClub = clubClient.create(request.toCreateClubDto());
+                if (mainImage != null) {
+                    try {
+                        clubClient.uploadMainImage(createdClub.id(), mainImage);
+                    } catch (FeignException ex) {
+                        redirectAttributes.addFlashAttribute(
+                                "errorMessage",
+                                firstNonBlank(
+                                        extractUserMessage(ex),
+                                        "Club created, but the main image upload failed. You can try again from the edit page."
+                                )
+                        );
+                        return "redirect:/admin/clubs/" + createdClub.id() + "/edit";
+                    }
+                }
+            } else {
+                clubClient.createMultipart(request);
+            }
             return "redirect:/admin/clubs?success=created";
         } catch (FeignException ex) {
             populateCreateFormModel(
@@ -327,6 +386,38 @@ public class ClubController {
             redirectAttributes.addFlashAttribute("successMessage", "Teacher removed successfully.");
         } catch (FeignException ex) {
             redirectAttributes.addFlashAttribute("errorMessage", toTeacherAssignmentErrorMessage(ex, false));
+        }
+
+        return redirectToAdminClubEdit(id);
+    }
+
+    @PostMapping("/admin/clubs/{id}/main-image")
+    public String uploadMainImage(
+            @PathVariable Long id,
+            @RequestParam("mainImage") MultipartFile mainImage,
+            RedirectAttributes redirectAttributes
+    ) {
+        if (!hasFile(mainImage)) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Please choose an image to upload.");
+            return redirectToAdminClubEdit(id);
+        }
+
+        if (mainImage.getSize() > MAX_IMAGE_FILE_SIZE_BYTES) {
+            redirectAttributes.addFlashAttribute(
+                    "errorMessage",
+                    "Main image must be 5 MB or smaller. Please choose another file."
+            );
+            return redirectToAdminClubEdit(id);
+        }
+
+        try {
+            clubClient.uploadMainImage(id, mainImage);
+            redirectAttributes.addFlashAttribute("successMessage", "Main image updated successfully.");
+        } catch (FeignException ex) {
+            redirectAttributes.addFlashAttribute(
+                    "errorMessage",
+                    firstNonBlank(extractUserMessage(ex), "Unable to upload the main image right now. Please try again.")
+            );
         }
 
         return redirectToAdminClubEdit(id);

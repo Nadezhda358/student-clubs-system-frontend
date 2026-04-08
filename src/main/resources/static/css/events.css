@@ -594,6 +594,23 @@
   gap: 0.85rem;
 }
 
+.event-detail__actions form {
+  margin: 0;
+}
+
+.event-detail__actions--cancel-state {
+  row-gap: 0.5rem;
+}
+
+.event-detail__actions--cancel-state .event-detail__action-form--cancel {
+  flex: 0 0 100%;
+}
+
+.event-detail__actions--cancel-state .events-link,
+.event-detail__actions--cancel-state .events-button {
+  white-space: nowrap;
+}
+
 .event-detail__meta-list {
   display: grid;
   gap: 0.7rem;
@@ -703,4 +720,15 @@
   .event-calendar__day--filler {
     display: none;
   }
+
+  .event-detail__actions {
+    align-items: stretch;
+  }
+
+  .event-detail__actions .events-link,
+  .event-detail__actions form,
+  .event-detail__actions .events-button {
+    width: 100%;
+  }
+
 }

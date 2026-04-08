@@ -173,10 +173,10 @@
                   accept="image/*"
                 />
                 <small class="club-field__hint" th:if="${clubMainImageUrl != null and !#strings.isEmpty(clubMainImageUrl)}">
-                  Current main image is already set. Uploading a new file will replace it.
+                  Current main image is already set. Uploading a new file will replace it. Maximum size: 5 MB.
                 </small>
                 <small class="club-field__hint" th:unless="${clubMainImageUrl != null and !#strings.isEmpty(clubMainImageUrl)}">
-                  Upload a single main image for this club.
+                  Upload a single main image for this club. Maximum size: 5 MB.
                 </small>
               </label>
             </div>

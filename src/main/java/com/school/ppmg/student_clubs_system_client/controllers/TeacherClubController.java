@@ -22,6 +22,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @RequiredArgsConstructor
 public class TeacherClubController {
+    private static final long MAX_IMAGE_FILE_SIZE_BYTES = 5L * 1024 * 1024;
     private static final int PAGE_SIZE = 9;
 
     private final TeacherClubClient teacherClubClient;
@@ -199,6 +200,14 @@ public class TeacherClubController {
     ) {
         if (!hasFile(mainImage)) {
             redirectAttributes.addFlashAttribute("errorMessage", "Please choose an image to upload.");
+            return "redirect:/teacher/clubs/" + id + "/edit";
+        }
+
+        if (mainImage.getSize() > MAX_IMAGE_FILE_SIZE_BYTES) {
+            redirectAttributes.addFlashAttribute(
+                    "errorMessage",
+                    "Main image must be 5 MB or smaller. Please choose another file."
+            );
             return "redirect:/teacher/clubs/" + id + "/edit";
         }
 

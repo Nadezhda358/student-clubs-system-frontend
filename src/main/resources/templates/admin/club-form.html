@@ -137,7 +137,7 @@
                   type="file"
                   accept="image/*"
                 />
-                <small class="club-field__hint">Upload a single main image for the club.</small>
+                <small class="club-field__hint">Upload a single main image for the club. Maximum size: 5 MB.</small>
               </label>
 
               <label class="club-field" for="club-teacherIds">
@@ -174,7 +174,7 @@
                   type="file"
                   multiple
                 />
-                <small class="club-field__hint">Add any extra images or files to upload during creation.</small>
+                <small class="club-field__hint">Add any extra images or files to upload during creation. Maximum size per file: 5 MB.</small>
               </label>
             </div>
           </th:block>
@@ -208,6 +208,39 @@
         </form>
 
         <th:block th:if="${mode == 'edit'}">
+          <form
+            class="club-form club-form--stacked"
+            method="post"
+            enctype="multipart/form-data"
+            th:action="@{/admin/clubs/{id}/main-image(id=${clubId})}"
+          >
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+            <div class="club-form-section__header">
+              <h2>Main Image</h2>
+              <p class="club-form-section__subtitle">
+                Upload or replace the club main image without changing the rest of the club details.
+              </p>
+            </div>
+
+            <div class="club-form-grid">
+              <label class="club-field club-field--full" for="club-editMainImage">
+                <span>Main Image</span>
+                <input
+                  id="club-editMainImage"
+                  name="mainImage"
+                  type="file"
+                  accept="image/*"
+                />
+                <small class="club-field__hint">Maximum size: 5 MB.</small>
+              </label>
+            </div>
+
+            <div class="club-form-actions">
+              <button class="club-button club-button--primary" type="submit">Upload Main Image</button>
+            </div>
+          </form>
+
           <section class="club-form club-form--stacked">
             <div class="club-form-section__header">
               <h2>Assigned Teachers</h2>

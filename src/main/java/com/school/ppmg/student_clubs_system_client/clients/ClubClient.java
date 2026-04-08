@@ -66,6 +66,6 @@ public interface ClubClient {
     @PostMapping(value = "/{id}/main-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ClubDto uploadMainImage(
             @PathVariable Long id,
-            @RequestParam("file") MultipartFile file
+            @RequestPart("file") MultipartFile file
     );
 }
