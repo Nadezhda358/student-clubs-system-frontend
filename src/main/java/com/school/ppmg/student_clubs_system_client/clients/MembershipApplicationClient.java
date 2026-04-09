@@ -28,6 +28,9 @@ public interface MembershipApplicationClient {
             @RequestParam(required = false) MembershipRequestStatus status
     );
 
+    @PostMapping("/me/membership-applications/{id}/cancel")
+    MembershipApplicationDto cancelMyApplication(@PathVariable Long id);
+
     @GetMapping("/admin/membership-applications")
     @PreAuthorize("hasRole('ADMIN')")
     List<MembershipApplicationDto> adminGetAll(

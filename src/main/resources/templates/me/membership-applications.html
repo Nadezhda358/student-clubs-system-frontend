@@ -29,6 +29,24 @@
         </section>
 
         <div
+          class="me-applications-alert me-applications-alert--success"
+          role="alert"
+          th:if="${membershipActionSuccessMessage}"
+          th:text="${membershipActionSuccessMessage}"
+        >
+          Membership application updated successfully.
+        </div>
+
+        <div
+          class="me-applications-alert me-applications-alert--warning"
+          role="alert"
+          th:if="${membershipActionWarningMessage}"
+          th:text="${membershipActionWarningMessage}"
+        >
+          Membership application update requires attention.
+        </div>
+
+        <div
           class="me-applications-alert me-applications-alert--warning"
           role="alert"
           th:if="${accessMessage}"
@@ -44,6 +62,15 @@
           th:text="${loadErrorMessage}"
         >
           Unable to load your applications right now.
+        </div>
+
+        <div
+          class="me-applications-alert me-applications-alert--error"
+          role="alert"
+          th:if="${membershipActionErrorMessage}"
+          th:text="${membershipActionErrorMessage}"
+        >
+          Unable to update this application right now.
         </div>
 
         <section class="me-applications-panel" th:if="${accessMessage == null}">
@@ -86,6 +113,7 @@
                   <th scope="col">Status</th>
                   <th scope="col">Created</th>
                   <th scope="col">Motivation</th>
+                  <th scope="col">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -102,7 +130,7 @@
                     <span
                       class="membership-status-badge"
                       th:classappend="${app.status != null ? ' is-' + #strings.toLowerCase(app.status.name()) : ''}"
-                      th:text="${app.status != null ? app.status.name() : 'UNKNOWN'}"
+                      th:text="${app.status != null ? T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatLabel(app.status) : 'Unknown'}"
                     >
                     </span>
                   </td>
@@ -119,9 +147,26 @@
                     </span>
                     <span
                       th:unless="${motivation == null or #strings.isEmpty(motivation)}"
-                      th:text="${#strings.length(motivation) > 180 ? #strings.substring(motivation, 0, 180) + '…' : motivation}"
+                      th:text="${#strings.length(motivation) > 180 ? #strings.substring(motivation, 0, 180) + '...' : motivation}"
                     >
                       I would like to join this club because...
+                    </span>
+                  </td>
+                  <td>
+                    <div class="me-applications-actions" th:if="${app.status == T(com.school.ppmg.student_clubs_system_client.enums.MembershipRequestStatus).PENDING}">
+                      <form method="post" th:action="@{/me/membership-applications/{id}/cancel(id=${app.id})}">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                        <input type="hidden" name="status" th:if="${selectedStatus != null}" th:value="${selectedStatus.name()}" />
+                        <button type="submit" class="membership-action membership-action--reject me-applications-action">
+                          Cancel
+                        </button>
+                      </form>
+                    </div>
+                    <span
+                      class="me-applications-muted"
+                      th:unless="${app.status == T(com.school.ppmg.student_clubs_system_client.enums.MembershipRequestStatus).PENDING}"
+                    >
+                      -
                     </span>
                   </td>
                 </tr>

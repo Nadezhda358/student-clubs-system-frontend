@@ -12,7 +12,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.Collections;
 import java.util.List;
@@ -59,37 +62,130 @@ public class MembershipApplicationsController {
         return "me/membership-applications";
     }
 
+    @PostMapping("/me/membership-applications/{id}/cancel")
+    public String cancelMyMembershipApplication(
+            @PathVariable Long id,
+            @RequestParam(required = false) MembershipRequestStatus status,
+            @ModelAttribute("sessionUser") AuthUserDto sessionUser,
+            RedirectAttributes redirectAttributes
+    ) {
+        if (sessionUser == null) {
+            redirectAttributes.addFlashAttribute(
+                    "success",
+                    "Please sign in to manage your membership applications."
+            );
+            return "redirect:/login";
+        }
+
+        if (sessionUser.role() != UserRole.STUDENT) {
+            redirectAttributes.addFlashAttribute(
+                    "membershipActionWarningMessage",
+                    "Only students can cancel membership applications."
+            );
+            return redirectToMembershipApplications(status);
+        }
+
+        try {
+            membershipApplicationClient.cancelMyApplication(id);
+            redirectAttributes.addFlashAttribute("membershipActionSuccessMessage", "Application cancelled.");
+        } catch (FeignException ex) {
+            if (ex.status() == HttpStatus.UNAUTHORIZED.value()) {
+                redirectAttributes.addFlashAttribute(
+                        "success",
+                        "Please sign in to manage your membership applications."
+                );
+                return "redirect:/login";
+            }
+
+            if (resolveStatus(ex) == HttpStatus.FORBIDDEN) {
+                redirectAttributes.addFlashAttribute(
+                        "membershipActionWarningMessage",
+                        firstNonBlank(extractUserMessage(ex), "You are not allowed to cancel this application.")
+                );
+            } else {
+                redirectAttributes.addFlashAttribute(
+                        "membershipActionErrorMessage",
+                        toCancelErrorMessage(ex)
+                );
+            }
+        }
+
+        return redirectToMembershipApplications(status);
+    }
+
     private String toListLoadErrorMessage(FeignException ex) {
-        HttpStatus status = HttpStatus.resolve(ex.status());
-        if (status == null) {
-            status = HttpStatus.BAD_GATEWAY;
+        String extracted = extractUserMessage(ex);
+        if (!extracted.isBlank()) {
+            return extracted;
         }
 
-        String content = ex.contentUTF8();
-        if (content != null && !content.isBlank()) {
-            String extracted = extractJsonField(content, "message");
-            if (!extracted.isBlank()) {
-                return extracted;
-            }
-
-            extracted = extractJsonField(content, "error");
-            if (!extracted.isBlank()) {
-                return extracted;
-            }
-
-            extracted = extractJsonField(content, "detail");
-            if (!extracted.isBlank()) {
-                return extracted;
-            }
-        }
-
-        return switch (status) {
+        return switch (resolveStatus(ex)) {
             case NOT_FOUND -> "Membership applications endpoint is not available.";
             case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Invalid status filter. Please choose a valid option.";
             case UNAUTHORIZED -> "Please sign in to view your applications.";
             case FORBIDDEN -> "Only students can view membership applications.";
             default -> "Unable to load your applications right now. Please try again.";
         };
+    }
+
+    private String toCancelErrorMessage(FeignException ex) {
+        String extracted = extractUserMessage(ex);
+        if (!extracted.isBlank()) {
+            return extracted;
+        }
+
+        return switch (resolveStatus(ex)) {
+            case NOT_FOUND -> "This membership application was not found.";
+            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "This application can no longer be cancelled.";
+            case CONFLICT -> "This membership application has already been updated.";
+            default -> "Unable to cancel this membership application right now. Please try again.";
+        };
+    }
+
+    private String redirectToMembershipApplications(MembershipRequestStatus status) {
+        if (status == null) {
+            return "redirect:/me/membership-applications";
+        }
+
+        return "redirect:/me/membership-applications?status=" + status.name();
+    }
+
+    private HttpStatus resolveStatus(FeignException ex) {
+        HttpStatus status = HttpStatus.resolve(ex.status());
+        return status == null ? HttpStatus.BAD_GATEWAY : status;
+    }
+
+    private String extractUserMessage(FeignException ex) {
+        String content = ex.contentUTF8();
+        if (content == null || content.isBlank()) {
+            return "";
+        }
+
+        String extracted = extractJsonField(content, "message");
+        if (!extracted.isBlank()) {
+            return extracted;
+        }
+
+        extracted = extractJsonField(content, "error");
+        if (!extracted.isBlank()) {
+            return extracted;
+        }
+
+        extracted = extractJsonField(content, "detail");
+        if (!extracted.isBlank()) {
+            return extracted;
+        }
+
+        String compact = content.trim();
+        if (!compact.startsWith("<") && compact.length() <= 220) {
+            return compact;
+        }
+
+        return "";
+    }
+
+    private String firstNonBlank(String primary, String fallback) {
+        return primary != null && !primary.isBlank() ? primary : fallback;
     }
 
     private String extractJsonField(String json, String fieldName) {
