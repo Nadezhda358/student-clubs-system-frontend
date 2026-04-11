@@ -77,6 +77,8 @@ public class ClubController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(required = false) String sort,
             @RequestParam(required = false) String success,
+            @ModelAttribute("successMessage") String flashSuccessMessage,
+            @ModelAttribute("errorMessage") String flashErrorMessage,
             Model model
     ) {
         String resolvedSort = (sort == null || sort.isBlank()) ? "name,asc" : sort;
@@ -87,7 +89,8 @@ public class ClubController {
         model.addAttribute("active", active);
         model.addAttribute("sort", resolvedSort);
         model.addAttribute("size", PAGE_SIZE);
-        model.addAttribute("successMessage", successMessage(success));
+        model.addAttribute("successMessage", firstNonBlank(flashSuccessMessage, successMessage(success)));
+        model.addAttribute("errorMessage", trimToNull(flashErrorMessage));
 
         return "admin/clubs";
     }
@@ -423,6 +426,24 @@ public class ClubController {
         return redirectToAdminClubEdit(id);
     }
 
+    @PostMapping("/admin/clubs/{id}/delete")
+    public String deleteClub(
+            @PathVariable Long id,
+            RedirectAttributes redirectAttributes
+    ) {
+        try {
+            clubClient.delete(id);
+            redirectAttributes.addFlashAttribute(
+                    "successMessage",
+                    "Club deleted. Future events were cancelled and active memberships were marked as left."
+            );
+        } catch (FeignException ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", toClubDeleteErrorMessage(ex));
+        }
+
+        return "redirect:/admin/clubs";
+    }
+
     @GetMapping("/clubs/{id}")
     public String clubDetails(
             @PathVariable Long id,
@@ -674,6 +695,10 @@ public class ClubController {
             return "Club updated successfully.";
         }
 
+        if ("deleted".equalsIgnoreCase(success)) {
+            return "Club deleted successfully.";
+        }
+
         return null;
     }
 
@@ -778,6 +803,15 @@ public class ClubController {
         return primary != null && !primary.isBlank() ? primary : fallback;
     }
 
+    private String trimToNull(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        String normalized = value.trim();
+        return normalized.isEmpty() ? null : normalized;
+    }
+
     private String toClubSaveErrorMessage(FeignException ex) {
         HttpStatus status = HttpStatus.resolve(ex.status());
         if (status == null) {
@@ -841,6 +875,22 @@ public class ClubController {
             default -> addOperation
                     ? "Unable to add teachers right now. Please try again."
                     : "Unable to remove the teacher right now. Please try again.";
+        };
+
+        return firstNonBlank(extractUserMessage(ex), fallback);
+    }
+
+    private String toClubDeleteErrorMessage(FeignException ex) {
+        HttpStatus status = HttpStatus.resolve(ex.status());
+        if (status == null) {
+            status = HttpStatus.BAD_GATEWAY;
+        }
+
+        String fallback = switch (status) {
+            case FORBIDDEN, UNAUTHORIZED -> "You are not authorized to delete this club.";
+            case NOT_FOUND -> "This club no longer exists.";
+            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "This club could not be deleted right now. Please refresh and try again.";
+            default -> "Unable to delete the club right now. Please try again.";
         };
 
         return firstNonBlank(extractUserMessage(ex), fallback);

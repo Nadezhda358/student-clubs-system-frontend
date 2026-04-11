@@ -42,7 +42,14 @@
                 >
                   Registration open
                 </span>
-                <span class="event-chip event-chip--registered" th:if="${myRegistrationStatus != null}" th:text="${T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatLabel(myRegistrationStatus)}">Registered</span>
+                <span
+                  class="event-chip"
+                  th:if="${myRegistrationStatus != null}"
+                  th:classappend="${myRegistrationStatus.name() == 'CANCELLED'} ? ' event-chip--cancelled' : ' event-chip--registered'"
+                  th:text="${T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatLabel(myRegistrationStatus)}"
+                >
+                  Registered
+                </span>
               </div>
             </section>
 

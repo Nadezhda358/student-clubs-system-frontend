@@ -66,16 +66,6 @@ public class AdminController {
         return "admin/membership-applications";
     }
 
-    @GetMapping("/admin/stats")
-    public String adminStats(Model model) {
-        return placeholder(
-                model,
-                "Stats",
-                "Track engagement and activity across clubs and events.",
-                "Admin analytics dashboards are coming soon."
-        );
-    }
-
     @PostMapping("/admin/membership-applications/{id}/approve")
     @ResponseBody
     public ResponseEntity<?> approveMembershipApplication(@PathVariable Long id) {
@@ -86,18 +76,6 @@ public class AdminController {
     @ResponseBody
     public ResponseEntity<?> rejectMembershipApplication(@PathVariable Long id) {
         return updateMembershipApplication(id, membershipApplicationClient::adminReject);
-    }
-
-    private String placeholder(
-            Model model,
-            String pageTitle,
-            String pageSubtitle,
-            String comingSoonMessage
-    ) {
-        model.addAttribute("pageTitle", pageTitle);
-        model.addAttribute("pageSubtitle", pageSubtitle);
-        model.addAttribute("comingSoonMessage", comingSoonMessage);
-        return "admin/placeholder";
     }
 
     private String normalizeQuery(String q) {

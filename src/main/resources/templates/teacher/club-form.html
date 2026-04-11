@@ -187,6 +187,27 @@
               </button>
             </div>
           </form>
+
+          <form
+            class="club-form club-form--stacked club-form--danger"
+            method="post"
+            th:action="@{/teacher/clubs/{id}/delete(id=${clubId})}"
+            onsubmit="return confirm('Delete this club? Future events will be cancelled and active memberships will be marked as left.');"
+          >
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+            <div class="club-form-section__header">
+              <h2>Delete Club</h2>
+              <p class="club-form-section__subtitle">
+                Deleting this club cancels its future events and ends active memberships by marking them as left.
+                Historical event and participation reporting still keeps past activity from when the club existed.
+              </p>
+            </div>
+
+            <div class="club-form-actions">
+              <button class="club-button club-button--danger" type="submit">Delete Club</button>
+            </div>
+          </form>
         </div>
       </div>
     </th:block>

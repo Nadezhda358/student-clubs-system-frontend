@@ -1,6 +1,7 @@
 package com.school.ppmg.student_clubs_system_client.controllers.support;
 
 import com.school.ppmg.student_clubs_system_client.dtos.auth.AuthUserDto;
+import com.school.ppmg.student_clubs_system_client.enums.RegistrationStatus;
 import com.school.ppmg.student_clubs_system_client.enums.UserRole;
 import feign.FeignException;
 import org.springframework.http.HttpStatus;
@@ -8,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Locale;
 
 public final class EventViewSupport {
     public static final int BROWSER_PAGE_SIZE = 12;
@@ -38,6 +40,19 @@ public final class EventViewSupport {
 
     public static String trimToEmpty(String value) {
         return value == null ? "" : value.trim();
+    }
+
+    public static RegistrationStatus parseRegistrationStatus(String value) {
+        String normalized = trimToNull(value);
+        if (normalized == null) {
+            return null;
+        }
+
+        try {
+            return RegistrationStatus.valueOf(normalized.toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException ex) {
+            return null;
+        }
     }
 
     public static OffsetDateTime parseDateTimeInput(String value) {

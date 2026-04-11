@@ -1,5 +1,6 @@
 package com.school.ppmg.student_clubs_system_client.controllers;
 
+import com.school.ppmg.student_clubs_system_client.clients.ClubClient;
 import com.school.ppmg.student_clubs_system_client.clients.TeacherClubClient;
 import com.school.ppmg.student_clubs_system_client.dtos.club.ClubDto;
 import com.school.ppmg.student_clubs_system_client.dtos.club.ClubListDto;
@@ -25,6 +26,7 @@ public class TeacherClubController {
     private static final long MAX_IMAGE_FILE_SIZE_BYTES = 5L * 1024 * 1024;
     private static final int PAGE_SIZE = 9;
 
+    private final ClubClient clubClient;
     private final TeacherClubClient teacherClubClient;
 
     @GetMapping("/teacher")
@@ -39,6 +41,8 @@ public class TeacherClubController {
             @RequestParam(required = false) String sort,
             @RequestParam(required = false) String success,
             @RequestParam(required = false) String error,
+            @ModelAttribute("successMessage") String flashSuccessMessage,
+            @ModelAttribute("errorMessage") String flashErrorMessage,
             Model model
     ) {
         String resolvedSort = (sort == null || sort.isBlank()) ? "name,asc" : sort;
@@ -49,8 +53,8 @@ public class TeacherClubController {
         model.addAttribute("active", active);
         model.addAttribute("sort", resolvedSort);
         model.addAttribute("size", PAGE_SIZE);
-        model.addAttribute("successMessage", successMessage(success));
-        model.addAttribute("errorMessage", listErrorMessage(error));
+        model.addAttribute("successMessage", firstNonBlank(flashSuccessMessage, successMessage(success)));
+        model.addAttribute("errorMessage", firstNonBlank(flashErrorMessage, listErrorMessage(error)));
 
         return "teacher/clubs";
     }
@@ -232,6 +236,24 @@ public class TeacherClubController {
         }
     }
 
+    @PostMapping("/teacher/clubs/{id}/delete")
+    public String deleteManagedClub(
+            @PathVariable Long id,
+            RedirectAttributes redirectAttributes
+    ) {
+        try {
+            clubClient.delete(id);
+            redirectAttributes.addFlashAttribute(
+                    "successMessage",
+                    "Club deleted. Future events were cancelled and active memberships were marked as left."
+            );
+        } catch (FeignException ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", toClubDeleteErrorMessage(ex));
+        }
+
+        return "redirect:/teacher/clubs";
+    }
+
     private void populateFormModel(
             Model model,
             Long clubId,
@@ -265,6 +287,10 @@ public class TeacherClubController {
 
         if ("updated".equalsIgnoreCase(success)) {
             return "Club updated successfully.";
+        }
+
+        if ("deleted".equalsIgnoreCase(success)) {
+            return "Club deleted successfully.";
         }
 
         return null;
@@ -341,6 +367,22 @@ public class TeacherClubController {
             case NOT_FOUND -> "Requested resource not found.";
             default -> "Unable to save the club right now. Please try again.";
         };
+    }
+
+    private String toClubDeleteErrorMessage(FeignException ex) {
+        HttpStatus status = HttpStatus.resolve(ex.status());
+        if (status == null) {
+            status = HttpStatus.BAD_GATEWAY;
+        }
+
+        String fallback = switch (status) {
+            case FORBIDDEN, UNAUTHORIZED -> "You can only delete clubs assigned to you.";
+            case NOT_FOUND -> "This club no longer exists.";
+            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "This club could not be deleted right now. Please refresh and try again.";
+            default -> "Unable to delete the club right now. Please try again.";
+        };
+
+        return firstNonBlank(extractUserMessage(ex), fallback);
     }
 
     private String extractUserMessage(FeignException ex) {

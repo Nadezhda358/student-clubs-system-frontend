@@ -282,7 +282,7 @@ public class TeacherEventController {
     @GetMapping("/teacher/events/{id}/participants")
     public String teacherEventParticipants(
             @PathVariable Long id,
-            @RequestParam(required = false) RegistrationStatus status,
+            @RequestParam(required = false) String status,
             @RequestParam(required = false) String q,
             @RequestParam(defaultValue = "0") int page,
             @ModelAttribute("successMessage") String successMessage,
@@ -291,12 +291,14 @@ public class TeacherEventController {
             HttpServletResponse response,
             RedirectAttributes redirectAttributes
     ) {
+        RegistrationStatus selectedStatus = EventViewSupport.parseRegistrationStatus(status);
+
         try {
             EventDto event = teacherEventClient.getTeacherEventById(id);
             model.addAttribute("event", event);
             model.addAttribute("participants", Collections.emptyList());
             model.addAttribute("participantPage", null);
-            model.addAttribute("selectedStatus", status);
+            model.addAttribute("selectedStatus", selectedStatus);
             model.addAttribute("q", q == null ? "" : q.trim());
             model.addAttribute("statusValues", RegistrationStatus.values());
             model.addAttribute("successMessage", EventViewSupport.trimToNull(successMessage));
@@ -304,7 +306,7 @@ public class TeacherEventController {
 
             PageResponse<EventParticipationDto> result = teacherEventClient.getTeacherParticipants(
                     id,
-                    status,
+                    selectedStatus,
                     EventViewSupport.trimToNull(q),
                     page,
                     EventViewSupport.PARTICIPANTS_PAGE_SIZE,

@@ -248,7 +248,7 @@ public class AdminEventController {
     public String adminEventParticipations(
             @RequestParam(required = false) Long clubId,
             @RequestParam(required = false) Long eventId,
-            @RequestParam(required = false) RegistrationStatus registrationStatus,
+            @RequestParam(required = false) String registrationStatus,
             @RequestParam(required = false) EventStatus eventStatus,
             @RequestParam(required = false) String q,
             @RequestParam(defaultValue = "0") int page,
@@ -256,12 +256,14 @@ public class AdminEventController {
             @ModelAttribute("errorMessage") String errorMessage,
             Model model
     ) {
+        RegistrationStatus selectedRegistrationStatus = EventViewSupport.parseRegistrationStatus(registrationStatus);
+
         model.addAttribute("clubOptions", loadClubs());
         model.addAttribute("participations", Collections.emptyList());
         model.addAttribute("participationPage", null);
         model.addAttribute("selectedClubId", clubId);
         model.addAttribute("selectedEventId", eventId);
-        model.addAttribute("selectedRegistrationStatus", registrationStatus);
+        model.addAttribute("selectedRegistrationStatus", selectedRegistrationStatus);
         model.addAttribute("selectedEventStatus", eventStatus);
         model.addAttribute("q", q == null ? "" : q.trim());
         model.addAttribute("registrationStatusValues", RegistrationStatus.values());
@@ -273,7 +275,7 @@ public class AdminEventController {
             PageResponse<EventParticipationDto> result = adminEventClient.getAdminParticipations(
                     clubId,
                     eventId,
-                    registrationStatus,
+                    selectedRegistrationStatus,
                     eventStatus,
                     EventViewSupport.trimToNull(q),
                     null,

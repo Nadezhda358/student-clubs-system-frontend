@@ -188,8 +188,7 @@
 }
 
 .me-events-status.is-registered,
-.me-events-status.is-published,
-.me-events-status.is-attended {
+.me-events-status.is-published {
   color: #047857;
   background: rgba(16, 185, 129, 0.08);
   border-color: rgba(16, 185, 129, 0.18);
@@ -201,7 +200,6 @@
   border-color: rgba(239, 68, 68, 0.16);
 }
 
-.me-events-status.is-no_show,
 .me-events-status.is-draft {
   color: #b45309;
   background: rgba(245, 158, 11, 0.08);

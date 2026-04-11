@@ -206,13 +206,14 @@ public class EventController {
 
     @GetMapping("/me/events")
     public String myEvents(
-            @RequestParam(required = false) RegistrationStatus status,
+            @RequestParam(required = false) String status,
             @RequestParam(required = false) String q,
             @RequestParam(defaultValue = "0") int page,
             @ModelAttribute("sessionUser") AuthUserDto sessionUser,
             Model model
     ) {
-        model.addAttribute("selectedStatus", status);
+        RegistrationStatus selectedStatus = EventViewSupport.parseRegistrationStatus(status);
+        model.addAttribute("selectedStatus", selectedStatus);
         model.addAttribute("q", q == null ? "" : q.trim());
         model.addAttribute("events", Collections.emptyList());
         model.addAttribute("eventPage", null);
@@ -228,7 +229,7 @@ public class EventController {
 
         try {
             PageResponse<MyEventDto> result = eventClient.getMyEvents(
-                    status,
+                    selectedStatus,
                     null,
                     EventViewSupport.trimToNull(q),
                     null,

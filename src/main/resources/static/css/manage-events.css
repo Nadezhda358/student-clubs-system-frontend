@@ -212,16 +212,14 @@
 }
 
 .manage-event-chip--published,
-.manage-event-chip--registered,
-.manage-event-chip--attended {
+.manage-event-chip--registered {
   color: #047857;
   background: rgba(16, 185, 129, 0.08);
   border-color: rgba(16, 185, 129, 0.18);
 }
 
 .manage-event-chip--draft,
-.manage-event-chip--members_only,
-.manage-event-chip--no_show {
+.manage-event-chip--members_only {
   color: #b45309;
   background: rgba(245, 158, 11, 0.08);
   border-color: rgba(245, 158, 11, 0.18);
