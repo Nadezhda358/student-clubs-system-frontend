@@ -15,6 +15,7 @@
     <link rel="stylesheet" th:href="@{/css/design-tokens.css}" />
     <link rel="stylesheet" th:href="@{/css/admin-shell.css}" />
     <link rel="stylesheet" th:href="@{/css/admin-clubs.css}" />
+    <link rel="stylesheet" th:href="@{/css/site-ui.css}" />
   </head>
   <body th:replace="~{fragments/admin-shell :: adminShell('admin-clubs-page', ~{::adminPageContent}, ~{::pageScripts})}">
     <th:block th:fragment="adminPageContent">
@@ -34,6 +35,7 @@
         </section>
 
         <div class="admin-alert admin-alert--success" th:if="${successMessage}" th:text="${successMessage}"></div>
+        <div class="admin-alert admin-alert--error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
 
         <section class="admin-clubs__list" th:if="${!#lists.isEmpty(clubs)}">
           <article class="admin-club-row" th:each="club : ${clubs}">

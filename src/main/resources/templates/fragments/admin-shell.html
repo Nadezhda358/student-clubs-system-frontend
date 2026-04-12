@@ -12,12 +12,11 @@
               open
               th:with="
                 path=${currentPath != null ? currentPath : ''},
-                clubsActive=${path == '/admin/clubs' or (#strings.startsWith(path, '/admin/clubs/') and path != '/admin/clubs/create')},
-                addClubActive=${path == '/admin/clubs/create'},
-                eventsActive=${path == '/admin/events'},
+                clubsActive=${path == '/admin/clubs' or #strings.startsWith(path, '/admin/clubs/')},
+                eventsActive=${path == '/admin/events' or path == '/admin/events/create' or #strings.startsWith(path, '/admin/events/')},
                 clubAppsActive=${path == '/admin/applications/clubs' or path == '/admin/membership-applications'},
-                eventAppsActive=${path == '/admin/applications/events' or path == '/admin/event-applications'},
-                statsActive=${path == '/admin/stats'},
+                eventAppsActive=${path == '/admin/applications/events' or path == '/admin/event-participations' or path == '/admin/event-applications'},
+                reportsActive=${path == '/admin/stats' or path == '/admin/reports'},
                 teacherInvitesActive=${path == '/admin/teacher-invites' or path == '/admin/teacher-invites/new'}
               "
             >
@@ -40,14 +39,6 @@
                   </a>
                   <a
                     class="admin-sidebar__link"
-                    th:classappend="${addClubActive} ? ' is-active' : ''"
-                    th:attr="aria-current=${addClubActive} ? 'page' : null"
-                    th:href="@{/admin/clubs/create}"
-                  >
-                    Add Club
-                  </a>
-                  <a
-                    class="admin-sidebar__link"
                     th:classappend="${eventsActive} ? ' is-active' : ''"
                     th:attr="aria-current=${eventsActive} ? 'page' : null"
                     th:href="@{/admin/events}"
@@ -66,17 +57,17 @@
                     class="admin-sidebar__link"
                     th:classappend="${eventAppsActive} ? ' is-active' : ''"
                     th:attr="aria-current=${eventAppsActive} ? 'page' : null"
-                    th:href="@{/admin/applications/events}"
+                    th:href="@{/admin/event-participations}"
                   >
-                    Event Applications
+                    Event Participations
                   </a>
                   <a
                     class="admin-sidebar__link"
-                    th:classappend="${statsActive} ? ' is-active' : ''"
-                    th:attr="aria-current=${statsActive} ? 'page' : null"
-                    th:href="@{/admin/stats}"
+                    th:classappend="${reportsActive} ? ' is-active' : ''"
+                    th:attr="aria-current=${reportsActive} ? 'page' : null"
+                    th:href="@{/admin/reports}"
                   >
-                    Stats
+                    Reports
                   </a>
                   <a
                     class="admin-sidebar__link"

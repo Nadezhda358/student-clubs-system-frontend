@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Events | ClubsHub</title>
+    <link th:href="@{/assets/logo.png}" rel="icon" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Sora:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" th:href="@{/css/site-chrome.css}" />
+    <link rel="stylesheet" th:href="@{/css/design-tokens.css}" />
+    <link rel="stylesheet" th:href="@{/css/events.css}" />
+    <link rel="stylesheet" th:href="@{/css/site-ui.css}" />
+  </head>
+  <body>
+    <header th:replace="fragments/site-chrome :: siteHeader"></header>
+
+    <main class="events-page">
+      <div class="container">
+        <div class="events-shell">
+          <section class="events-hero">
+            <p class="events-hero__tag">Campus Calendar</p>
+            <h1>Browse Events</h1>
+            <p class="events-hero__subtitle">
+              Explore upcoming club activity, compare schedules in a list or calendar, and jump into the events that fit your interests.
+            </p>
+          </section>
+
+          <div class="events-alert events-alert--success" th:if="${eventActionSuccessMessage}" th:text="${eventActionSuccessMessage}"></div>
+          <div class="events-alert events-alert--warning" th:if="${eventActionWarningMessage}" th:text="${eventActionWarningMessage}"></div>
+          <div class="events-alert events-alert--error" th:if="${eventActionErrorMessage}" th:text="${eventActionErrorMessage}"></div>
+          <div class="events-alert events-alert--error" th:if="${loadErrorMessage}" th:text="${loadErrorMessage}"></div>
+
+          <form method="get" th:action="@{/events}" class="events-filters">
+            <div class="events-filters__grid">
+              <div class="events-filter events-filter--search">
+                <label for="eventsSearch">Search</label>
+                <input id="eventsSearch" class="events-input" type="text" name="q" th:value="${q}" placeholder="Search by title or keyword" />
+              </div>
+
+              <div class="events-filter events-filter--club">
+                <label for="eventsClub">Club</label>
+                <select id="eventsClub" class="events-select" name="clubId">
+                  <option value="">All clubs</option>
+                  <option
+                    th:each="club : ${clubOptions}"
+                    th:value="${club.id}"
+                    th:selected="${selectedClubId != null and selectedClubId == club.id}"
+                    th:text="${club.name}"
+                  ></option>
+                </select>
+              </div>
+
+              <div class="events-filter events-filter--date">
+                <label for="eventsFromDate">From</label>
+                <input id="eventsFromDate" class="events-input" type="date" name="fromDate" th:value="${fromDate}" />
+              </div>
+
+              <div class="events-filter events-filter--date">
+                <label for="eventsToDate">To</label>
+                <input id="eventsToDate" class="events-input" type="date" name="toDate" th:value="${toDate}" />
+              </div>
+            </div>
+
+            <input type="hidden" name="view" th:value="${view}" />
+
+            <div class="events-filter-actions">
+              <button class="events-button events-button--primary" type="submit">Apply Filters</button>
+              <a class="events-link events-link--ghost" th:href="@{/events}">Reset</a>
+            </div>
+          </form>
+
+          <section class="events-browser" data-event-browser th:attr="data-default-view=${view}">
+            <div class="events-browser__toolbar">
+              <p class="events-browser__meta" th:text="${eventPage != null ? 'Showing ' + eventPage.numberOfElements + ' of ' + eventPage.totalElements + ' events' : 'Browse the latest campus events'}">
+                Browse the latest campus events
+              </p>
+
+              <div class="events-view-toggle" role="group" aria-label="Switch event view">
+                <button class="events-view-toggle__button" type="button" data-event-view-btn="list">List</button>
+                <button class="events-view-toggle__button" type="button" data-event-view-btn="calendar">Calendar</button>
+              </div>
+            </div>
+
+            <div class="events-empty" th:if="${#lists.isEmpty(events) and loadErrorMessage == null}">
+              No events matched the current filters.
+            </div>
+
+            <section class="events-pane" data-event-pane="list">
+              <div class="events-grid" th:if="${!#lists.isEmpty(events)}">
+                <article class="event-card" th:each="event : ${events}">
+                  <header class="event-card__header">
+                    <span class="event-card__club" th:text="${event.clubName}">Science Club</span>
+                    <h2 class="event-card__title">
+                      <a th:href="@{/events/{id}(id=${event.id})}" th:text="${event.title}">Event title</a>
+                    </h2>
+                    <p class="event-card__description" th:text="${event.description}">Event summary</p>
+                  </header>
+
+                  <div class="event-card__chips">
+                    <span class="event-chip" th:text="${T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatLabel(event.audience)}">All students</span>
+                    <span
+                      class="event-chip"
+                      th:classappend="${event.status.name() == 'CANCELLED'} ? ' event-chip--cancelled' : (${event.registrationOpen} ? ' event-chip--open' : ' event-chip--closed')"
+                      th:text="${event.status.name() == 'CANCELLED' ? 'Cancelled' : (event.registrationOpen ? 'Registration open' : 'Registration closed')}"
+                    >
+                      Registration open
+                    </span>
+                  </div>
+
+                  <div class="event-card__meta">
+                    <span th:text="${event.startAt != null ? T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatDateTime(event.startAt) : '-'}">2026-04-18 16:00</span>
+                    <span th:text="${event.location != null and !#strings.isEmpty(event.location) ? event.location : 'Location to be announced'}">Main Hall</span>
+                  </div>
+
+                  <footer class="event-card__footer">
+                    <span class="event-card__capacity" th:text="${event.availableSpots != null ? event.availableSpots + ' spots left' : 'Capacity flexible'}">12 spots left</span>
+                    <a class="events-link events-link--ghost" th:href="@{/events/{id}(id=${event.id})}">View Details</a>
+                  </footer>
+                </article>
+              </div>
+            </section>
+
+            <section class="events-pane" data-event-pane="calendar" hidden>
+              <div data-event-calendar>
+                <span
+                  th:each="event : ${events}"
+                  data-event-calendar-seed
+                  th:attr="
+                    data-title=${event.title},
+                    data-club=${event.clubName},
+                    data-location=${event.location},
+                    data-start=${event.startAt},
+                    data-href=@{/events/{id}(id=${event.id})}
+                  "
+                ></span>
+              </div>
+            </section>
+          </section>
+
+          <section
+            class="events-pagination"
+            th:if="${eventPage != null and eventPage.totalPages > 1}"
+            th:with="lastIndex=${eventPage.totalPages - 1}"
+          >
+            <a
+              class="events-link events-link--ghost"
+              th:classappend="${eventPage.first} ? ' disabled' : ''"
+              th:href="${eventPage.first} ? '#' : @{/events(page=0, clubId=${selectedClubId}, q=${q}, fromDate=${fromDate}, toDate=${toDate}, view=${view})}"
+            >
+              First
+            </a>
+            <a
+              class="events-link events-link--ghost"
+              th:classappend="${eventPage.first} ? ' disabled' : ''"
+              th:href="${eventPage.first} ? '#' : @{/events(page=${eventPage.number - 1}, clubId=${selectedClubId}, q=${q}, fromDate=${fromDate}, toDate=${toDate}, view=${view})}"
+            >
+              Previous
+            </a>
+            <span class="events-pagination__state">
+              Page <strong th:text="${eventPage.number + 1}">1</strong> of
+              <strong th:text="${eventPage.totalPages}">1</strong>
+            </span>
+            <a
+              class="events-link events-link--ghost"
+              th:classappend="${eventPage.last} ? ' disabled' : ''"
+              th:href="${eventPage.last} ? '#' : @{/events(page=${eventPage.number + 1}, clubId=${selectedClubId}, q=${q}, fromDate=${fromDate}, toDate=${toDate}, view=${view})}"
+            >
+              Next
+            </a>
+            <a
+              class="events-link events-link--ghost"
+              th:classappend="${eventPage.last} ? ' disabled' : ''"
+              th:href="${eventPage.last} ? '#' : @{/events(page=${lastIndex}, clubId=${selectedClubId}, q=${q}, fromDate=${fromDate}, toDate=${toDate}, view=${view})}"
+            >
+              Last
+            </a>
+          </section>
+        </div>
+      </div>
+    </main>
+
+    <footer th:replace="fragments/site-chrome :: siteFooter"></footer>
+    <script th:src="@{/js/event-browser.js}" defer></script>
+  </body>
+</html>

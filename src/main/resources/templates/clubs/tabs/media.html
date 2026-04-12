@@ -5,18 +5,29 @@
 
   <div th:if="${error == null}">
     <div class="tab-message" th:if="${media == null or #lists.isEmpty(media)}">
-      No media uploaded yet.
+      No images uploaded yet.
     </div>
-    <ul class="tab-list" th:if="${media != null and !#lists.isEmpty(media)}">
-      <li th:each="item : ${media}">
-        <div>
-          <strong th:text="${item.type != null ? item.type : 'Media'}">Media</strong>
-        </div>
-        <div>
-          <a th:if="${item.url != null}" th:href="${item.url}" th:text="${item.url}">
-            Media link
-          </a>
-          <span th:if="${item.url == null}">Link unavailable</span>
+    <ul class="tab-list club-media-grid" th:if="${media != null and !#lists.isEmpty(media)}">
+      <li class="club-media-card" th:each="item : ${media}">
+        <a
+          class="club-media-card__link"
+          th:if="${item.url != null and !#strings.isEmpty(item.url)}"
+          th:href="${item.url}"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <img
+            class="club-media-card__image"
+            th:src="${item.url}"
+            th:alt="${'Club image ' + (item.id != null ? item.id : '')}"
+            loading="lazy"
+          />
+        </a>
+        <div
+          class="club-media-card__placeholder"
+          th:if="${item.url == null or #strings.isEmpty(item.url)}"
+        >
+          Image unavailable
         </div>
       </li>
     </ul>

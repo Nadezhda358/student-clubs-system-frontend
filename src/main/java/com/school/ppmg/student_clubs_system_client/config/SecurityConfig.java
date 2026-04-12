@@ -25,7 +25,9 @@ public class SecurityConfig {
                                 "/js/**",
                                 "/webjars/**"
                         ).permitAll()
-                        .requestMatchers("/admin/**", "/teacher/**", "/student/**", "/me/**").authenticated()
+                        .requestMatchers("/admin", "/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/teacher", "/teacher/**").hasRole("TEACHER")
+                        .requestMatchers("/student/**", "/me/**").authenticated()
                         .anyRequest().permitAll()
                 )
                 .csrf(Customizer.withDefaults())

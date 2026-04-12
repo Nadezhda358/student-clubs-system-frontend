@@ -432,6 +432,12 @@ body.club-modal-open {
   color: #fee2e2;
 }
 
+.status-badge--cancelled {
+  background: rgba(34, 22, 28, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #f5ede7;
+}
+
 .membership-panel__empty {
   padding: 0.15rem 0;
 }
@@ -664,6 +670,78 @@ body.club-modal-open {
   border-radius: 12px;
   border: 1px solid rgba(34, 22, 28, 0.06);
   background: rgba(255, 255, 255, 0.74);
+}
+
+.club-media-grid {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.club-media-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.club-media-card__link,
+.club-media-card__placeholder {
+  display: block;
+  min-height: 220px;
+}
+
+.club-media-card__link {
+  background: rgba(246, 242, 251, 0.82);
+}
+
+.club-media-card__image {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  display: block;
+}
+
+.club-media-card__placeholder {
+  display: grid;
+  place-items: center;
+  color: rgba(34, 22, 28, 0.55);
+  background: rgba(246, 242, 251, 0.82);
+  font-weight: 600;
+}
+
+.tab-list--announcements {
+  gap: 1rem;
+}
+
+.announcement-card {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.announcement-card__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.announcement-card__title {
+  margin: 0;
+  font-family: "Playfair Display", serif;
+  font-size: 1.3rem;
+  color: var(--deep-brown);
+}
+
+.announcement-card__meta,
+.announcement-card__footer {
+  margin: 0;
+  color: rgba(34, 22, 28, 0.58);
+  font-size: 0.92rem;
+}
+
+.announcement-card__body {
+  margin: 0;
+  color: rgba(34, 22, 28, 0.82);
+  line-height: 1.7;
+  white-space: pre-line;
 }
 
 .error-panel {

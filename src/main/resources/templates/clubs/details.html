@@ -12,7 +12,10 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" th:href="@{/css/site-chrome.css}" />
+    <link rel="stylesheet" th:href="@{/css/design-tokens.css}" />
     <link rel="stylesheet" th:href="@{/css/club-details.css}" />
+    <link rel="stylesheet" th:href="@{/css/events.css}" />
+    <link rel="stylesheet" th:href="@{/css/site-ui.css}" />
   </head>
   <body>
     <header th:replace="fragments/site-chrome :: siteHeader"></header>
@@ -35,7 +38,8 @@
             isApplicationPending=${isStudent and myApplicationStatus == T(com.school.ppmg.student_clubs_system_client.enums.MembershipRequestStatus).PENDING},
             isApplicationApproved=${isStudent and myApplicationStatus == T(com.school.ppmg.student_clubs_system_client.enums.MembershipRequestStatus).APPROVED},
             isApplicationRejected=${isStudent and myApplicationStatus == T(com.school.ppmg.student_clubs_system_client.enums.MembershipRequestStatus).REJECTED},
-            showApplicationStatusBadge=${isApplicationPending or isApplicationApproved or isApplicationRejected},
+            isApplicationCancelled=${isStudent and myApplicationStatus == T(com.school.ppmg.student_clubs_system_client.enums.MembershipRequestStatus).CANCELLED},
+            showApplicationStatusBadge=${isApplicationPending or isApplicationApproved or isApplicationRejected or isApplicationCancelled},
             applyButtonDisabled=${isApplicationPending or isApplicationApproved},
             canOpenApplyModal=${isStudent and !applyButtonDisabled}
           "
@@ -68,8 +72,8 @@
                         <span
                           class="status-badge"
                           th:if="${showApplicationStatusBadge}"
-                          th:classappend="${isApplicationPending ? ' status-badge--pending' : (isApplicationApproved ? ' status-badge--member' : ' status-badge--rejected')}"
-                          th:text="${isApplicationPending ? 'Application pending' : (isApplicationApproved ? 'You are a member' : 'Application rejected')}"
+                          th:classappend="${isApplicationPending ? ' status-badge--pending' : (isApplicationApproved ? ' status-badge--member' : (isApplicationRejected ? ' status-badge--rejected' : ' status-badge--cancelled'))}"
+                          th:text="${isApplicationPending ? 'Application pending' : (isApplicationApproved ? 'You are a member' : (isApplicationRejected ? 'Application rejected' : 'Application cancelled'))}"
                         >
                           Application pending
                         </span>
@@ -78,7 +82,7 @@
                           class="club-hero__apply-button"
                           th:if="${isStudent}"
                           th:disabled="${applyButtonDisabled}"
-                          th:text="${isApplicationPending ? 'Pending' : (isApplicationApproved ? 'Member' : (isApplicationRejected ? 'Apply again' : 'Apply'))}"
+                          th:text="${isApplicationPending ? 'Pending' : (isApplicationApproved ? 'Member' : ((isApplicationRejected or isApplicationCancelled) ? 'Apply again' : 'Apply'))}"
                           th:attr="
                             data-open-apply-modal=${canOpenApplyModal ? 'true' : null},
                             aria-controls=${canOpenApplyModal ? 'club-apply-modal' : null},
@@ -431,6 +435,7 @@
     </main>
 
     <footer th:replace="fragments/site-chrome :: siteFooter"></footer>
+    <script th:src="@{/js/event-browser.js}" defer></script>
 
     <div
       id="club-toast"
@@ -484,6 +489,7 @@
               })
               .then((html) => {
                 activePanel.innerHTML = html;
+                window.ClubsHubEventBrowser?.init(activePanel);
               })
               .catch(() => {
                 activePanel.innerHTML =

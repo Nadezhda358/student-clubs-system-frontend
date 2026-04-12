@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reports | ClubsHub Admin</title>
+    <link th:href="@{/assets/logo.png}" rel="icon" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Sora:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" th:href="@{/css/site-chrome.css}" />
+    <link rel="stylesheet" th:href="@{/css/design-tokens.css}" />
+    <link rel="stylesheet" th:href="@{/css/admin-shell.css}" />
+    <link rel="stylesheet" th:href="@{/css/site-ui.css}" />
+    <link rel="stylesheet" th:href="@{/css/admin-reports.css}" />
+  </head>
+  <body th:replace="~{fragments/admin-shell :: adminShell('admin-reports-page', ~{::adminPageContent}, ~{::pageScripts})}">
+    <th:block th:fragment="adminPageContent">
+      <div class="admin-reports">
+        <div class="container admin-reports__container">
+          <section class="admin-reports__hero">
+            <div>
+              <p class="admin-reports__tag">Admin Workspace</p>
+              <h1>Reports</h1>
+              <p class="admin-reports__subtitle">
+                Review current club totals and historical event activity from one reporting surface.
+              </p>
+            </div>
+          </section>
+
+          <form method="get" th:action="@{/admin/reports}" class="admin-reports__filters">
+            <div class="admin-reports__filters-grid">
+              <label class="admin-reports__field" for="reportFromDate">
+                <span>From</span>
+                <input id="reportFromDate" class="admin-reports__input" type="date" name="fromDate" th:value="${fromDate}" />
+              </label>
+
+              <label class="admin-reports__field" for="reportToDate">
+                <span>To</span>
+                <input id="reportToDate" class="admin-reports__input" type="date" name="toDate" th:value="${toDate}" />
+              </label>
+
+              <label class="admin-reports__field" for="reportPeriod">
+                <span>Period</span>
+                <select id="reportPeriod" class="admin-reports__select" name="period">
+                  <option
+                    th:each="periodValue : ${periodValues}"
+                    th:value="${periodValue.name()}"
+                    th:selected="${selectedPeriod == periodValue}"
+                    th:text="${T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatLabel(periodValue)}"
+                  ></option>
+                </select>
+              </label>
+            </div>
+
+            <div class="admin-reports__filter-actions">
+              <button class="admin-reports__button admin-reports__button--primary" type="submit">Apply Filters</button>
+              <a class="admin-reports__button admin-reports__button--ghost" th:href="@{/admin/reports}">Reset</a>
+            </div>
+          </form>
+
+          <section class="admin-reports__note">
+            <h2>Reporting Rules</h2>
+            <p>Current club totals and active-member counts only include clubs that are not deleted.</p>
+            <p>Historical event and participation metrics still include past events from clubs that existed during that period.</p>
+            <p>Future events from deleted clubs no longer count because club deletion automatically cancels them.</p>
+          </section>
+
+          <section class="admin-reports__panel">
+            <div class="admin-reports__panel-header">
+              <div>
+                <p class="admin-reports__eyebrow">Overview</p>
+                <h2>Platform Totals</h2>
+              </div>
+              <p
+                class="admin-reports__window"
+                th:if="${reportWindowFrom != null or reportWindowTo != null}"
+                th:text="|Window: ${reportWindowFrom != null ? T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).toDateInput(reportWindowFrom) : 'Start'} to ${reportWindowTo != null ? T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).toDateInput(reportWindowTo) : 'Now'}|"
+              >
+                Window: 2026-04-01 to 2026-04-30
+              </p>
+            </div>
+
+            <div class="admin-alert admin-alert--error" th:if="${overviewErrorMessage}" th:text="${overviewErrorMessage}"></div>
+
+            <div class="admin-reports__stats" th:if="${overview != null}">
+              <article class="admin-reports__stat-card">
+                <span class="admin-reports__stat-label">Total Clubs</span>
+                <strong th:text="${overview.totalClubs != null ? overview.totalClubs : 0}">0</strong>
+              </article>
+              <article class="admin-reports__stat-card">
+                <span class="admin-reports__stat-label">Active Clubs</span>
+                <strong th:text="${overview.activeClubs != null ? overview.activeClubs : 0}">0</strong>
+              </article>
+              <article class="admin-reports__stat-card">
+                <span class="admin-reports__stat-label">Inactive Clubs</span>
+                <strong th:text="${overview.inactiveClubs != null ? overview.inactiveClubs : 0}">0</strong>
+              </article>
+              <article class="admin-reports__stat-card">
+                <span class="admin-reports__stat-label">Active Members</span>
+                <strong th:text="${overview.activeMembers != null ? overview.activeMembers : 0}">0</strong>
+              </article>
+              <article class="admin-reports__stat-card">
+                <span class="admin-reports__stat-label">Total Events</span>
+                <strong th:text="${overview.totalEvents != null ? overview.totalEvents : 0}">0</strong>
+              </article>
+              <article class="admin-reports__stat-card">
+                <span class="admin-reports__stat-label">Registered Participations</span>
+                <strong th:text="${overview.registeredParticipations != null ? overview.registeredParticipations : 0}">0</strong>
+              </article>
+              <article class="admin-reports__stat-card">
+                <span class="admin-reports__stat-label">Cancelled Participations</span>
+                <strong th:text="${overview.cancelledParticipations != null ? overview.cancelledParticipations : 0}">0</strong>
+              </article>
+              <article class="admin-reports__stat-card">
+                <span class="admin-reports__stat-label">Unique Registered Participants</span>
+                <strong th:text="${overview.uniqueRegisteredParticipants != null ? overview.uniqueRegisteredParticipants : 0}">0</strong>
+              </article>
+            </div>
+
+            <div class="admin-reports__empty" th:if="${overview == null and overviewErrorMessage == null}">
+              Overview metrics are not available for the selected window.
+            </div>
+          </section>
+
+          <section class="admin-reports__panel">
+            <div class="admin-reports__panel-header">
+              <div>
+                <p class="admin-reports__eyebrow">Timeline</p>
+                <h2>Events By Period</h2>
+              </div>
+              <p class="admin-reports__window" th:text="|Grouped by ${T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatLabel(selectedPeriod)}|">
+                Grouped by Month
+              </p>
+            </div>
+
+            <div class="admin-alert admin-alert--error" th:if="${timelineErrorMessage}" th:text="${timelineErrorMessage}"></div>
+
+            <div class="admin-reports__timeline" th:if="${!#lists.isEmpty(eventsByPeriodPoints)}">
+              <article class="admin-reports__point" th:each="point : ${eventsByPeriodPoints}">
+                <div class="admin-reports__point-meta">
+                  <strong th:text="${point.periodStart != null ? point.periodStart : '-'}">2026-04-01</strong>
+                  <span th:text="${point.eventsCount != null ? point.eventsCount : 0}">0</span>
+                </div>
+                <div class="admin-reports__bar">
+                  <span
+                    class="admin-reports__bar-fill"
+                    th:style="${'width:' + (eventsByPeriodMaxCount > 0 ? ((point.eventsCount != null ? point.eventsCount : 0) * 100 / eventsByPeriodMaxCount) : 0) + '%'}"
+                  ></span>
+                </div>
+              </article>
+            </div>
+
+            <div class="admin-reports__empty" th:if="${#lists.isEmpty(eventsByPeriodPoints) and timelineErrorMessage == null}">
+              No events matched the selected date range.
+            </div>
+          </section>
+        </div>
+      </div>
+    </th:block>
+
+    <th:block th:fragment="pageScripts"></th:block>
+  </body>
+</html>

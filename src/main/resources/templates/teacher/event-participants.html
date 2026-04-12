@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Event Participants | ClubsHub Teacher</title>
+    <link th:href="@{/assets/logo.png}" rel="icon" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Sora:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" th:href="@{/css/site-chrome.css}" />
+    <link rel="stylesheet" th:href="@{/css/design-tokens.css}" />
+    <link rel="stylesheet" th:href="@{/css/admin-shell.css}" />
+    <link rel="stylesheet" th:href="@{/css/admin-clubs.css}" />
+    <link rel="stylesheet" th:href="@{/css/events.css}" />
+    <link rel="stylesheet" th:href="@{/css/manage-events.css}" />
+    <link rel="stylesheet" th:href="@{/css/site-ui.css}" />
+  </head>
+  <body th:replace="~{fragments/teacher-shell :: teacherShell('event-participants-page', ~{::teacherPageContent}, ~{::pageScripts})}">
+    <th:block th:fragment="teacherPageContent">
+      <div class="event-participants-page">
+        <div class="container">
+          <div class="event-participants">
+            <section class="event-participants__hero">
+              <div>
+                <p class="event-participants__tag">Teacher Workspace</p>
+                <h1>Event Participants</h1>
+                <p class="event-participants__subtitle">Review registrations for this event and update participant statuses when needed.</p>
+              </div>
+              <a class="events-link events-link--ghost" th:href="@{/teacher/events}">Back to Events</a>
+            </section>
+
+            <section class="event-participants__event-panel">
+              <h2 th:text="${event.title}">Event Title</h2>
+              <p th:text="${event.clubName + ' • ' + (event.startAt != null ? T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatDateTime(event.startAt) : 'Schedule pending')}">
+                Club • schedule
+              </p>
+            </section>
+
+            <div class="admin-alert admin-alert--success" th:if="${successMessage}" th:text="${successMessage}"></div>
+            <div class="admin-alert admin-alert--error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
+            <form method="get" th:action="@{/teacher/events/{id}/participants(id=${event.id})}" class="event-participants__filters">
+              <div class="event-participants__filters-grid">
+                <div class="event-participants__field">
+                  <label for="teacherParticipantStatus">Status</label>
+                  <select id="teacherParticipantStatus" class="event-participants__select" name="status">
+                    <option value="">All statuses</option>
+                    <option
+                      th:each="statusValue : ${statusValues}"
+                      th:value="${statusValue.name()}"
+                      th:selected="${selectedStatus != null and selectedStatus == statusValue}"
+                      th:text="${T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatLabel(statusValue)}"
+                    ></option>
+                  </select>
+                </div>
+
+                <div class="event-participants__field event-participants__field--wide">
+                  <label for="teacherParticipantSearch">Search</label>
+                  <input id="teacherParticipantSearch" class="event-participants__input" type="text" name="q" th:value="${q}" placeholder="Search by name or email" />
+                </div>
+              </div>
+
+              <div class="event-participants__filter-actions" style="margin-top: 0.9rem;">
+                <button class="events-button events-button--primary" type="submit">Apply Filters</button>
+                <a class="events-link events-link--ghost" th:href="@{/teacher/events/{id}/participants(id=${event.id})}">Reset</a>
+              </div>
+            </form>
+
+            <div class="manage-events__empty" th:if="${#lists.isEmpty(participants)}">
+              No participants matched the current filters.
+            </div>
+
+            <div class="event-participants__table-wrap" th:if="${!#lists.isEmpty(participants)}">
+              <table class="event-participants__table">
+                <thead>
+                  <tr>
+                    <th>Student</th>
+                    <th>Registered At</th>
+                    <th>Status</th>
+                    <th>Update</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr th:each="participant : ${participants}">
+                    <td>
+                      <strong th:text="${participant.studentFullName}">Student</strong>
+                      <div th:text="${participant.studentEmail}">student@example.com</div>
+                    </td>
+                    <td th:text="${participant.registeredAt != null ? T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatDateTime(participant.registeredAt) : '-'}">2026-04-18 12:00</td>
+                    <td>
+                      <span
+                        class="manage-event-chip"
+                        th:classappend="${' manage-event-chip--' + #strings.toLowerCase(participant.status.name())}"
+                        th:text="${T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatLabel(participant.status)}"
+                      >
+                        Registered
+                      </span>
+                    </td>
+                    <td>
+                      <form class="event-status-form" method="post" th:action="@{/teacher/events/{eventId}/participants/{studentId}(eventId=${event.id},studentId=${participant.studentId})}">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                        <select class="event-status-form__select" name="status">
+                          <option
+                            th:each="statusValue : ${statusValues}"
+                            th:value="${statusValue.name()}"
+                            th:selected="${participant.status == statusValue}"
+                            th:text="${T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatLabel(statusValue)}"
+                          ></option>
+                        </select>
+                        <button class="event-status-form__button" type="submit">Save</button>
+                      </form>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <section
+              class="event-participants__pagination"
+              th:if="${participantPage != null and participantPage.totalPages > 1}"
+              th:with="lastIndex=${participantPage.totalPages - 1}"
+            >
+              <a class="events-link events-link--ghost" th:href="${participantPage.first} ? '#' : @{/teacher/events/{id}/participants(id=${event.id},page=0,status=${selectedStatus},q=${q})}" th:classappend="${participantPage.first} ? ' disabled' : ''">First</a>
+              <a class="events-link events-link--ghost" th:href="${participantPage.first} ? '#' : @{/teacher/events/{id}/participants(id=${event.id},page=${participantPage.number - 1},status=${selectedStatus},q=${q})}" th:classappend="${participantPage.first} ? ' disabled' : ''">Previous</a>
+              <span>Page <strong th:text="${participantPage.number + 1}">1</strong> of <strong th:text="${participantPage.totalPages}">1</strong></span>
+              <a class="events-link events-link--ghost" th:href="${participantPage.last} ? '#' : @{/teacher/events/{id}/participants(id=${event.id},page=${participantPage.number + 1},status=${selectedStatus},q=${q})}" th:classappend="${participantPage.last} ? ' disabled' : ''">Next</a>
+              <a class="events-link events-link--ghost" th:href="${participantPage.last} ? '#' : @{/teacher/events/{id}/participants(id=${event.id},page=${lastIndex},status=${selectedStatus},q=${q})}" th:classappend="${participantPage.last} ? ' disabled' : ''">Last</a>
+            </section>
+          </div>
+        </div>
+      </div>
+    </th:block>
+
+    <th:block th:fragment="pageScripts"></th:block>
+  </body>
+</html>

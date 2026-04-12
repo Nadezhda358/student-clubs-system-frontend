@@ -1,10 +1,10 @@
 package com.school.ppmg.student_clubs_system_client.clients;
 
 import com.school.ppmg.student_clubs_system_client.dtos.auth.UserDto;
+import com.school.ppmg.student_clubs_system_client.dtos.common.PageResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @FeignClient(
         name = "student-clubs-system",
@@ -14,5 +14,9 @@ import java.util.List;
 public interface AdminTeacherClient {
 
     @GetMapping
-    List<UserDto> getAllTeachers();
+    PageResponse<UserDto> getAllTeachers(
+            @RequestParam(required = false) String q,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "200") int size
+    );
 }

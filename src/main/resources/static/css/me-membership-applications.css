@@ -43,6 +43,12 @@ body {
   background: rgba(245, 158, 11, 0.07);
 }
 
+.me-applications-alert--success {
+  color: #047857;
+  border-color: rgba(16, 185, 129, 0.16);
+  background: rgba(16, 185, 129, 0.06);
+}
+
 .me-applications-alert--error {
   color: #b91c1c;
   border-color: rgba(239, 68, 68, 0.16);
@@ -188,6 +194,23 @@ body {
 
 .me-applications-muted {
   color: rgba(34, 22, 28, 0.55);
+}
+
+.me-applications-actions {
+  display: flex;
+  align-items: center;
+}
+
+.admin-pagination {
+  margin-top: 1rem;
+}
+
+.me-applications-actions form {
+  margin: 0;
+}
+
+.me-applications-action {
+  white-space: nowrap;
 }
 
 @media (max-width: 900px) {

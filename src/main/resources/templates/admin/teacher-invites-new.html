@@ -18,8 +18,10 @@
       crossorigin="anonymous"
     />
     <link rel="stylesheet" th:href="@{/css/site-chrome.css}" />
+    <link rel="stylesheet" th:href="@{/css/design-tokens.css}" />
     <link rel="stylesheet" th:href="@{/css/admin-shell.css}" />
     <link rel="stylesheet" th:href="@{/css/admin-invites.css}" />
+    <link rel="stylesheet" th:href="@{/css/site-ui.css}" />
   </head>
   <body th:replace="~{fragments/admin-shell :: adminShell('bg-light admin-invites', ~{::adminPageContent}, ~{::pageScripts})}">
     <th:block th:fragment="adminPageContent">

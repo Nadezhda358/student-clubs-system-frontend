@@ -1,19 +1,25 @@
 package com.school.ppmg.student_clubs_system_client.controllers;
 
 import com.school.ppmg.student_clubs_system_client.clients.AdminTeacherClient;
+import com.school.ppmg.student_clubs_system_client.clients.AnnouncementClient;
 import com.school.ppmg.student_clubs_system_client.clients.ClubClient;
+import com.school.ppmg.student_clubs_system_client.clients.EventClient;
 import com.school.ppmg.student_clubs_system_client.clients.MembershipApplicationClient;
+import com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport;
+import com.school.ppmg.student_clubs_system_client.dtos.announcement.AnnouncementDto;
 import com.school.ppmg.student_clubs_system_client.dtos.auth.AuthUserDto;
 import com.school.ppmg.student_clubs_system_client.dtos.auth.UserDto;
+import com.school.ppmg.student_clubs_system_client.dtos.club.AddClubTeachersRequest;
 import com.school.ppmg.student_clubs_system_client.dtos.club.ClubDto;
 import com.school.ppmg.student_clubs_system_client.dtos.club.ClubListDto;
 import com.school.ppmg.student_clubs_system_client.dtos.club.CreateClubRequest;
 import com.school.ppmg.student_clubs_system_client.dtos.club.CreateMembershipApplicationRequest;
-import com.school.ppmg.student_clubs_system_client.dtos.club.MembershipApplicationDto;
 import com.school.ppmg.student_clubs_system_client.dtos.club.MediaDto;
+import com.school.ppmg.student_clubs_system_client.dtos.club.MembershipApplicationDto;
 import com.school.ppmg.student_clubs_system_client.dtos.club.TeacherDto;
 import com.school.ppmg.student_clubs_system_client.dtos.club.UpsertClubDto;
 import com.school.ppmg.student_clubs_system_client.dtos.common.PageResponse;
+import com.school.ppmg.student_clubs_system_client.dtos.event.EventListDto;
 import com.school.ppmg.student_clubs_system_client.enums.MembershipRequestStatus;
 import com.school.ppmg.student_clubs_system_client.enums.UserRole;
 import feign.FeignException;
@@ -33,18 +39,22 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
+import java.util.Locale;
 
 @Controller
 @RequiredArgsConstructor
 public class ClubController {
+    private static final long MAX_IMAGE_FILE_SIZE_BYTES = 5L * 1024 * 1024;
     private final AdminTeacherClient adminTeacherClient;
+    private final AnnouncementClient announcementClient;
     private final ClubClient clubClient;
+    private final EventClient eventClient;
     private final MembershipApplicationClient membershipApplicationClient;
     private static final int PAGE_SIZE = 9;
 
     @GetMapping("/clubs")
     public String clubsPage(
+            @RequestParam(required = false) String q,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "9") int size,
             @RequestParam(required = false) String sort,
@@ -55,10 +65,12 @@ public class ClubController {
             sort = "name,asc";
         }
 
-        PageResponse<ClubListDto> result = clubClient.getAll(true, page, PAGE_SIZE, sort);
+        String normalizedQuery = trimToNull(q);
+        PageResponse<ClubListDto> result = clubClient.getAll(true, normalizedQuery, page, PAGE_SIZE, sort);
 
         model.addAttribute("page", result);
         model.addAttribute("clubs", result.getContent());
+        model.addAttribute("q", normalizedQuery == null ? "" : normalizedQuery);
 
         // keep query params for pagination links
         model.addAttribute("sort", sort);
@@ -73,31 +85,35 @@ public class ClubController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(required = false) String sort,
             @RequestParam(required = false) String success,
+            @ModelAttribute("successMessage") String flashSuccessMessage,
+            @ModelAttribute("errorMessage") String flashErrorMessage,
             Model model
     ) {
         String resolvedSort = (sort == null || sort.isBlank()) ? "name,asc" : sort;
-        PageResponse<ClubListDto> result = clubClient.getAll(active, page, PAGE_SIZE, resolvedSort);
+        PageResponse<ClubListDto> result = clubClient.getAll(active, null, page, PAGE_SIZE, resolvedSort);
 
         model.addAttribute("page", result);
         model.addAttribute("clubs", result.getContent());
         model.addAttribute("active", active);
         model.addAttribute("sort", resolvedSort);
         model.addAttribute("size", PAGE_SIZE);
-        model.addAttribute("successMessage", successMessage(success));
+        model.addAttribute("successMessage", firstNonBlank(flashSuccessMessage, successMessage(success)));
+        model.addAttribute("errorMessage", trimToNull(flashErrorMessage));
 
         return "admin/clubs";
     }
 
     @GetMapping("/admin/clubs/create")
     public String createClubPage(Model model) {
-        populateCreateFormModel(model, "", "", "", "", "", "", true, null, true);
+        populateCreateFormModel(model, "", "", "", "", "", "", true, List.of());
         return "admin/club-form";
     }
 
     @PostMapping("/admin/clubs/create")
     public String createClub(
             @ModelAttribute CreateClubRequest request,
-            Model model
+            Model model,
+            RedirectAttributes redirectAttributes
     ) {
         String normalizedName = normalizeRequiredText(request.getName());
         String normalizedDescription = normalizeRequiredText(request.getDescription());
@@ -105,9 +121,10 @@ public class ClubController {
         String normalizedRoom = normalizeOptionalText(request.getRoom());
         String normalizedContactEmail = normalizeOptionalText(request.getContactEmail());
         String normalizedContactPhone = normalizeOptionalText(request.getContactPhone());
+        List<Long> teacherIds = normalizeTeacherIds(request.getTeacherIds());
         boolean isActive = Boolean.TRUE.equals(request.getIsActive());
-        Long teacherId = request.getTeacherId();
-        boolean teacherIsPrimary = request.getTeacherIsPrimary() == null || request.getTeacherIsPrimary();
+        MultipartFile mainImage = hasFile(request.getMainImage()) ? request.getMainImage() : null;
+        List<MultipartFile> mediaFiles = normalizeFiles(request.getMediaFiles());
 
         if (normalizedName.isBlank()) {
             populateCreateFormModel(
@@ -119,8 +136,7 @@ public class ClubController {
                     normalizedContactEmail,
                     normalizedContactPhone,
                     isActive,
-                    teacherId,
-                    teacherIsPrimary
+                    teacherIds
             );
             model.addAttribute("errorMessage", "Club Name is required.");
             return "admin/club-form";
@@ -136,11 +152,79 @@ public class ClubController {
                     normalizedContactEmail,
                     normalizedContactPhone,
                     isActive,
-                    teacherId,
-                    teacherIsPrimary
+                    teacherIds
             );
             model.addAttribute("errorMessage", "Description is required.");
             return "admin/club-form";
+        }
+
+        if (mainImage != null && mainImage.getSize() > MAX_IMAGE_FILE_SIZE_BYTES) {
+            populateCreateFormModel(
+                    model,
+                    normalizedName,
+                    normalizedDescription,
+                    normalizedScheduleText,
+                    normalizedRoom,
+                    normalizedContactEmail,
+                    normalizedContactPhone,
+                    isActive,
+                    teacherIds
+            );
+            model.addAttribute("errorMessage", "Main image must be 5 MB or smaller. Please choose another file.");
+            return "admin/club-form";
+        }
+
+        if (mainImage != null && !isImageFile(mainImage)) {
+            populateCreateFormModel(
+                    model,
+                    normalizedName,
+                    normalizedDescription,
+                    normalizedScheduleText,
+                    normalizedRoom,
+                    normalizedContactEmail,
+                    normalizedContactPhone,
+                    isActive,
+                    teacherIds
+            );
+            model.addAttribute("errorMessage", "Main image must be an image file.");
+            return "admin/club-form";
+        }
+
+        for (MultipartFile mediaFile : mediaFiles) {
+            if (mediaFile.getSize() > MAX_IMAGE_FILE_SIZE_BYTES) {
+                populateCreateFormModel(
+                        model,
+                        normalizedName,
+                        normalizedDescription,
+                        normalizedScheduleText,
+                        normalizedRoom,
+                        normalizedContactEmail,
+                        normalizedContactPhone,
+                        isActive,
+                        teacherIds
+                );
+                model.addAttribute(
+                        "errorMessage",
+                        "Each uploaded media file must be 5 MB or smaller. Please choose another file."
+                );
+                return "admin/club-form";
+            }
+
+            if (!isImageFile(mediaFile)) {
+                populateCreateFormModel(
+                        model,
+                        normalizedName,
+                        normalizedDescription,
+                        normalizedScheduleText,
+                        normalizedRoom,
+                        normalizedContactEmail,
+                        normalizedContactPhone,
+                        isActive,
+                        teacherIds
+                );
+                model.addAttribute("errorMessage", "Club media uploads must be image files.");
+                return "admin/club-form";
+            }
         }
 
         request.setName(normalizedName);
@@ -150,13 +234,30 @@ public class ClubController {
         request.setContactEmail(normalizedContactEmail);
         request.setContactPhone(normalizedContactPhone);
         request.setIsActive(isActive);
-        request.setTeacherId(teacherId);
-        request.setTeacherIsPrimary(teacherId == null ? null : teacherIsPrimary);
-        request.setMainImage(hasFile(request.getMainImage()) ? request.getMainImage() : null);
-        request.setMediaFiles(normalizeFiles(request.getMediaFiles()));
+        request.setTeacherIds(teacherIds.isEmpty() ? null : teacherIds);
+        request.setMainImage(mainImage);
+        request.setMediaFiles(mediaFiles);
 
         try {
-            clubClient.create(request);
+            if (mediaFiles.isEmpty()) {
+                ClubDto createdClub = clubClient.create(request.toCreateClubDto());
+                if (mainImage != null) {
+                    try {
+                        clubClient.uploadMainImage(createdClub.id(), mainImage);
+                    } catch (FeignException ex) {
+                        redirectAttributes.addFlashAttribute(
+                                "errorMessage",
+                                firstNonBlank(
+                                        extractUserMessage(ex),
+                                        "Club created, but the main image upload failed. You can try again from the edit page."
+                                )
+                        );
+                        return "redirect:/admin/clubs/" + createdClub.id() + "/edit";
+                    }
+                }
+            } else {
+                clubClient.createMultipart(request);
+            }
             return "redirect:/admin/clubs?success=created";
         } catch (FeignException ex) {
             populateCreateFormModel(
@@ -168,8 +269,7 @@ public class ClubController {
                     normalizedContactEmail,
                     normalizedContactPhone,
                     isActive,
-                    teacherId,
-                    teacherId == null ? true : teacherIsPrimary
+                    teacherIds
             );
             model.addAttribute("errorMessage", toCreateClubSaveErrorMessage(ex, request));
             return "admin/club-form";
@@ -184,18 +284,7 @@ public class ClubController {
     ) {
         try {
             ClubDto club = clubClient.getById(id);
-            populateFormModel(
-                    model,
-                    "edit",
-                    id,
-                    nonNull(club.name()),
-                    nonNull(club.description()),
-                    nonNull(club.scheduleText()),
-                    nonNull(club.room()),
-                    nonNull(club.contactEmail()),
-                    nonNull(club.contactPhone()),
-                    club.isActive() == null || club.isActive()
-            );
+            populateEditFormModel(model, club, extractSelectedTeacherIds(model));
             return "admin/club-form";
         } catch (FeignException.NotFound ex) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -226,16 +315,15 @@ public class ClubController {
             HttpServletResponse response
     ) {
         String normalizedName = normalizeRequiredText(name);
-        String normalizedDescription = normalizeOptionalText(description);
+        String normalizedDescription = normalizeRequiredText(description);
         String normalizedScheduleText = normalizeOptionalText(scheduleText);
         String normalizedRoom = normalizeOptionalText(room);
         String normalizedContactEmail = normalizeOptionalText(contactEmail);
         String normalizedContactPhone = normalizeOptionalText(contactPhone);
 
         if (normalizedName.isBlank()) {
-            populateFormModel(
+            populateEditFormModel(
                     model,
-                    "edit",
                     id,
                     normalizedName,
                     normalizedDescription,
@@ -243,9 +331,29 @@ public class ClubController {
                     normalizedRoom,
                     normalizedContactEmail,
                     normalizedContactPhone,
-                    isActive
+                    isActive,
+                    resolveAssignedTeachers(id),
+                    extractSelectedTeacherIds(model)
             );
             model.addAttribute("errorMessage", "Club Name is required.");
+            return "admin/club-form";
+        }
+
+        if (normalizedDescription.isBlank()) {
+            populateEditFormModel(
+                    model,
+                    id,
+                    normalizedName,
+                    normalizedDescription,
+                    normalizedScheduleText,
+                    normalizedRoom,
+                    normalizedContactEmail,
+                    normalizedContactPhone,
+                    isActive,
+                    resolveAssignedTeachers(id),
+                    extractSelectedTeacherIds(model)
+            );
+            model.addAttribute("errorMessage", "Description is required.");
             return "admin/club-form";
         }
 
@@ -265,9 +373,8 @@ public class ClubController {
             model.addAttribute("missingClubId", id);
             return "errors/404";
         } catch (FeignException ex) {
-            populateFormModel(
+            populateEditFormModel(
                     model,
-                    "edit",
                     id,
                     normalizedName,
                     normalizedDescription,
@@ -275,11 +382,111 @@ public class ClubController {
                     normalizedRoom,
                     normalizedContactEmail,
                     normalizedContactPhone,
-                    isActive
+                    isActive,
+                    resolveAssignedTeachers(id),
+                    extractSelectedTeacherIds(model)
             );
             model.addAttribute("errorMessage", toClubSaveErrorMessage(ex));
             return "admin/club-form";
         }
+    }
+
+    @PostMapping("/admin/clubs/{id}/teachers")
+    public String addClubTeachers(
+            @PathVariable Long id,
+            @RequestParam(name = "teacherIds", required = false) List<Long> teacherIds,
+            RedirectAttributes redirectAttributes
+    ) {
+        List<Long> normalizedTeacherIds = normalizeTeacherIds(teacherIds);
+        if (normalizedTeacherIds.isEmpty()) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Select at least one teacher to add.");
+            redirectAttributes.addFlashAttribute("selectedTeacherIds", normalizedTeacherIds);
+            return redirectToAdminClubEdit(id);
+        }
+
+        try {
+            clubClient.addTeachers(id, new AddClubTeachersRequest(normalizedTeacherIds));
+            redirectAttributes.addFlashAttribute(
+                    "successMessage",
+                    normalizedTeacherIds.size() == 1 ? "Teacher added successfully." : "Teachers added successfully."
+            );
+        } catch (FeignException ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", toTeacherAssignmentErrorMessage(ex, true));
+            redirectAttributes.addFlashAttribute("selectedTeacherIds", normalizedTeacherIds);
+        }
+
+        return redirectToAdminClubEdit(id);
+    }
+
+    @PostMapping("/admin/clubs/{id}/teachers/{teacherId}/remove")
+    public String removeClubTeacher(
+            @PathVariable Long id,
+            @PathVariable Long teacherId,
+            RedirectAttributes redirectAttributes
+    ) {
+        try {
+            clubClient.removeTeacher(id, teacherId);
+            redirectAttributes.addFlashAttribute("successMessage", "Teacher removed successfully.");
+        } catch (FeignException ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", toTeacherAssignmentErrorMessage(ex, false));
+        }
+
+        return redirectToAdminClubEdit(id);
+    }
+
+    @PostMapping("/admin/clubs/{id}/main-image")
+    public String uploadMainImage(
+            @PathVariable Long id,
+            @RequestParam("mainImage") MultipartFile mainImage,
+            RedirectAttributes redirectAttributes
+    ) {
+        if (!hasFile(mainImage)) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Please choose an image to upload.");
+            return redirectToAdminClubEdit(id);
+        }
+
+        if (mainImage.getSize() > MAX_IMAGE_FILE_SIZE_BYTES) {
+            redirectAttributes.addFlashAttribute(
+                    "errorMessage",
+                    "Main image must be 5 MB or smaller. Please choose another file."
+            );
+            return redirectToAdminClubEdit(id);
+        }
+
+        if (!isImageFile(mainImage)) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Main image must be an image file.");
+            return redirectToAdminClubEdit(id);
+        }
+
+        try {
+            clubClient.uploadMainImage(id, mainImage);
+            redirectAttributes.addFlashAttribute("successMessage", "Main image updated successfully.");
+        } catch (FeignException ex) {
+            redirectAttributes.addFlashAttribute(
+                    "errorMessage",
+                    firstNonBlank(extractUserMessage(ex), "Unable to upload the main image right now. Please try again.")
+            );
+        }
+
+        return redirectToAdminClubEdit(id);
+    }
+
+    @PostMapping("/admin/clubs/{id}/delete")
+    public String deleteClub(
+            @PathVariable Long id,
+            RedirectAttributes redirectAttributes
+    ) {
+        try {
+            clubClient.delete(id);
+            redirectAttributes.addFlashAttribute(
+                    "successMessage",
+                    "Club deleted. Future events were cancelled and active memberships were marked as left."
+            );
+        } catch (FeignException ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", toClubDeleteErrorMessage(ex));
+        }
+
+        return "redirect:/admin/clubs";
     }
 
     @GetMapping("/clubs/{id}")
@@ -358,8 +565,18 @@ public class ClubController {
     @GetMapping("/clubs/{id}/tabs/events")
     public String clubEventsTab(@PathVariable Long id, Model model) {
         try {
-            List<Map<String, Object>> events = clubClient.getEvents(id);
-            model.addAttribute("events", events);
+            PageResponse<EventListDto> result = eventClient.getPublicEvents(
+                    id,
+                    null,
+                    null,
+                    null,
+                    null,
+                    0,
+                    EventViewSupport.TAB_PAGE_SIZE,
+                    EventViewSupport.EVENT_SORT
+            );
+            model.addAttribute("events", result.getContent() == null ? List.of() : result.getContent());
+            model.addAttribute("clubId", id);
         } catch (Exception ex) {
             model.addAttribute("error", "Events are not available yet.");
         }
@@ -370,7 +587,8 @@ public class ClubController {
     @GetMapping("/clubs/{id}/tabs/media")
     public String clubMediaTab(@PathVariable Long id, Model model) {
         try {
-            List<MediaDto> media = clubClient.getMedia(id);
+            ClubDto club = clubClient.getById(id);
+            List<MediaDto> media = club.media() == null ? List.of() : club.media();
             model.addAttribute("media", media);
         } catch (Exception ex) {
             model.addAttribute("error", "Media is not available yet.");
@@ -382,7 +600,16 @@ public class ClubController {
     @GetMapping("/clubs/{id}/tabs/announcements")
     public String clubAnnouncementsTab(@PathVariable Long id, Model model) {
         try {
-            List<Map<String, Object>> announcements = clubClient.getAnnouncements(id);
+            PageResponse<AnnouncementDto> result = announcementClient.getPublicAnnouncements(
+                    id,
+                    null,
+                    null,
+                    null,
+                    0,
+                    EventViewSupport.TAB_PAGE_SIZE,
+                    "publishedAt,desc"
+            );
+            List<AnnouncementDto> announcements = result.getContent() == null ? List.of() : result.getContent();
             model.addAttribute("announcements", announcements);
         } catch (Exception ex) {
             model.addAttribute("error", "Announcements are not available yet.");
@@ -429,8 +656,7 @@ public class ClubController {
             String contactEmail,
             String contactPhone,
             boolean isActive,
-            Long teacherId,
-            boolean teacherIsPrimary
+            List<Long> teacherIds
     ) {
         populateFormModel(
                 model,
@@ -445,24 +671,70 @@ public class ClubController {
                 isActive
         );
 
-        List<TeacherDto> teacherOptions;
-        try {
-            teacherOptions = adminTeacherClient.getAllTeachers().stream()
-                    .filter(teacher -> teacher != null && teacher.id() != null)
-                    .map(teacher -> new TeacherDto(
-                            teacher.id(),
-                            buildTeacherOptionLabel(teacher),
-                            null
-                    ))
-                    .toList();
-        } catch (RuntimeException ex) {
-            teacherOptions = List.of();
-        }
+        List<TeacherDto> teacherOptions = loadTeacherOptions();
 
         model.addAttribute("teacherOptions", teacherOptions);
-        model.addAttribute("selectedTeacherId", teacherId);
-        model.addAttribute("selectedTeacherIsPrimary", teacherIsPrimary);
+        model.addAttribute("selectedTeacherIds", normalizeTeacherIds(teacherIds));
         model.addAttribute("teacherOptionsAvailable", !teacherOptions.isEmpty());
+    }
+
+    private void populateEditFormModel(Model model, ClubDto club, List<Long> selectedTeacherIds) {
+        populateEditFormModel(
+                model,
+                club.id(),
+                nonNull(club.name()),
+                nonNull(club.description()),
+                nonNull(club.scheduleText()),
+                nonNull(club.room()),
+                nonNull(club.contactEmail()),
+                nonNull(club.contactPhone()),
+                club.isActive() == null || club.isActive(),
+                normalizeTeachers(club.teachers()),
+                selectedTeacherIds
+        );
+    }
+
+    private void populateEditFormModel(
+            Model model,
+            Long clubId,
+            String name,
+            String description,
+            String scheduleText,
+            String room,
+            String contactEmail,
+            String contactPhone,
+            boolean isActive,
+            List<TeacherDto> assignedTeachers,
+            List<Long> selectedTeacherIds
+    ) {
+        populateFormModel(
+                model,
+                "edit",
+                clubId,
+                name,
+                description,
+                scheduleText,
+                room,
+                contactEmail,
+                contactPhone,
+                isActive
+        );
+
+        List<TeacherDto> normalizedAssignedTeachers = normalizeTeachers(assignedTeachers);
+        List<TeacherDto> allTeacherOptions = loadTeacherOptions();
+        List<TeacherDto> availableTeacherOptions = new ArrayList<>();
+
+        for (TeacherDto teacher : allTeacherOptions) {
+            if (!containsTeacher(normalizedAssignedTeachers, teacher.id())) {
+                availableTeacherOptions.add(teacher);
+            }
+        }
+
+        model.addAttribute("assignedTeachers", normalizedAssignedTeachers);
+        model.addAttribute("availableTeacherOptions", availableTeacherOptions);
+        model.addAttribute("selectedTeacherIds", normalizeTeacherIds(selectedTeacherIds));
+        model.addAttribute("teacherOptionsAvailable", !allTeacherOptions.isEmpty());
+        model.addAttribute("availableTeacherOptionsAvailable", !availableTeacherOptions.isEmpty());
     }
 
     private String successMessage(String success) {
@@ -476,6 +748,10 @@ public class ClubController {
 
         if ("updated".equalsIgnoreCase(success)) {
             return "Club updated successfully.";
+        }
+
+        if ("deleted".equalsIgnoreCase(success)) {
+            return "Club deleted successfully.";
         }
 
         return null;
@@ -504,8 +780,17 @@ public class ClubController {
     }
 
     private MembershipRequestStatus resolveMyApplicationStatus(Long clubId) {
-        return membershipApplicationClient
-                .getMyApplications(null)
+        PageResponse<MembershipApplicationDto> response = membershipApplicationClient.getMyApplications(
+                null,
+                clubId,
+                null,
+                0,
+                1,
+                "createdAt,desc"
+        );
+
+        List<MembershipApplicationDto> applications = response.getContent() == null ? List.of() : response.getContent();
+        return applications
                 .stream()
                 .filter(application -> application.clubId() != null && application.clubId().equals(clubId))
                 .max(Comparator
@@ -582,6 +867,15 @@ public class ClubController {
         return primary != null && !primary.isBlank() ? primary : fallback;
     }
 
+    private String trimToNull(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        String normalized = value.trim();
+        return normalized.isEmpty() ? null : normalized;
+    }
+
     private String toClubSaveErrorMessage(FeignException ex) {
         HttpStatus status = HttpStatus.resolve(ex.status());
         if (status == null) {
@@ -628,6 +922,44 @@ public class ClubController {
         return message + " Please re-select any files before trying again.";
     }
 
+    private String toTeacherAssignmentErrorMessage(FeignException ex, boolean addOperation) {
+        HttpStatus status = HttpStatus.resolve(ex.status());
+        if (status == null) {
+            status = HttpStatus.BAD_GATEWAY;
+        }
+
+        String fallback = switch (status) {
+            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> addOperation
+                    ? "Please review the selected teachers and try again."
+                    : "Unable to remove this teacher assignment right now.";
+            case UNAUTHORIZED, FORBIDDEN -> "You are not authorized to manage teachers for this club.";
+            case NOT_FOUND -> addOperation
+                    ? "The club or selected teacher could not be found."
+                    : "The teacher assignment could not be found.";
+            default -> addOperation
+                    ? "Unable to add teachers right now. Please try again."
+                    : "Unable to remove the teacher right now. Please try again.";
+        };
+
+        return firstNonBlank(extractUserMessage(ex), fallback);
+    }
+
+    private String toClubDeleteErrorMessage(FeignException ex) {
+        HttpStatus status = HttpStatus.resolve(ex.status());
+        if (status == null) {
+            status = HttpStatus.BAD_GATEWAY;
+        }
+
+        String fallback = switch (status) {
+            case FORBIDDEN, UNAUTHORIZED -> "You are not authorized to delete this club.";
+            case NOT_FOUND -> "This club no longer exists.";
+            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "This club could not be deleted right now. Please refresh and try again.";
+            default -> "Unable to delete the club right now. Please try again.";
+        };
+
+        return firstNonBlank(extractUserMessage(ex), fallback);
+    }
+
     private String extractJsonField(String json, String fieldName) {
         String token = "\"" + fieldName + "\"";
         int fieldIndex = json.indexOf(token);
@@ -657,6 +989,31 @@ public class ClubController {
         return value == null ? "" : value;
     }
 
+    private String redirectToAdminClubEdit(Long id) {
+        return "redirect:/admin/clubs/" + id + "/edit";
+    }
+
+    private List<TeacherDto> loadTeacherOptions() {
+        try {
+            PageResponse<UserDto> response = adminTeacherClient.getAllTeachers(null, 0, 200);
+            List<UserDto> teachers = response.getContent() == null ? List.of() : response.getContent();
+
+            return teachers.stream()
+                    .filter(teacher -> teacher != null && teacher.id() != null)
+                    .map(teacher -> new TeacherDto(
+                            teacher.id(),
+                            buildTeacherOptionLabel(teacher)
+                    ))
+                    .sorted(Comparator.comparing(
+                            TeacherDto::fullName,
+                            Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)
+                    ))
+                    .toList();
+        } catch (RuntimeException ex) {
+            return List.of();
+        }
+    }
+
     private String buildTeacherOptionLabel(UserDto teacher) {
         String firstName = nonNull(teacher.firstName()).trim();
         String lastName = nonNull(teacher.lastName()).trim();
@@ -671,6 +1028,79 @@ public class ClubController {
         }
 
         return "Teacher #" + teacher.id();
+    }
+
+    private List<TeacherDto> normalizeTeachers(List<TeacherDto> teachers) {
+        if (teachers == null || teachers.isEmpty()) {
+            return List.of();
+        }
+
+        List<TeacherDto> normalized = new ArrayList<>();
+        for (TeacherDto teacher : teachers) {
+            if (teacher != null && teacher.id() != null) {
+                normalized.add(teacher);
+            }
+        }
+        return normalized;
+    }
+
+    private boolean containsTeacher(List<TeacherDto> teachers, Long teacherId) {
+        if (teacherId == null) {
+            return false;
+        }
+
+        for (TeacherDto teacher : teachers) {
+            if (teacher != null && teacherId.equals(teacher.id())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private List<TeacherDto> resolveAssignedTeachers(Long clubId) {
+        try {
+            return normalizeTeachers(clubClient.getById(clubId).teachers());
+        } catch (RuntimeException ex) {
+            return List.of();
+        }
+    }
+
+    private List<Long> normalizeTeacherIds(List<Long> teacherIds) {
+        if (teacherIds == null || teacherIds.isEmpty()) {
+            return List.of();
+        }
+
+        List<Long> normalized = new ArrayList<>();
+        for (Long teacherId : teacherIds) {
+            if (teacherId != null && teacherId > 0 && !normalized.contains(teacherId)) {
+                normalized.add(teacherId);
+            }
+        }
+        return normalized;
+    }
+
+    private List<Long> extractSelectedTeacherIds(Model model) {
+        Object rawValue = model.asMap().get("selectedTeacherIds");
+        if (!(rawValue instanceof List<?> rawTeacherIds)) {
+            return List.of();
+        }
+
+        List<Long> selectedTeacherIds = new ArrayList<>();
+        for (Object rawTeacherId : rawTeacherIds) {
+            if (rawTeacherId instanceof Long teacherId) {
+                selectedTeacherIds.add(teacherId);
+            } else if (rawTeacherId instanceof Number teacherId) {
+                selectedTeacherIds.add(teacherId.longValue());
+            } else if (rawTeacherId instanceof String teacherIdText) {
+                try {
+                    selectedTeacherIds.add(Long.parseLong(teacherIdText));
+                } catch (NumberFormatException ignored) {
+                    // Ignore invalid flash values.
+                }
+            }
+        }
+
+        return normalizeTeacherIds(selectedTeacherIds);
     }
 
     private List<MultipartFile> normalizeFiles(List<MultipartFile> files) {
@@ -689,5 +1119,21 @@ public class ClubController {
 
     private boolean hasFile(MultipartFile file) {
         return file != null && !file.isEmpty();
+    }
+
+    private boolean isImageFile(MultipartFile file) {
+        if (!hasFile(file)) {
+            return false;
+        }
+
+        return isImageContentType(file.getContentType());
+    }
+
+    private boolean isImageContentType(String contentType) {
+        if (contentType == null) {
+            return false;
+        }
+
+        return contentType.toLowerCase(Locale.ROOT).startsWith("image/");
     }
 }
