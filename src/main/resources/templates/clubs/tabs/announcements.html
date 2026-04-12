@@ -7,9 +7,40 @@
     <div class="tab-message" th:if="${announcements == null or #lists.isEmpty(announcements)}">
       No announcements yet.
     </div>
-    <ul class="tab-list" th:if="${announcements != null and !#lists.isEmpty(announcements)}">
-      <li th:each="announcement : ${announcements}">
-        <span th:text="${announcement}">Announcement</span>
+    <ul class="tab-list tab-list--announcements" th:if="${announcements != null and !#lists.isEmpty(announcements)}">
+      <li class="announcement-card" th:each="announcement : ${announcements}">
+        <div class="announcement-card__header">
+          <h3
+            class="announcement-card__title"
+            th:text="${announcement.title != null and !#strings.isEmpty(announcement.title) ? announcement.title : 'Announcement'}"
+          >
+            Announcement
+          </h3>
+          <p
+            class="announcement-card__meta"
+            th:text="${
+              announcement.publishedAt != null
+                ? T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatDateTime(announcement.publishedAt)
+                : (announcement.updatedAt != null
+                  ? T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatDateTime(announcement.updatedAt)
+                  : 'Recently updated')
+            }"
+          >
+            2026-04-11 10:00
+          </p>
+        </div>
+        <p
+          class="announcement-card__body"
+          th:text="${announcement.body != null and !#strings.isEmpty(announcement.body) ? announcement.body : 'No details provided.'}"
+        >
+          Announcement details.
+        </p>
+        <p
+          class="announcement-card__footer"
+          th:if="${announcement.authorName != null and !#strings.isEmpty(announcement.authorName)}"
+        >
+          Posted by <span th:text="${announcement.authorName}">Teacher</span>
+        </p>
       </li>
     </ul>
   </div>

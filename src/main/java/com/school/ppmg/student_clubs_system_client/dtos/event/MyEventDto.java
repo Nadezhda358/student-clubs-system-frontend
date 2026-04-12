@@ -14,6 +14,7 @@ public record MyEventDto(
         OffsetDateTime startAt,
         OffsetDateTime endAt,
         String location,
+        String mainImageUrl,
         EventStatus eventStatus,
         EventAudience audience,
         RegistrationStatus registrationStatus,

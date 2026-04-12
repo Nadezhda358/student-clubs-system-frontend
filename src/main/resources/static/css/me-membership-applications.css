@@ -201,6 +201,10 @@ body {
   align-items: center;
 }
 
+.admin-pagination {
+  margin-top: 1rem;
+}
+
 .me-applications-actions form {
   margin: 0;
 }

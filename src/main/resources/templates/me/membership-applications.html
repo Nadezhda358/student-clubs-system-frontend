@@ -157,6 +157,7 @@
                       <form method="post" th:action="@{/me/membership-applications/{id}/cancel(id=${app.id})}">
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                         <input type="hidden" name="status" th:if="${selectedStatus != null}" th:value="${selectedStatus.name()}" />
+                        <input type="hidden" name="page" th:if="${membershipPage != null}" th:value="${membershipPage.number}" />
                         <button type="submit" class="membership-action membership-action--reject me-applications-action">
                           Cancel
                         </button>
@@ -173,6 +174,45 @@
               </tbody>
             </table>
           </div>
+
+          <section
+            class="admin-pagination"
+            th:if="${membershipPage != null and membershipPage.totalPages > 1}"
+            th:with="lastIndex=${membershipPage.totalPages - 1}"
+          >
+            <a
+              class="page-link"
+              th:classappend="${membershipPage.first} ? ' disabled' : ''"
+              th:href="${membershipPage.first ? '#' : membershipPageBaseHref + 'page=0'}"
+            >
+              First
+            </a>
+            <a
+              class="page-link"
+              th:classappend="${membershipPage.first} ? ' disabled' : ''"
+              th:href="${membershipPage.first ? '#' : membershipPageBaseHref + 'page=' + (membershipPage.number - 1)}"
+            >
+              Previous
+            </a>
+            <span class="page-state">
+              Page <strong th:text="${membershipPage.number + 1}">1</strong> of
+              <strong th:text="${membershipPage.totalPages}">1</strong>
+            </span>
+            <a
+              class="page-link"
+              th:classappend="${membershipPage.last} ? ' disabled' : ''"
+              th:href="${membershipPage.last ? '#' : membershipPageBaseHref + 'page=' + (membershipPage.number + 1)}"
+            >
+              Next
+            </a>
+            <a
+              class="page-link"
+              th:classappend="${membershipPage.last} ? ' disabled' : ''"
+              th:href="${membershipPage.last ? '#' : membershipPageBaseHref + 'page=' + lastIndex}"
+            >
+              Last
+            </a>
+          </section>
         </section>
       </div>
     </main>

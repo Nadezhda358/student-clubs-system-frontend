@@ -3,6 +3,7 @@ package com.school.ppmg.student_clubs_system_client.controllers;
 import com.school.ppmg.student_clubs_system_client.clients.MembershipApplicationClient;
 import com.school.ppmg.student_clubs_system_client.dtos.auth.AuthUserDto;
 import com.school.ppmg.student_clubs_system_client.dtos.club.MembershipApplicationDto;
+import com.school.ppmg.student_clubs_system_client.dtos.common.PageResponse;
 import com.school.ppmg.student_clubs_system_client.enums.MembershipRequestStatus;
 import com.school.ppmg.student_clubs_system_client.enums.UserRole;
 import feign.FeignException;
@@ -23,16 +24,21 @@ import java.util.List;
 @Controller
 @RequiredArgsConstructor
 public class MembershipApplicationsController {
+    private static final int PAGE_SIZE = 12;
+
     private final MembershipApplicationClient membershipApplicationClient;
 
     @GetMapping("/me/membership-applications")
     public String myMembershipApplications(
             @RequestParam(required = false) MembershipRequestStatus status,
+            @RequestParam(defaultValue = "0") int page,
             @ModelAttribute("sessionUser") AuthUserDto sessionUser,
             Model model
     ) {
         model.addAttribute("selectedStatus", status);
         model.addAttribute("applications", Collections.emptyList());
+        model.addAttribute("membershipPage", null);
+        model.addAttribute("membershipPageBaseHref", buildMembershipPageBaseHref(status));
 
         if (sessionUser == null) {
             return "redirect:/login";
@@ -44,8 +50,19 @@ public class MembershipApplicationsController {
         }
 
         try {
-            List<MembershipApplicationDto> applications = membershipApplicationClient.getMyApplications(status);
-            model.addAttribute("applications", applications == null ? Collections.emptyList() : applications);
+            PageResponse<MembershipApplicationDto> result = membershipApplicationClient.getMyApplications(
+                    status,
+                    null,
+                    null,
+                    page,
+                    PAGE_SIZE,
+                    "createdAt,desc"
+            );
+            model.addAttribute("membershipPage", result);
+            model.addAttribute(
+                    "applications",
+                    result.getContent() == null ? Collections.emptyList() : result.getContent()
+            );
         } catch (FeignException ex) {
             if (ex.status() == HttpStatus.UNAUTHORIZED.value()) {
                 return "redirect:/login";
@@ -66,6 +83,7 @@ public class MembershipApplicationsController {
     public String cancelMyMembershipApplication(
             @PathVariable Long id,
             @RequestParam(required = false) MembershipRequestStatus status,
+            @RequestParam(defaultValue = "0") int page,
             @ModelAttribute("sessionUser") AuthUserDto sessionUser,
             RedirectAttributes redirectAttributes
     ) {
@@ -82,7 +100,7 @@ public class MembershipApplicationsController {
                     "membershipActionWarningMessage",
                     "Only students can cancel membership applications."
             );
-            return redirectToMembershipApplications(status);
+            return redirectToMembershipApplications(status, page);
         }
 
         try {
@@ -110,7 +128,7 @@ public class MembershipApplicationsController {
             }
         }
 
-        return redirectToMembershipApplications(status);
+        return redirectToMembershipApplications(status, page);
     }
 
     private String toListLoadErrorMessage(FeignException ex) {
@@ -142,12 +160,16 @@ public class MembershipApplicationsController {
         };
     }
 
-    private String redirectToMembershipApplications(MembershipRequestStatus status) {
-        if (status == null) {
-            return "redirect:/me/membership-applications";
-        }
+    private String redirectToMembershipApplications(MembershipRequestStatus status, int page) {
+        return "redirect:" + buildMembershipPageBaseHref(status) + "page=" + page;
+    }
 
-        return "redirect:/me/membership-applications?status=" + status.name();
+    private String buildMembershipPageBaseHref(MembershipRequestStatus status) {
+        StringBuilder href = new StringBuilder("/me/membership-applications?");
+        if (status != null) {
+            href.append("status=").append(status.name()).append("&");
+        }
+        return href.toString();
     }
 
     private HttpStatus resolveStatus(FeignException ex) {

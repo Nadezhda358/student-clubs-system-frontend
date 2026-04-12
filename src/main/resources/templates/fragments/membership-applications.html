@@ -133,6 +133,45 @@
                 </tbody>
               </table>
             </div>
+
+            <section
+              class="admin-pagination"
+              th:if="${membershipPage != null and membershipPage.totalPages > 1}"
+              th:with="lastIndex=${membershipPage.totalPages - 1}"
+            >
+              <a
+                class="page-link"
+                th:classappend="${membershipPage.first} ? ' disabled' : ''"
+                th:href="${membershipPage.first ? '#' : membershipPageBaseHref + 'page=0'}"
+              >
+                First
+              </a>
+              <a
+                class="page-link"
+                th:classappend="${membershipPage.first} ? ' disabled' : ''"
+                th:href="${membershipPage.first ? '#' : membershipPageBaseHref + 'page=' + (membershipPage.number - 1)}"
+              >
+                Previous
+              </a>
+              <span>
+                Page <strong th:text="${membershipPage.number + 1}">1</strong> of
+                <strong th:text="${membershipPage.totalPages}">1</strong>
+              </span>
+              <a
+                class="page-link"
+                th:classappend="${membershipPage.last} ? ' disabled' : ''"
+                th:href="${membershipPage.last ? '#' : membershipPageBaseHref + 'page=' + (membershipPage.number + 1)}"
+              >
+                Next
+              </a>
+              <a
+                class="page-link"
+                th:classappend="${membershipPage.last} ? ' disabled' : ''"
+                th:href="${membershipPage.last ? '#' : membershipPageBaseHref + 'page=' + lastIndex}"
+              >
+                Last
+              </a>
+            </section>
           </section>
         </div>
 

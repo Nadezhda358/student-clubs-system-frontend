@@ -2,6 +2,7 @@ package com.school.ppmg.student_clubs_system_client.controllers;
 
 import com.school.ppmg.student_clubs_system_client.clients.MembershipApplicationClient;
 import com.school.ppmg.student_clubs_system_client.dtos.club.MembershipApplicationDto;
+import com.school.ppmg.student_clubs_system_client.dtos.common.PageResponse;
 import com.school.ppmg.student_clubs_system_client.enums.MembershipRequestStatus;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +26,8 @@ import java.util.function.Consumer;
 @Controller
 @RequiredArgsConstructor
 public class TeacherMembershipApplicationsController {
+    private static final int PAGE_SIZE = 20;
+
     private final MembershipApplicationClient membershipApplicationClient;
 
     @GetMapping("/teacher/membership-applications")
@@ -30,12 +35,15 @@ public class TeacherMembershipApplicationsController {
             @RequestParam(required = false) MembershipRequestStatus status,
             @RequestParam(required = false) Long clubId,
             @RequestParam(required = false) String q,
+            @RequestParam(defaultValue = "0") int page,
             Model model
     ) {
         model.addAttribute("applications", Collections.emptyList());
+        model.addAttribute("membershipPage", null);
         model.addAttribute("status", status);
         model.addAttribute("clubId", clubId);
         model.addAttribute("q", q == null ? "" : q.trim());
+        model.addAttribute("membershipPageBaseHref", buildMembershipPageBaseHref(status, clubId, q));
         model.addAttribute("statusValues", MembershipRequestStatus.values());
         model.addAttribute("pendingStatus", MembershipRequestStatus.PENDING);
         model.addAttribute("approvedStatusName", MembershipRequestStatus.APPROVED.name());
@@ -52,9 +60,16 @@ public class TeacherMembershipApplicationsController {
         model.addAttribute("membershipEmptyMessage", "No membership applications found for your clubs.");
 
         try {
-            List<MembershipApplicationDto> applications =
-                    membershipApplicationClient.teacherGetAllApplications(status, clubId, normalizeQuery(q));
-            model.addAttribute("applications", applications == null ? Collections.emptyList() : applications);
+            PageResponse<MembershipApplicationDto> result = membershipApplicationClient.teacherGetAllApplications(
+                    status,
+                    clubId,
+                    normalizeQuery(q),
+                    page,
+                    PAGE_SIZE,
+                    "createdAt,desc"
+            );
+            model.addAttribute("membershipPage", result);
+            model.addAttribute("applications", result.getContent() == null ? Collections.emptyList() : result.getContent());
         } catch (FeignException ex) {
             if (ex.status() == HttpStatus.UNAUTHORIZED.value()) {
                 return "redirect:/login";
@@ -97,6 +112,23 @@ public class TeacherMembershipApplicationsController {
 
         String normalized = q.trim();
         return normalized.isEmpty() ? null : normalized;
+    }
+
+    private String buildMembershipPageBaseHref(MembershipRequestStatus status, Long clubId, String q) {
+        StringBuilder href = new StringBuilder("/teacher/membership-applications?");
+        if (status != null) {
+            href.append("status=").append(status.name()).append("&");
+        }
+        if (clubId != null) {
+            href.append("clubId=").append(clubId).append("&");
+        }
+
+        String normalizedQuery = normalizeQuery(q);
+        if (normalizedQuery != null) {
+            href.append("q=").append(URLEncoder.encode(normalizedQuery, StandardCharsets.UTF_8)).append("&");
+        }
+
+        return href.toString();
     }
 
     private HttpStatus resolveStatus(FeignException ex) {

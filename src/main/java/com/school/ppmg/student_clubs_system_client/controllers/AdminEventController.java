@@ -319,7 +319,7 @@ public class AdminEventController {
 
     private List<ClubListDto> loadClubs() {
         try {
-            PageResponse<ClubListDto> response = clubClient.getAll(null, 0, 200, "name,asc");
+            PageResponse<ClubListDto> response = clubClient.getAll(null, null, 0, 200, "name,asc");
             return response.getContent() == null ? List.of() : response.getContent();
         } catch (RuntimeException ex) {
             return List.of();

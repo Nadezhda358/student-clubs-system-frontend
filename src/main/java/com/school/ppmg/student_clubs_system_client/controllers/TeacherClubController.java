@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.Locale;
+
 @Controller
 @RequiredArgsConstructor
 public class TeacherClubController {
@@ -215,6 +217,11 @@ public class TeacherClubController {
             return "redirect:/teacher/clubs/" + id + "/edit";
         }
 
+        if (!isImageFile(mainImage)) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Main image must be an image file.");
+            return "redirect:/teacher/clubs/" + id + "/edit";
+        }
+
         try {
             teacherClubClient.uploadManagedClubMainImage(id, mainImage);
             redirectAttributes.addFlashAttribute("successMessage", "Main image updated successfully.");
@@ -327,6 +334,15 @@ public class TeacherClubController {
 
     private boolean hasFile(MultipartFile file) {
         return file != null && !file.isEmpty();
+    }
+
+    private boolean isImageFile(MultipartFile file) {
+        if (!hasFile(file)) {
+            return false;
+        }
+
+        String contentType = file.getContentType();
+        return contentType != null && contentType.toLowerCase(Locale.ROOT).startsWith("image/");
     }
 
     private String firstNonBlank(String primary, String fallback) {

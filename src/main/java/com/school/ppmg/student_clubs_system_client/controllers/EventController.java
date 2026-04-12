@@ -257,7 +257,7 @@ public class EventController {
 
     private List<ClubListDto> loadClubOptions(boolean activeOnly) {
         try {
-            PageResponse<ClubListDto> response = clubClient.getAll(activeOnly ? true : null, 0, 200, "name,asc");
+            PageResponse<ClubListDto> response = clubClient.getAll(activeOnly ? true : null, null, 0, 200, "name,asc");
             return response.getContent() == null ? List.of() : response.getContent();
         } catch (RuntimeException ex) {
             return List.of();

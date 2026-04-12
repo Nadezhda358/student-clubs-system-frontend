@@ -14,6 +14,7 @@ public record EventListDto(
         OffsetDateTime startAt,
         OffsetDateTime endAt,
         String location,
+        String mainImageUrl,
         Integer capacity,
         Long registeredCount,
         Long availableSpots,

@@ -1,10 +1,12 @@
 package com.school.ppmg.student_clubs_system_client.controllers;
 
 import com.school.ppmg.student_clubs_system_client.clients.AdminTeacherClient;
+import com.school.ppmg.student_clubs_system_client.clients.AnnouncementClient;
 import com.school.ppmg.student_clubs_system_client.clients.ClubClient;
 import com.school.ppmg.student_clubs_system_client.clients.EventClient;
 import com.school.ppmg.student_clubs_system_client.clients.MembershipApplicationClient;
 import com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport;
+import com.school.ppmg.student_clubs_system_client.dtos.announcement.AnnouncementDto;
 import com.school.ppmg.student_clubs_system_client.dtos.auth.AuthUserDto;
 import com.school.ppmg.student_clubs_system_client.dtos.auth.UserDto;
 import com.school.ppmg.student_clubs_system_client.dtos.club.AddClubTeachersRequest;
@@ -12,6 +14,7 @@ import com.school.ppmg.student_clubs_system_client.dtos.club.ClubDto;
 import com.school.ppmg.student_clubs_system_client.dtos.club.ClubListDto;
 import com.school.ppmg.student_clubs_system_client.dtos.club.CreateClubRequest;
 import com.school.ppmg.student_clubs_system_client.dtos.club.CreateMembershipApplicationRequest;
+import com.school.ppmg.student_clubs_system_client.dtos.club.MediaDto;
 import com.school.ppmg.student_clubs_system_client.dtos.club.MembershipApplicationDto;
 import com.school.ppmg.student_clubs_system_client.dtos.club.TeacherDto;
 import com.school.ppmg.student_clubs_system_client.dtos.club.UpsertClubDto;
@@ -36,12 +39,14 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 
 @Controller
 @RequiredArgsConstructor
 public class ClubController {
     private static final long MAX_IMAGE_FILE_SIZE_BYTES = 5L * 1024 * 1024;
     private final AdminTeacherClient adminTeacherClient;
+    private final AnnouncementClient announcementClient;
     private final ClubClient clubClient;
     private final EventClient eventClient;
     private final MembershipApplicationClient membershipApplicationClient;
@@ -49,6 +54,7 @@ public class ClubController {
 
     @GetMapping("/clubs")
     public String clubsPage(
+            @RequestParam(required = false) String q,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "9") int size,
             @RequestParam(required = false) String sort,
@@ -59,10 +65,12 @@ public class ClubController {
             sort = "name,asc";
         }
 
-        PageResponse<ClubListDto> result = clubClient.getAll(true, page, PAGE_SIZE, sort);
+        String normalizedQuery = trimToNull(q);
+        PageResponse<ClubListDto> result = clubClient.getAll(true, normalizedQuery, page, PAGE_SIZE, sort);
 
         model.addAttribute("page", result);
         model.addAttribute("clubs", result.getContent());
+        model.addAttribute("q", normalizedQuery == null ? "" : normalizedQuery);
 
         // keep query params for pagination links
         model.addAttribute("sort", sort);
@@ -82,7 +90,7 @@ public class ClubController {
             Model model
     ) {
         String resolvedSort = (sort == null || sort.isBlank()) ? "name,asc" : sort;
-        PageResponse<ClubListDto> result = clubClient.getAll(active, page, PAGE_SIZE, resolvedSort);
+        PageResponse<ClubListDto> result = clubClient.getAll(active, null, page, PAGE_SIZE, resolvedSort);
 
         model.addAttribute("page", result);
         model.addAttribute("clubs", result.getContent());
@@ -166,6 +174,22 @@ public class ClubController {
             return "admin/club-form";
         }
 
+        if (mainImage != null && !isImageFile(mainImage)) {
+            populateCreateFormModel(
+                    model,
+                    normalizedName,
+                    normalizedDescription,
+                    normalizedScheduleText,
+                    normalizedRoom,
+                    normalizedContactEmail,
+                    normalizedContactPhone,
+                    isActive,
+                    teacherIds
+            );
+            model.addAttribute("errorMessage", "Main image must be an image file.");
+            return "admin/club-form";
+        }
+
         for (MultipartFile mediaFile : mediaFiles) {
             if (mediaFile.getSize() > MAX_IMAGE_FILE_SIZE_BYTES) {
                 populateCreateFormModel(
@@ -183,6 +207,22 @@ public class ClubController {
                         "errorMessage",
                         "Each uploaded media file must be 5 MB or smaller. Please choose another file."
                 );
+                return "admin/club-form";
+            }
+
+            if (!isImageFile(mediaFile)) {
+                populateCreateFormModel(
+                        model,
+                        normalizedName,
+                        normalizedDescription,
+                        normalizedScheduleText,
+                        normalizedRoom,
+                        normalizedContactEmail,
+                        normalizedContactPhone,
+                        isActive,
+                        teacherIds
+                );
+                model.addAttribute("errorMessage", "Club media uploads must be image files.");
                 return "admin/club-form";
             }
         }
@@ -413,6 +453,11 @@ public class ClubController {
             return redirectToAdminClubEdit(id);
         }
 
+        if (!isImageFile(mainImage)) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Main image must be an image file.");
+            return redirectToAdminClubEdit(id);
+        }
+
         try {
             clubClient.uploadMainImage(id, mainImage);
             redirectAttributes.addFlashAttribute("successMessage", "Main image updated successfully.");
@@ -542,8 +587,9 @@ public class ClubController {
     @GetMapping("/clubs/{id}/tabs/media")
     public String clubMediaTab(@PathVariable Long id, Model model) {
         try {
-            //List<MediaDto> media = clubClient.getMedia(id);
-            //model.addAttribute("media", media);
+            ClubDto club = clubClient.getById(id);
+            List<MediaDto> media = club.media() == null ? List.of() : club.media();
+            model.addAttribute("media", media);
         } catch (Exception ex) {
             model.addAttribute("error", "Media is not available yet.");
         }
@@ -554,8 +600,17 @@ public class ClubController {
     @GetMapping("/clubs/{id}/tabs/announcements")
     public String clubAnnouncementsTab(@PathVariable Long id, Model model) {
         try {
-            //List<Map<String, Object>> announcements = clubClient.getAnnouncements(id);
-            //model.addAttribute("announcements", announcements);
+            PageResponse<AnnouncementDto> result = announcementClient.getPublicAnnouncements(
+                    id,
+                    null,
+                    null,
+                    null,
+                    0,
+                    EventViewSupport.TAB_PAGE_SIZE,
+                    "publishedAt,desc"
+            );
+            List<AnnouncementDto> announcements = result.getContent() == null ? List.of() : result.getContent();
+            model.addAttribute("announcements", announcements);
         } catch (Exception ex) {
             model.addAttribute("error", "Announcements are not available yet.");
         }
@@ -725,8 +780,17 @@ public class ClubController {
     }
 
     private MembershipRequestStatus resolveMyApplicationStatus(Long clubId) {
-        return membershipApplicationClient
-                .getMyApplications(null)
+        PageResponse<MembershipApplicationDto> response = membershipApplicationClient.getMyApplications(
+                null,
+                clubId,
+                null,
+                0,
+                1,
+                "createdAt,desc"
+        );
+
+        List<MembershipApplicationDto> applications = response.getContent() == null ? List.of() : response.getContent();
+        return applications
                 .stream()
                 .filter(application -> application.clubId() != null && application.clubId().equals(clubId))
                 .max(Comparator
@@ -931,7 +995,10 @@ public class ClubController {
 
     private List<TeacherDto> loadTeacherOptions() {
         try {
-            return adminTeacherClient.getAllTeachers().stream()
+            PageResponse<UserDto> response = adminTeacherClient.getAllTeachers(null, 0, 200);
+            List<UserDto> teachers = response.getContent() == null ? List.of() : response.getContent();
+
+            return teachers.stream()
                     .filter(teacher -> teacher != null && teacher.id() != null)
                     .map(teacher -> new TeacherDto(
                             teacher.id(),
@@ -1052,5 +1119,21 @@ public class ClubController {
 
     private boolean hasFile(MultipartFile file) {
         return file != null && !file.isEmpty();
+    }
+
+    private boolean isImageFile(MultipartFile file) {
+        if (!hasFile(file)) {
+            return false;
+        }
+
+        return isImageContentType(file.getContentType());
+    }
+
+    private boolean isImageContentType(String contentType) {
+        if (contentType == null) {
+            return false;
+        }
+
+        return contentType.toLowerCase(Locale.ROOT).startsWith("image/");
     }
 }

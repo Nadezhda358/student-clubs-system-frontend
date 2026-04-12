@@ -17,23 +17,18 @@ document.addEventListener("DOMContentLoaded", function () {
   const logoUrl = toastContainer?.dataset.logoUrl || "/assets/logo.png";
   const actionBasePath = normalizeBasePath(page.dataset.actionBasePath || "");
   const successMessage = page.dataset.successMessage || "Membership application updated successfully.";
-  const hasDataRows = document.querySelectorAll("#membershipAppsTable tbody tr[data-app-row='true']").length > 0;
 
   let pendingAction = null;
   let lastFocusedElement = null;
 
   if (table && window.jQuery && window.jQuery.fn && window.jQuery.fn.DataTable) {
     window.jQuery("#membershipAppsTable").DataTable({
-      paging: hasDataRows,
-      searching: hasDataRows,
-      ordering: hasDataRows,
-      pageLength: 10,
-      lengthMenu: [10, 25, 50, 100],
-      order: [[0, "desc"]],
-      columnDefs: [
-        { targets: 5, orderable: false },
-        { targets: 6, orderable: false }
-      ]
+      paging: false,
+      searching: false,
+      ordering: false,
+      info: false,
+      autoWidth: false,
+      dom: "t"
     });
   }
 
