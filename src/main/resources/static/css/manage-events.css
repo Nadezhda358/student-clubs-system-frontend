@@ -124,6 +124,43 @@
   resize: vertical;
 }
 
+.event-form__input--file {
+  min-height: auto;
+  padding: 0.75rem;
+}
+
+.event-form__media {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.event-form__image-preview,
+.event-form__image-placeholder {
+  overflow: hidden;
+  border-radius: 16px;
+  border: 1px solid rgba(34, 22, 28, 0.08);
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.event-form__image-preview img {
+  width: 100%;
+  max-height: 260px;
+  object-fit: cover;
+  display: block;
+}
+
+.event-form__image-placeholder {
+  min-height: 180px;
+  display: grid;
+  place-items: center;
+  color: rgba(34, 22, 28, 0.58);
+  font-weight: 600;
+  background:
+    radial-gradient(circle at top left, rgba(242, 201, 76, 0.18), transparent 38%),
+    radial-gradient(circle at bottom right, rgba(107, 63, 160, 0.14), transparent 42%),
+    rgba(255, 255, 255, 0.92);
+}
+
 .manage-events__input:focus,
 .manage-events__select:focus,
 .event-participants__input:focus,
@@ -265,6 +302,52 @@
   gap: 0.7rem;
 }
 
+.manage-event-row__media {
+  overflow: hidden;
+  border-radius: 16px;
+  border: 1px solid rgba(34, 22, 28, 0.08);
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.manage-event-row__media img {
+  width: 100%;
+  max-height: 240px;
+  object-fit: cover;
+  display: block;
+}
+
+.manage-events-page--admin .manage-event-row--admin-has-media .manage-event-row__layout--admin {
+  display: grid;
+  grid-template-columns: minmax(180px, 220px) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.manage-events-page--admin .manage-event-row__content--admin {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.manage-events-page--admin .manage-event-row__media--admin {
+  height: 100%;
+  min-height: 150px;
+  max-height: 180px;
+  align-self: stretch;
+}
+
+.manage-events-page--admin .manage-event-row__media--admin img {
+  height: 100%;
+  max-height: none;
+}
+
+.manage-announcement-row__body {
+  margin: 0;
+  color: rgba(34, 22, 28, 0.78);
+  line-height: 1.6;
+  white-space: pre-line;
+}
+
 .manage-events__empty {
   padding: 1.3rem 1.4rem;
   border-radius: 18px;
@@ -286,6 +369,10 @@
   margin: 0;
   color: rgba(34, 22, 28, 0.58);
   font-size: 0.86rem;
+}
+
+.event-form__submit-error {
+  margin: 1.15rem 0 0;
 }
 
 .event-participants__event-panel {
@@ -362,6 +449,10 @@
   .manage-event-row__stats {
     grid-template-columns: 1fr;
   }
+
+  .manage-events-page--admin .manage-event-row--admin-has-media .manage-event-row__layout--admin {
+    grid-template-columns: minmax(150px, 180px) minmax(0, 1fr);
+  }
 }
 
 @media (max-width: 720px) {
@@ -396,5 +487,14 @@
   .event-participants__table-wrap,
   .event-form-surface {
     padding: 1rem;
+  }
+
+  .manage-events-page--admin .manage-event-row--admin-has-media .manage-event-row__layout--admin {
+    grid-template-columns: 1fr;
+  }
+
+  .manage-events-page--admin .manage-event-row__media--admin {
+    min-height: 170px;
+    max-height: 220px;
   }
 }

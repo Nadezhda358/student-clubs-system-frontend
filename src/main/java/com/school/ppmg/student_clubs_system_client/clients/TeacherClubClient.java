@@ -21,6 +21,7 @@ public interface TeacherClubClient {
     @GetMapping
     PageResponse<ClubListDto> getManagedClubs(
             @RequestParam(required = false) Boolean active,
+            @RequestParam(required = false) String q,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "9") int size,
             @RequestParam(required = false) String sort

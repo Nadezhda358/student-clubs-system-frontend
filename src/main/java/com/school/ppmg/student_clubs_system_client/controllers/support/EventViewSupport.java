@@ -1,6 +1,8 @@
 package com.school.ppmg.student_clubs_system_client.controllers.support;
 
 import com.school.ppmg.student_clubs_system_client.dtos.auth.AuthUserDto;
+import com.school.ppmg.student_clubs_system_client.dtos.event.EventDto;
+import com.school.ppmg.student_clubs_system_client.dtos.event.EventListDto;
 import com.school.ppmg.student_clubs_system_client.enums.RegistrationStatus;
 import com.school.ppmg.student_clubs_system_client.enums.UserRole;
 import feign.FeignException;
@@ -119,6 +121,51 @@ public final class EventViewSupport {
         }
 
         return value.atZoneSameInstant(BUSINESS_ZONE).toLocalDateTime().format(DISPLAY_DATE_TIME);
+    }
+
+    public static boolean isRegistrationCutoffPassed(EventListDto event) {
+        if (event == null) {
+            return false;
+        }
+
+        return isRegistrationCutoffPassed(
+                event.effectiveRegistrationDeadline(),
+                event.registrationDeadline(),
+                event.startAt()
+        );
+    }
+
+    public static boolean isRegistrationCutoffPassed(EventDto event) {
+        if (event == null) {
+            return false;
+        }
+
+        return isRegistrationCutoffPassed(
+                event.effectiveRegistrationDeadline(),
+                event.registrationDeadline(),
+                event.startAt()
+        );
+    }
+
+    public static boolean isRegistrationCutoffPassed(
+            OffsetDateTime effectiveRegistrationDeadline,
+            OffsetDateTime registrationDeadline,
+            OffsetDateTime startAt
+    ) {
+        OffsetDateTime cutoff = resolveRegistrationCutoff(effectiveRegistrationDeadline, registrationDeadline, startAt);
+        return cutoff != null && cutoff.isBefore(OffsetDateTime.now(BUSINESS_ZONE));
+    }
+
+    public static OffsetDateTime resolveRegistrationCutoff(
+            OffsetDateTime effectiveRegistrationDeadline,
+            OffsetDateTime registrationDeadline,
+            OffsetDateTime startAt
+    ) {
+        if (effectiveRegistrationDeadline != null) {
+            return effectiveRegistrationDeadline;
+        }
+
+        return registrationDeadline != null ? registrationDeadline : startAt;
     }
 
     public static HttpStatus resolveStatus(FeignException ex) {

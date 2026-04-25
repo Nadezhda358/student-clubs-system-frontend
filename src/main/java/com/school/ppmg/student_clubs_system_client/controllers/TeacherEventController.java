@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.OffsetDateTime;
@@ -34,6 +35,8 @@ import java.util.List;
 @Controller
 @RequiredArgsConstructor
 public class TeacherEventController {
+    private static final long MAX_IMAGE_FILE_SIZE_BYTES = 5L * 1024 * 1024;
+
     private final TeacherEventClient teacherEventClient;
     private final TeacherClubClient teacherClubClient;
 
@@ -117,7 +120,8 @@ public class TeacherEventController {
                 "Plan a new event for one of the clubs you manage.",
                 "Create Event",
                 "/teacher/events/create",
-                buildTeacherEventsHref(form.getClubId())
+                buildTeacherEventsHref(form.getClubId()),
+                ""
         );
         return "teacher/event-form";
     }
@@ -130,6 +134,10 @@ public class TeacherEventController {
     ) {
         List<ClubListDto> clubOptions = loadManagedClubs();
         String validationMessage = validateEventForm(form);
+        if (validationMessage == null) {
+            validationMessage = validateMainImage(form.getMainImage());
+        }
+
         if (validationMessage != null) {
             populateFormModel(
                     model,
@@ -140,14 +148,29 @@ public class TeacherEventController {
                     "Plan a new event for one of the clubs you manage.",
                     "Create Event",
                     "/teacher/events/create",
-                    buildTeacherEventsHref(form.getClubId())
+                    buildTeacherEventsHref(form.getClubId()),
+                    ""
             );
             model.addAttribute("errorMessage", validationMessage);
             return "teacher/event-form";
         }
 
         try {
-            teacherEventClient.createTeacherEvent(toUpsertEventDto(form));
+            EventDto createdEvent = teacherEventClient.createTeacherEvent(toUpsertEventDto(form));
+            if (hasFile(form.getMainImage())) {
+                try {
+                    teacherEventClient.uploadTeacherEventMainImage(createdEvent.id(), form.getMainImage());
+                } catch (FeignException ex) {
+                    redirectAttributes.addFlashAttribute(
+                            "errorMessage",
+                            EventViewSupport.firstNonBlank(
+                                    EventViewSupport.extractUserMessage(ex),
+                                    "Event created, but the main image upload failed. You can try again from the edit page."
+                            )
+                    );
+                    return "redirect:/teacher/events/" + createdEvent.id() + "/edit";
+                }
+            }
             redirectAttributes.addFlashAttribute("successMessage", "Event created successfully.");
             return "redirect:" + buildTeacherEventsHref(form.getClubId());
         } catch (FeignException ex) {
@@ -160,7 +183,8 @@ public class TeacherEventController {
                     "Plan a new event for one of the clubs you manage.",
                     "Create Event",
                     "/teacher/events/create",
-                    buildTeacherEventsHref(form.getClubId())
+                    buildTeacherEventsHref(form.getClubId()),
+                    ""
             );
             model.addAttribute("errorMessage", toEventSaveErrorMessage(ex, true));
             return "teacher/event-form";
@@ -186,7 +210,8 @@ public class TeacherEventController {
                     "Adjust the schedule, registration settings, or capacity for this event.",
                     "Save Changes",
                     "/teacher/events/" + id + "/edit",
-                    buildTeacherEventsHref(event.clubId())
+                    buildTeacherEventsHref(event.clubId()),
+                    nonNull(event.mainImageUrl())
             );
             model.addAttribute("eventId", id);
             return "teacher/event-form";
@@ -214,6 +239,10 @@ public class TeacherEventController {
     ) {
         List<ClubListDto> clubOptions = loadManagedClubs();
         String validationMessage = validateEventForm(form);
+        if (validationMessage == null) {
+            validationMessage = validateMainImage(form.getMainImage());
+        }
+
         if (validationMessage != null) {
             populateFormModel(
                     model,
@@ -224,7 +253,8 @@ public class TeacherEventController {
                     "Adjust the schedule, registration settings, or capacity for this event.",
                     "Save Changes",
                     "/teacher/events/" + id + "/edit",
-                    buildTeacherEventsHref(form.getClubId())
+                    buildTeacherEventsHref(form.getClubId()),
+                    resolveCurrentMainImageUrl(id)
             );
             model.addAttribute("eventId", id);
             model.addAttribute("errorMessage", validationMessage);
@@ -233,6 +263,20 @@ public class TeacherEventController {
 
         try {
             teacherEventClient.updateTeacherEvent(id, toUpsertEventDto(form));
+            if (hasFile(form.getMainImage())) {
+                try {
+                    teacherEventClient.uploadTeacherEventMainImage(id, form.getMainImage());
+                } catch (FeignException ex) {
+                    redirectAttributes.addFlashAttribute(
+                            "errorMessage",
+                            EventViewSupport.firstNonBlank(
+                                    EventViewSupport.extractUserMessage(ex),
+                                    "Event details were saved, but the main image upload failed. Please try again."
+                            )
+                    );
+                    return "redirect:/teacher/events/" + id + "/edit";
+                }
+            }
             redirectAttributes.addFlashAttribute("successMessage", "Event updated successfully.");
             return "redirect:" + buildTeacherEventsHref(form.getClubId());
         } catch (FeignException.NotFound ex) {
@@ -255,7 +299,8 @@ public class TeacherEventController {
                     "Adjust the schedule, registration settings, or capacity for this event.",
                     "Save Changes",
                     "/teacher/events/" + id + "/edit",
-                    buildTeacherEventsHref(form.getClubId())
+                    buildTeacherEventsHref(form.getClubId()),
+                    resolveCurrentMainImageUrl(id)
             );
             model.addAttribute("eventId", id);
             model.addAttribute("errorMessage", toEventSaveErrorMessage(ex, false));
@@ -353,7 +398,7 @@ public class TeacherEventController {
 
     private List<ClubListDto> loadManagedClubs() {
         try {
-            PageResponse<ClubListDto> response = teacherClubClient.getManagedClubs(null, 0, 200, "name,asc");
+            PageResponse<ClubListDto> response = teacherClubClient.getManagedClubs(null, null, 0, 200, "name,asc");
             return response.getContent() == null ? List.of() : response.getContent();
         } catch (RuntimeException ex) {
             return List.of();
@@ -369,7 +414,8 @@ public class TeacherEventController {
             String pageSubtitle,
             String submitLabel,
             String formAction,
-            String cancelHref
+            String cancelHref,
+            String eventMainImageUrl
     ) {
         model.addAttribute("workspaceLabel", workspaceLabel);
         model.addAttribute("pageTitle", pageTitle);
@@ -380,6 +426,7 @@ public class TeacherEventController {
         model.addAttribute("clubOptions", clubOptions);
         model.addAttribute("statusValues", EventStatus.values());
         model.addAttribute("audienceValues", EventAudience.values());
+        model.addAttribute("eventMainImageUrl", nonNull(eventMainImageUrl));
         model.addAttribute("form", form);
     }
 
@@ -431,6 +478,22 @@ public class TeacherEventController {
         return null;
     }
 
+    private String validateMainImage(MultipartFile mainImage) {
+        if (!hasFile(mainImage)) {
+            return null;
+        }
+
+        if (mainImage.getSize() > MAX_IMAGE_FILE_SIZE_BYTES) {
+            return "Main image must be 5 MB or smaller. Please choose another file.";
+        }
+
+        if (!isImageFile(mainImage)) {
+            return "Main image must be an image file.";
+        }
+
+        return null;
+    }
+
     private UpsertEventDto toUpsertEventDto(EventFormRequest form) {
         return new UpsertEventDto(
                 form.getClubId(),
@@ -459,6 +522,15 @@ public class TeacherEventController {
         form.setStatus(event.status());
         form.setAudience(event.audience());
         return form;
+    }
+
+    private String resolveCurrentMainImageUrl(Long id) {
+        try {
+            EventDto event = teacherEventClient.getTeacherEventById(id);
+            return nonNull(event.mainImageUrl());
+        } catch (RuntimeException ignored) {
+            return "";
+        }
     }
 
     private String buildTeacherCreateHref(Long clubId) {
@@ -525,5 +597,19 @@ public class TeacherEventController {
             case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Unable to update the participant status. Please refresh and try again.";
             default -> "Unable to update the participant right now. Please try again.";
         };
+    }
+
+    private String nonNull(String value) {
+        return value == null ? "" : value;
+    }
+
+    private boolean hasFile(MultipartFile file) {
+        return file != null && !file.isEmpty();
+    }
+
+    private boolean isImageFile(MultipartFile file) {
+        return hasFile(file)
+                && file.getContentType() != null
+                && file.getContentType().toLowerCase().startsWith("image/");
     }
 }

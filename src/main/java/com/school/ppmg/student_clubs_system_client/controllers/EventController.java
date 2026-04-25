@@ -95,16 +95,19 @@ public class EventController {
             }
 
             RegistrationStatus myRegistrationStatus = myEvent != null ? myEvent.registrationStatus() : null;
+            boolean registrationCutoffPassed = EventViewSupport.isRegistrationCutoffPassed(event);
             boolean canRegister = EventViewSupport.isStudent(sessionUser)
                     && myRegistrationStatus != RegistrationStatus.REGISTERED
                     && event.status() == EventStatus.PUBLISHED
-                    && Boolean.TRUE.equals(event.registrationOpen());
+                    && Boolean.TRUE.equals(event.registrationOpen())
+                    && !registrationCutoffPassed;
             boolean canCancel = myRegistrationStatus == RegistrationStatus.REGISTERED && isCancellationStillAllowed(event);
 
             model.addAttribute("myEvent", myEvent);
             model.addAttribute("myRegistrationStatus", myRegistrationStatus);
             model.addAttribute("canRegister", canRegister);
             model.addAttribute("canCancelRegistration", canCancel);
+            model.addAttribute("registrationCutoffPassed", registrationCutoffPassed);
             model.addAttribute("registrationWindowClosed", myRegistrationStatus == RegistrationStatus.REGISTERED && !canCancel);
 
             return "events/details";
@@ -285,7 +288,11 @@ public class EventController {
     }
 
     private boolean isCancellationStillAllowed(EventDto event) {
-        OffsetDateTime deadline = event.effectiveRegistrationDeadline();
+        OffsetDateTime deadline = EventViewSupport.resolveRegistrationCutoff(
+                event.effectiveRegistrationDeadline(),
+                event.registrationDeadline(),
+                event.startAt()
+        );
         if (deadline == null) {
             return true;
         }

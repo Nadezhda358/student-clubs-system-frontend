@@ -23,22 +23,17 @@
       <div class="container">
         <div class="event-detail">
           <section class="event-detail__main">
-            <div class="events-alert events-alert--success" th:if="${eventActionSuccessMessage}" th:text="${eventActionSuccessMessage}"></div>
-            <div class="events-alert events-alert--warning" th:if="${eventActionWarningMessage}" th:text="${eventActionWarningMessage}"></div>
-            <div class="events-alert events-alert--error" th:if="${eventActionErrorMessage}" th:text="${eventActionErrorMessage}"></div>
-
             <section class="event-detail__hero">
               <p class="event-detail__eyebrow" th:text="${event.clubName}">Science Club</p>
               <h1 class="event-detail__title" th:text="${event.title}">Event title</h1>
-              <p class="event-detail__subtitle" th:text="${event.description}">Description</p>
 
               <div class="event-detail__chips">
                 <span class="event-chip" th:text="${T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatLabel(event.audience)}">All students</span>
                 <span class="event-chip" th:text="${T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatLabel(event.status)}">Published</span>
                 <span
                   class="event-chip"
-                  th:classappend="${event.status.name() == 'CANCELLED'} ? ' event-chip--cancelled' : (${event.registrationOpen} ? ' event-chip--open' : ' event-chip--closed')"
-                  th:text="${event.status.name() == 'CANCELLED' ? 'Cancelled' : (event.registrationOpen ? 'Registration open' : 'Registration closed')}"
+                  th:classappend="${event.status.name() == 'CANCELLED'} ? ' event-chip--cancelled' : (${registrationCutoffPassed} ? ' event-chip--expired' : (${event.registrationOpen} ? ' event-chip--open' : ' event-chip--closed'))"
+                  th:text="${event.status.name() == 'CANCELLED' ? 'Cancelled' : (registrationCutoffPassed ? 'Sign-up closed' : (event.registrationOpen ? 'Registration open' : 'Registration closed'))}"
                 >
                   Registration open
                 </span>
@@ -53,7 +48,7 @@
               </div>
             </section>
 
-            <section class="event-detail__panel">
+            <section class="event-detail__panel event-detail__panel--facts">
               <h2>Event Details</h2>
               <dl class="event-detail__facts">
                 <div class="event-detail__fact">
@@ -75,14 +70,24 @@
               </dl>
             </section>
 
-            <section class="event-detail__panel">
+            <section class="event-detail__panel event-detail__panel--story">
               <h2>What to Expect</h2>
               <p th:text="${event.description}">Description</p>
             </section>
           </section>
 
           <aside class="event-detail__sidebar">
-            <section class="event-detail__panel event-detail__action-box">
+            <section
+              class="event-detail__hero-media event-detail__hero-media--sidebar"
+              th:if="${event.mainImageUrl != null and !#strings.isEmpty(event.mainImageUrl)}"
+            >
+              <img class="event-detail__hero-image" th:src="${event.mainImageUrl}" alt="Event image" />
+            </section>
+
+            <section
+              class="event-detail__panel event-detail__action-box"
+              th:classappend="${registrationCutoffPassed} ? ' event-detail__action-box--closed' : ''"
+            >
               <h2>Participation</h2>
 
               <dl class="event-detail__meta-list">
@@ -100,12 +105,18 @@
                 </div>
               </dl>
 
-              <p class="event-detail__side-copy" th:if="${sessionUser == null}">
+              <p
+                class="event-detail__side-copy event-detail__side-copy--closed"
+                th:if="${registrationCutoffPassed and myRegistrationStatus != T(com.school.ppmg.student_clubs_system_client.enums.RegistrationStatus).REGISTERED}"
+              >
+                Sign-up is closed for this event.
+              </p>
+              <p class="event-detail__side-copy" th:if="${sessionUser == null and !registrationCutoffPassed}">
                 Sign in with a student account to register for this event.
               </p>
               <p
                 class="event-detail__side-copy"
-                th:if="${sessionUser != null and sessionUser.role != T(com.school.ppmg.student_clubs_system_client.enums.UserRole).STUDENT}"
+                th:if="${sessionUser != null and sessionUser.role != T(com.school.ppmg.student_clubs_system_client.enums.UserRole).STUDENT and !registrationCutoffPassed}"
               >
                 Only students can register for events.
               </p>
@@ -120,7 +131,7 @@
               </p>
 
               <div class="event-detail__actions" th:classappend="${canCancelRegistration} ? ' event-detail__actions--cancel-state'">
-                <a class="events-link events-link--primary" th:if="${sessionUser == null}" th:href="@{/login}">Sign In</a>
+                <a class="events-link events-link--primary" th:if="${sessionUser == null and !registrationCutoffPassed}" th:href="@{/login}">Sign In</a>
                 <form method="post" th:if="${canRegister}" th:action="@{/events/{id}/register(id=${event.id})}">
                   <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                   <input type="hidden" name="returnTo" th:value="@{/events/{id}(id=${event.id})}" />
@@ -143,5 +154,56 @@
     </main>
 
     <footer th:replace="fragments/site-chrome :: siteFooter"></footer>
+
+    <div
+      id="event-toast"
+      class="event-toast"
+      th:if="${!#strings.isEmpty(eventActionSuccessMessage)
+        or !#strings.isEmpty(eventActionWarningMessage)
+        or !#strings.isEmpty(eventActionErrorMessage)}"
+      th:attr="
+        data-type=${!#strings.isEmpty(eventActionSuccessMessage) ? 'success'
+          : (!#strings.isEmpty(eventActionWarningMessage) ? 'warning' : 'error')},
+        data-message=${!#strings.isEmpty(eventActionSuccessMessage) ? eventActionSuccessMessage
+          : (!#strings.isEmpty(eventActionWarningMessage) ? eventActionWarningMessage : eventActionErrorMessage)}
+      "
+      role="status"
+      aria-live="polite"
+      hidden
+    ></div>
+
+    <script>
+      (() => {
+        const toast = document.getElementById("event-toast");
+        if (!toast) {
+          return;
+        }
+
+        const type = toast.dataset.type || "info";
+        const message = toast.dataset.message || "";
+
+        toast.classList.add(`event-toast--${type}`);
+
+        const logo = document.createElement("img");
+        logo.className = "event-toast__logo";
+        logo.src = "/assets/logo.png";
+        logo.alt = "ClubsHub";
+
+        const text = document.createElement("span");
+        text.textContent = message;
+
+        toast.append(logo, text);
+        toast.hidden = false;
+
+        requestAnimationFrame(() => {
+          toast.classList.add("is-visible");
+        });
+
+        setTimeout(() => {
+          toast.classList.remove("is-visible");
+          setTimeout(() => toast.remove(), 300);
+        }, 3000);
+      })();
+    </script>
   </body>
 </html>

@@ -46,7 +46,7 @@ document.addEventListener("DOMContentLoaded", function () {
       };
 
       if (modalMessage) {
-        modalMessage.textContent = "You are about to " + actionLabel + " this membership application.";
+        modalMessage.textContent = capitalize(actionLabel) + " this membership application?";
       }
       if (modalStudent) {
         modalStudent.textContent = pendingAction.student;
@@ -125,12 +125,12 @@ document.addEventListener("DOMContentLoaded", function () {
     if (pendingAction?.action === "approve") {
       modalConfirm?.classList.add("is-approve");
       if (modalConfirm) {
-        modalConfirm.textContent = "Confirm Approval";
+        modalConfirm.textContent = "Approve";
       }
     } else if (pendingAction?.action === "reject") {
       modalConfirm?.classList.add("is-reject");
       if (modalConfirm) {
-        modalConfirm.textContent = "Confirm Rejection";
+        modalConfirm.textContent = "Reject";
       }
     } else if (modalConfirm) {
       modalConfirm.textContent = "Confirm";
@@ -264,5 +264,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function normalizeBasePath(value) {
     return value.replace(/\/+$/, "");
+  }
+
+  function capitalize(value) {
+    const normalized = String(value || "").trim();
+    if (!normalized) {
+      return "Confirm";
+    }
+
+    return normalized.charAt(0).toUpperCase() + normalized.slice(1);
   }
 });

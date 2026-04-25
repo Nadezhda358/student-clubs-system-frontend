@@ -168,6 +168,25 @@
   text-decoration: none;
 }
 
+.me-events-table__event {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.me-events-table__event-copy {
+  min-width: 0;
+}
+
+.me-events-table__image {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 14px;
+  border: 1px solid rgba(34, 22, 28, 0.08);
+  flex: 0 0 auto;
+}
+
 .me-events-table__secondary {
   display: block;
   margin-top: 0.2rem;

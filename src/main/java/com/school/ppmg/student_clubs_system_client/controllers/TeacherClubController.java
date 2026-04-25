@@ -39,6 +39,7 @@ public class TeacherClubController {
     @GetMapping("/teacher/clubs")
     public String teacherClubsPage(
             @RequestParam(required = false) Boolean active,
+            @RequestParam(required = false) String q,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(required = false) String sort,
             @RequestParam(required = false) String success,
@@ -48,11 +49,19 @@ public class TeacherClubController {
             Model model
     ) {
         String resolvedSort = (sort == null || sort.isBlank()) ? "name,asc" : sort;
-        PageResponse<ClubListDto> result = teacherClubClient.getManagedClubs(active, page, PAGE_SIZE, resolvedSort);
+        String normalizedQuery = normalizeOptionalText(q);
+        PageResponse<ClubListDto> result = teacherClubClient.getManagedClubs(
+                active,
+                normalizedQuery,
+                page,
+                PAGE_SIZE,
+                resolvedSort
+        );
 
         model.addAttribute("page", result);
         model.addAttribute("clubs", result.getContent());
         model.addAttribute("active", active);
+        model.addAttribute("q", nonNull(normalizedQuery));
         model.addAttribute("sort", resolvedSort);
         model.addAttribute("size", PAGE_SIZE);
         model.addAttribute("successMessage", firstNonBlank(flashSuccessMessage, successMessage(success)));

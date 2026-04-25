@@ -103,6 +103,10 @@
                   </div>
                 </div>
 
+                <div class="manage-event-row__media" th:if="${event.mainImageUrl != null and !#strings.isEmpty(event.mainImageUrl)}">
+                  <img th:src="${event.mainImageUrl}" alt="Event image" />
+                </div>
+
                 <div class="manage-event-row__stats">
                   <div class="manage-event-stat">
                     <span class="manage-event-stat__label">Starts</span>

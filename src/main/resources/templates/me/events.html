@@ -74,8 +74,18 @@
               <tbody>
                 <tr th:each="event : ${events}">
                   <td>
-                    <a class="me-events-table__primary" th:href="@{/events/{id}(id=${event.eventId})}" th:text="${event.title}">Event</a>
-                    <span class="me-events-table__secondary" th:text="${event.clubName}">Club</span>
+                    <div class="me-events-table__event">
+                      <img
+                        class="me-events-table__image"
+                        th:if="${event.mainImageUrl != null and !#strings.isEmpty(event.mainImageUrl)}"
+                        th:src="${event.mainImageUrl}"
+                        alt="Event image"
+                      />
+                      <div class="me-events-table__event-copy">
+                        <a class="me-events-table__primary" th:href="@{/events/{id}(id=${event.eventId})}" th:text="${event.title}">Event</a>
+                        <span class="me-events-table__secondary" th:text="${event.clubName}">Club</span>
+                      </div>
+                    </div>
                   </td>
                   <td>
                     <span th:text="${event.startAt != null ? T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatDateTime(event.startAt) : '-'}">2026-04-18 16:00</span>

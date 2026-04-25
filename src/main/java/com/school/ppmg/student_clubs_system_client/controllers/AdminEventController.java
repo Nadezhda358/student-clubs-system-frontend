@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.OffsetDateTime;
@@ -34,6 +35,8 @@ import java.util.List;
 @Controller
 @RequiredArgsConstructor
 public class AdminEventController {
+    private static final long MAX_IMAGE_FILE_SIZE_BYTES = 5L * 1024 * 1024;
+
     private final AdminEventClient adminEventClient;
     private final ClubClient clubClient;
 
@@ -99,7 +102,8 @@ public class AdminEventController {
                 "Add a new event and assign it to the appropriate club.",
                 "Create Event",
                 "/admin/events/create",
-                "/admin/events"
+                "/admin/events",
+                ""
         );
         return "admin/event-form";
     }
@@ -112,6 +116,10 @@ public class AdminEventController {
     ) {
         List<ClubListDto> clubOptions = loadClubs();
         String validationMessage = validateEventForm(form);
+        if (validationMessage == null) {
+            validationMessage = validateMainImage(form.getMainImage());
+        }
+
         if (validationMessage != null) {
             populateFormModel(
                     model,
@@ -122,14 +130,29 @@ public class AdminEventController {
                     "Add a new event and assign it to the appropriate club.",
                     "Create Event",
                     "/admin/events/create",
-                    "/admin/events"
+                    "/admin/events",
+                    ""
             );
             model.addAttribute("errorMessage", validationMessage);
             return "admin/event-form";
         }
 
         try {
-            adminEventClient.createAdminEvent(toUpsertEventDto(form));
+            EventDto createdEvent = adminEventClient.createAdminEvent(toUpsertEventDto(form));
+            if (hasFile(form.getMainImage())) {
+                try {
+                    adminEventClient.uploadAdminEventMainImage(createdEvent.id(), form.getMainImage());
+                } catch (FeignException ex) {
+                    redirectAttributes.addFlashAttribute(
+                            "errorMessage",
+                            EventViewSupport.firstNonBlank(
+                                    EventViewSupport.extractUserMessage(ex),
+                                    "Event created, but the main image upload failed. You can try again from the edit page."
+                            )
+                    );
+                    return "redirect:/admin/events/" + createdEvent.id() + "/edit";
+                }
+            }
             redirectAttributes.addFlashAttribute("successMessage", "Event created successfully.");
             return "redirect:/admin/events";
         } catch (FeignException ex) {
@@ -142,7 +165,8 @@ public class AdminEventController {
                     "Add a new event and assign it to the appropriate club.",
                     "Create Event",
                     "/admin/events/create",
-                    "/admin/events"
+                    "/admin/events",
+                    ""
             );
             model.addAttribute("errorMessage", toEventSaveErrorMessage(ex, true));
             return "admin/event-form";
@@ -166,7 +190,8 @@ public class AdminEventController {
                     "Adjust event visibility, timing, or capacity across the platform.",
                     "Save Changes",
                     "/admin/events/" + id + "/edit",
-                    "/admin/events"
+                    "/admin/events",
+                    nonNull(event.mainImageUrl())
             );
             model.addAttribute("eventId", id);
             return "admin/event-form";
@@ -188,6 +213,10 @@ public class AdminEventController {
     ) {
         List<ClubListDto> clubOptions = loadClubs();
         String validationMessage = validateEventForm(form);
+        if (validationMessage == null) {
+            validationMessage = validateMainImage(form.getMainImage());
+        }
+
         if (validationMessage != null) {
             populateFormModel(
                     model,
@@ -198,7 +227,8 @@ public class AdminEventController {
                     "Adjust event visibility, timing, or capacity across the platform.",
                     "Save Changes",
                     "/admin/events/" + id + "/edit",
-                    "/admin/events"
+                    "/admin/events",
+                    resolveCurrentMainImageUrl(id)
             );
             model.addAttribute("eventId", id);
             model.addAttribute("errorMessage", validationMessage);
@@ -207,6 +237,20 @@ public class AdminEventController {
 
         try {
             adminEventClient.updateAdminEvent(id, toUpsertEventDto(form));
+            if (hasFile(form.getMainImage())) {
+                try {
+                    adminEventClient.uploadAdminEventMainImage(id, form.getMainImage());
+                } catch (FeignException ex) {
+                    redirectAttributes.addFlashAttribute(
+                            "errorMessage",
+                            EventViewSupport.firstNonBlank(
+                                    EventViewSupport.extractUserMessage(ex),
+                                    "Event details were saved, but the main image upload failed. Please try again."
+                            )
+                    );
+                    return "redirect:/admin/events/" + id + "/edit";
+                }
+            }
             redirectAttributes.addFlashAttribute("successMessage", "Event updated successfully.");
             return "redirect:/admin/events";
         } catch (FeignException.NotFound ex) {
@@ -224,7 +268,8 @@ public class AdminEventController {
                     "Adjust event visibility, timing, or capacity across the platform.",
                     "Save Changes",
                     "/admin/events/" + id + "/edit",
-                    "/admin/events"
+                    "/admin/events",
+                    resolveCurrentMainImageUrl(id)
             );
             model.addAttribute("eventId", id);
             model.addAttribute("errorMessage", toEventSaveErrorMessage(ex, false));
@@ -335,7 +380,8 @@ public class AdminEventController {
             String pageSubtitle,
             String submitLabel,
             String formAction,
-            String cancelHref
+            String cancelHref,
+            String eventMainImageUrl
     ) {
         model.addAttribute("workspaceLabel", workspaceLabel);
         model.addAttribute("pageTitle", pageTitle);
@@ -346,6 +392,7 @@ public class AdminEventController {
         model.addAttribute("clubOptions", clubOptions);
         model.addAttribute("statusValues", EventStatus.values());
         model.addAttribute("audienceValues", EventAudience.values());
+        model.addAttribute("eventMainImageUrl", nonNull(eventMainImageUrl));
         model.addAttribute("form", form);
     }
 
@@ -397,6 +444,22 @@ public class AdminEventController {
         return null;
     }
 
+    private String validateMainImage(MultipartFile mainImage) {
+        if (!hasFile(mainImage)) {
+            return null;
+        }
+
+        if (mainImage.getSize() > MAX_IMAGE_FILE_SIZE_BYTES) {
+            return "Main image must be 5 MB or smaller. Please choose another file.";
+        }
+
+        if (!isImageFile(mainImage)) {
+            return "Main image must be an image file.";
+        }
+
+        return null;
+    }
+
     private UpsertEventDto toUpsertEventDto(EventFormRequest form) {
         return new UpsertEventDto(
                 form.getClubId(),
@@ -425,6 +488,15 @@ public class AdminEventController {
         form.setStatus(event.status());
         form.setAudience(event.audience());
         return form;
+    }
+
+    private String resolveCurrentMainImageUrl(Long id) {
+        try {
+            EventDto event = adminEventClient.getAdminEventById(id);
+            return nonNull(event.mainImageUrl());
+        } catch (RuntimeException ignored) {
+            return "";
+        }
     }
 
     private String toEventsLoadErrorMessage(FeignException ex) {
@@ -491,5 +563,19 @@ public class AdminEventController {
             case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Unable to update the participation status. Please refresh and try again.";
             default -> "Unable to update the participation right now. Please try again.";
         };
+    }
+
+    private String nonNull(String value) {
+        return value == null ? "" : value;
+    }
+
+    private boolean hasFile(MultipartFile file) {
+        return file != null && !file.isEmpty();
+    }
+
+    private boolean isImageFile(MultipartFile file) {
+        return hasFile(file)
+                && file.getContentType() != null
+                && file.getContentType().toLowerCase().startsWith("image/");
     }
 }

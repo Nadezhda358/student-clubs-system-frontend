@@ -61,6 +61,14 @@ public class GlobalModelAttributes {
                 targetUrl = uri.substring(0, uri.length() - "/main-image".length()) + "/edit";
             } else if (uri != null && uri.startsWith("/teacher/clubs/") && uri.endsWith("/main-image")) {
                 targetUrl = uri.substring(0, uri.length() - "/main-image".length()) + "/edit";
+            } else if ("/admin/events/create".equals(uri)) {
+                targetUrl = "/admin/events/create";
+            } else if (uri != null && uri.startsWith("/admin/events/") && uri.endsWith("/edit")) {
+                targetUrl = uri;
+            } else if ("/teacher/events/create".equals(uri)) {
+                targetUrl = "/teacher/events/create";
+            } else if (uri != null && uri.startsWith("/teacher/events/") && uri.endsWith("/edit")) {
+                targetUrl = uri;
             } else if ("/admin/clubs/create".equals(uri)) {
                 targetUrl = "/admin/clubs/create";
             } else {

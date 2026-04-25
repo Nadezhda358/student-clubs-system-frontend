@@ -15,6 +15,7 @@
     <link rel="stylesheet" th:href="@{/css/design-tokens.css}" />
     <link rel="stylesheet" th:href="@{/css/admin-shell.css}" />
     <link rel="stylesheet" th:href="@{/css/admin-clubs.css}" />
+    <link rel="stylesheet" th:href="@{/css/manage-events.css}" />
     <link rel="stylesheet" th:href="@{/css/site-ui.css}" />
   </head>
   <body th:replace="~{fragments/teacher-shell :: teacherShell('admin-clubs-page', ~{::teacherPageContent}, ~{::pageScripts})}">
@@ -33,6 +34,29 @@
 
           <div class="admin-alert admin-alert--success" th:if="${successMessage}" th:text="${successMessage}"></div>
           <div class="admin-alert admin-alert--error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
+          <form method="get" th:action="@{/teacher/clubs}" class="manage-events__filters" style="margin-bottom: 1.2rem;">
+            <div class="manage-events__filters-grid">
+              <div class="manage-events__field manage-events__field--wide">
+                <label for="teacherClubSearch">Search</label>
+                <input id="teacherClubSearch" class="manage-events__input" type="text" name="q" th:value="${q}" placeholder="Search managed clubs" />
+              </div>
+
+              <div class="manage-events__field">
+                <label for="teacherClubActive">Status</label>
+                <select id="teacherClubActive" class="manage-events__select" name="active">
+                  <option value="" th:selected="${active == null}">All clubs</option>
+                  <option value="true" th:selected="${active != null and active}">Active</option>
+                  <option value="false" th:selected="${active != null and !active}">Inactive</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="manage-events__filter-actions" style="margin-top: 0.9rem;">
+              <button class="events-button events-button--primary" type="submit">Apply Filters</button>
+              <a class="events-link events-link--ghost" th:href="@{/teacher/clubs}">Reset</a>
+            </div>
+          </form>
 
           <section class="admin-clubs__list" th:if="${!#lists.isEmpty(clubs)}">
             <article class="admin-club-row" th:each="club : ${clubs}">
@@ -69,7 +93,7 @@
             <a
               class="page-link"
               th:classappend="${page.first} ? ' disabled' : ''"
-              th:href="${page.first} ? '#' : @{/teacher/clubs(page=0, sort=${sort}, active=${active})}"
+              th:href="${page.first} ? '#' : @{/teacher/clubs(page=0, sort=${sort}, active=${active}, q=${q})}"
               th:attr="aria-disabled=${page.first}"
             >
               First
@@ -77,7 +101,7 @@
             <a
               class="page-link"
               th:classappend="${page.first} ? ' disabled' : ''"
-              th:href="${page.first} ? '#' : @{/teacher/clubs(page=${page.number - 1}, sort=${sort}, active=${active})}"
+              th:href="${page.first} ? '#' : @{/teacher/clubs(page=${page.number - 1}, sort=${sort}, active=${active}, q=${q})}"
               th:attr="aria-disabled=${page.first}"
             >
               Previous
@@ -89,7 +113,7 @@
             <a
               class="page-link"
               th:classappend="${page.last} ? ' disabled' : ''"
-              th:href="${page.last} ? '#' : @{/teacher/clubs(page=${page.number + 1}, sort=${sort}, active=${active})}"
+              th:href="${page.last} ? '#' : @{/teacher/clubs(page=${page.number + 1}, sort=${sort}, active=${active}, q=${q})}"
               th:attr="aria-disabled=${page.last}"
             >
               Next
@@ -97,7 +121,7 @@
             <a
               class="page-link"
               th:classappend="${page.last} ? ' disabled' : ''"
-              th:href="${page.last} ? '#' : @{/teacher/clubs(page=${lastIndex}, sort=${sort}, active=${active})}"
+              th:href="${page.last} ? '#' : @{/teacher/clubs(page=${lastIndex}, sort=${sort}, active=${active}, q=${q})}"
               th:attr="aria-disabled=${page.last}"
             >
               Last

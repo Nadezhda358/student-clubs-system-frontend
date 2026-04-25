@@ -92,21 +92,45 @@
 
             <section class="events-pane" data-event-pane="list">
               <div class="events-grid" th:if="${!#lists.isEmpty(events)}">
-                <article class="event-card" th:each="event : ${events}">
+                <article
+                  class="event-card"
+                  th:each="event : ${events}"
+                  th:with="registrationCutoffPassed=${T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).isRegistrationCutoffPassed(event)}"
+                  th:classappend="${registrationCutoffPassed} ? ' event-card--registration-closed' : ''"
+                >
+                  <a
+                    class="event-card__media"
+                    th:classappend="${event.mainImageUrl != null and !#strings.isEmpty(event.mainImageUrl)} ? ' has-image' : ''"
+                    th:href="@{/events/{id}(id=${event.id})}"
+                  >
+                    <img
+                      class="event-card__image"
+                      th:if="${event.mainImageUrl != null and !#strings.isEmpty(event.mainImageUrl)}"
+                      th:src="${event.mainImageUrl}"
+                      alt="Event image"
+                    />
+                    <span
+                      class="event-card__placeholder"
+                      th:if="${event.mainImageUrl == null or #strings.isEmpty(event.mainImageUrl)}"
+                      th:text="${event.title != null and !#strings.isEmpty(event.title) ? #strings.substring(event.title, 0, 1) : 'E'}"
+                    >
+                      E
+                    </span>
+                  </a>
+
                   <header class="event-card__header">
                     <span class="event-card__club" th:text="${event.clubName}">Science Club</span>
                     <h2 class="event-card__title">
                       <a th:href="@{/events/{id}(id=${event.id})}" th:text="${event.title}">Event title</a>
                     </h2>
-                    <p class="event-card__description" th:text="${event.description}">Event summary</p>
                   </header>
 
                   <div class="event-card__chips">
                     <span class="event-chip" th:text="${T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatLabel(event.audience)}">All students</span>
                     <span
                       class="event-chip"
-                      th:classappend="${event.status.name() == 'CANCELLED'} ? ' event-chip--cancelled' : (${event.registrationOpen} ? ' event-chip--open' : ' event-chip--closed')"
-                      th:text="${event.status.name() == 'CANCELLED' ? 'Cancelled' : (event.registrationOpen ? 'Registration open' : 'Registration closed')}"
+                      th:classappend="${event.status.name() == 'CANCELLED'} ? ' event-chip--cancelled' : (${registrationCutoffPassed} ? ' event-chip--expired' : (${event.registrationOpen} ? ' event-chip--open' : ' event-chip--closed'))"
+                      th:text="${event.status.name() == 'CANCELLED' ? 'Cancelled' : (registrationCutoffPassed ? 'Sign-up closed' : (event.registrationOpen ? 'Registration open' : 'Registration closed'))}"
                     >
                       Registration open
                     </span>
@@ -118,7 +142,7 @@
                   </div>
 
                   <footer class="event-card__footer">
-                    <span class="event-card__capacity" th:text="${event.availableSpots != null ? event.availableSpots + ' spots left' : 'Capacity flexible'}">12 spots left</span>
+                    <span class="event-card__capacity" th:text="${registrationCutoffPassed ? 'Sign-up no longer available' : (event.availableSpots != null ? event.availableSpots + ' spots left' : 'Capacity flexible')}">12 spots left</span>
                     <a class="events-link events-link--ghost" th:href="@{/events/{id}(id=${event.id})}">View Details</a>
                   </footer>
                 </article>
@@ -130,11 +154,13 @@
                 <span
                   th:each="event : ${events}"
                   data-event-calendar-seed
+                  th:with="registrationCutoffPassed=${T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).isRegistrationCutoffPassed(event)}"
                   th:attr="
                     data-title=${event.title},
                     data-club=${event.clubName},
                     data-location=${event.location},
                     data-start=${event.startAt},
+                    data-registration-closed=${registrationCutoffPassed},
                     data-href=@{/events/{id}(id=${event.id})}
                   "
                 ></span>
@@ -144,13 +170,14 @@
 
           <section
             class="events-pagination"
-            th:if="${eventPage != null and eventPage.totalPages > 1}"
-            th:with="lastIndex=${eventPage.totalPages - 1}"
+            th:if="${eventPage != null}"
+            th:with="currentPage=${eventPage.totalPages > 0 ? eventPage.number + 1 : 1}, totalPages=${eventPage.totalPages > 0 ? eventPage.totalPages : 1}, lastIndex=${eventPage.totalPages > 0 ? eventPage.totalPages - 1 : 0}"
           >
             <a
               class="events-link events-link--ghost"
               th:classappend="${eventPage.first} ? ' disabled' : ''"
               th:href="${eventPage.first} ? '#' : @{/events(page=0, clubId=${selectedClubId}, q=${q}, fromDate=${fromDate}, toDate=${toDate}, view=${view})}"
+              th:attr="aria-disabled=${eventPage.first}"
             >
               First
             </a>
@@ -158,17 +185,35 @@
               class="events-link events-link--ghost"
               th:classappend="${eventPage.first} ? ' disabled' : ''"
               th:href="${eventPage.first} ? '#' : @{/events(page=${eventPage.number - 1}, clubId=${selectedClubId}, q=${q}, fromDate=${fromDate}, toDate=${toDate}, view=${view})}"
+              th:attr="aria-disabled=${eventPage.first}"
             >
               Previous
             </a>
-            <span class="events-pagination__state">
-              Page <strong th:text="${eventPage.number + 1}">1</strong> of
-              <strong th:text="${eventPage.totalPages}">1</strong>
-            </span>
+
+            <form class="events-page-input" th:action="@{/events}" method="get" data-event-page-input>
+              <input type="hidden" name="clubId" th:value="${selectedClubId}" />
+              <input type="hidden" name="q" th:value="${q}" />
+              <input type="hidden" name="fromDate" th:value="${fromDate}" />
+              <input type="hidden" name="toDate" th:value="${toDate}" />
+              <input type="hidden" name="view" th:value="${view}" />
+              <label class="events-sr-only" for="eventsPageNumber">Page</label>
+              <input
+                id="eventsPageNumber"
+                name="pageDisplay"
+                type="number"
+                min="1"
+                inputmode="numeric"
+                th:attr="max=${totalPages}"
+                th:value="${currentPage}"
+              />
+              <span class="events-pagination__state">of <strong th:text="${totalPages}">1</strong></span>
+            </form>
+
             <a
               class="events-link events-link--ghost"
               th:classappend="${eventPage.last} ? ' disabled' : ''"
               th:href="${eventPage.last} ? '#' : @{/events(page=${eventPage.number + 1}, clubId=${selectedClubId}, q=${q}, fromDate=${fromDate}, toDate=${toDate}, view=${view})}"
+              th:attr="aria-disabled=${eventPage.last}"
             >
               Next
             </a>
@@ -176,6 +221,7 @@
               class="events-link events-link--ghost"
               th:classappend="${eventPage.last} ? ' disabled' : ''"
               th:href="${eventPage.last} ? '#' : @{/events(page=${lastIndex}, clubId=${selectedClubId}, q=${q}, fromDate=${fromDate}, toDate=${toDate}, view=${view})}"
+              th:attr="aria-disabled=${eventPage.last}"
             >
               Last
             </a>
