@@ -56,25 +56,14 @@ public class ClubController {
     public String clubsPage(
             @RequestParam(required = false) String q,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "9") int size,
-            @RequestParam(required = false) String sort,
             Model model
     ) {
-        // default sort if you want
-        if (sort == null || sort.isBlank()) {
-            sort = "name,asc";
-        }
-
         String normalizedQuery = trimToNull(q);
-        PageResponse<ClubListDto> result = clubClient.getAll(true, normalizedQuery, page, PAGE_SIZE, sort);
+        PageResponse<ClubListDto> result = clubClient.getAll(true, normalizedQuery, page, PAGE_SIZE, null);
 
         model.addAttribute("page", result);
         model.addAttribute("clubs", result.getContent());
         model.addAttribute("q", normalizedQuery == null ? "" : normalizedQuery);
-
-        // keep query params for pagination links
-        model.addAttribute("sort", sort);
-        model.addAttribute("size", PAGE_SIZE);
 
         return "clubs/index";
     }
@@ -83,20 +72,16 @@ public class ClubController {
     public String adminClubsPage(
             @RequestParam(required = false) Boolean active,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(required = false) String sort,
             @RequestParam(required = false) String success,
             @ModelAttribute("successMessage") String flashSuccessMessage,
             @ModelAttribute("errorMessage") String flashErrorMessage,
             Model model
     ) {
-        String resolvedSort = (sort == null || sort.isBlank()) ? "name,asc" : sort;
-        PageResponse<ClubListDto> result = clubClient.getAll(active, null, page, PAGE_SIZE, resolvedSort);
+        PageResponse<ClubListDto> result = clubClient.getAll(active, null, page, PAGE_SIZE, null);
 
         model.addAttribute("page", result);
         model.addAttribute("clubs", result.getContent());
         model.addAttribute("active", active);
-        model.addAttribute("sort", resolvedSort);
-        model.addAttribute("size", PAGE_SIZE);
         model.addAttribute("successMessage", firstNonBlank(flashSuccessMessage, successMessage(success)));
         model.addAttribute("errorMessage", trimToNull(flashErrorMessage));
 
@@ -573,7 +558,7 @@ public class ClubController {
                     null,
                     0,
                     EventViewSupport.TAB_PAGE_SIZE,
-                    EventViewSupport.EVENT_SORT
+                    null
             );
             model.addAttribute("events", result.getContent() == null ? List.of() : result.getContent());
             model.addAttribute("clubId", id);
@@ -607,7 +592,7 @@ public class ClubController {
                     null,
                     0,
                     EventViewSupport.TAB_PAGE_SIZE,
-                    "publishedAt,desc"
+                    null
             );
             List<AnnouncementDto> announcements = result.getContent() == null ? List.of() : result.getContent();
             model.addAttribute("announcements", announcements);
@@ -786,7 +771,7 @@ public class ClubController {
                 null,
                 0,
                 1,
-                "createdAt,desc"
+                null
         );
 
         List<MembershipApplicationDto> applications = response.getContent() == null ? List.of() : response.getContent();

@@ -93,7 +93,7 @@
             <a
               class="page-link"
               th:classappend="${page.first} ? ' disabled' : ''"
-              th:href="${page.first} ? '#' : @{/teacher/clubs(page=0, sort=${sort}, active=${active}, q=${q})}"
+              th:href="${page.first} ? '#' : @{/teacher/clubs(page=0, active=${active}, q=${q})}"
               th:attr="aria-disabled=${page.first}"
             >
               First
@@ -101,7 +101,7 @@
             <a
               class="page-link"
               th:classappend="${page.first} ? ' disabled' : ''"
-              th:href="${page.first} ? '#' : @{/teacher/clubs(page=${page.number - 1}, sort=${sort}, active=${active}, q=${q})}"
+              th:href="${page.first} ? '#' : @{/teacher/clubs(page=${page.number - 1}, active=${active}, q=${q})}"
               th:attr="aria-disabled=${page.first}"
             >
               Previous
@@ -113,7 +113,7 @@
             <a
               class="page-link"
               th:classappend="${page.last} ? ' disabled' : ''"
-              th:href="${page.last} ? '#' : @{/teacher/clubs(page=${page.number + 1}, sort=${sort}, active=${active}, q=${q})}"
+              th:href="${page.last} ? '#' : @{/teacher/clubs(page=${page.number + 1}, active=${active}, q=${q})}"
               th:attr="aria-disabled=${page.last}"
             >
               Next
@@ -121,7 +121,7 @@
             <a
               class="page-link"
               th:classappend="${page.last} ? ' disabled' : ''"
-              th:href="${page.last} ? '#' : @{/teacher/clubs(page=${lastIndex}, sort=${sort}, active=${active}, q=${q})}"
+              th:href="${page.last} ? '#' : @{/teacher/clubs(page=${lastIndex}, active=${active}, q=${q})}"
               th:attr="aria-disabled=${page.last}"
             >
               Last

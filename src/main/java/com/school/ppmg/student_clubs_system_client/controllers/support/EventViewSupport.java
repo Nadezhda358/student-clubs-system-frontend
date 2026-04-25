@@ -17,8 +17,6 @@ public final class EventViewSupport {
     public static final int BROWSER_PAGE_SIZE = 12;
     public static final int TAB_PAGE_SIZE = 24;
     public static final int PARTICIPANTS_PAGE_SIZE = 20;
-    public static final String EVENT_SORT = "startAt,asc";
-    public static final String PARTICIPATION_SORT = "registeredAt,desc";
 
     private static final ZoneId BUSINESS_ZONE = ZoneId.of("Europe/Sofia");
     private static final DateTimeFormatter FORM_DATE_TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");

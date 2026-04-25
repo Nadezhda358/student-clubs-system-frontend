@@ -41,29 +41,25 @@ public class TeacherClubController {
             @RequestParam(required = false) Boolean active,
             @RequestParam(required = false) String q,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(required = false) String sort,
             @RequestParam(required = false) String success,
             @RequestParam(required = false) String error,
             @ModelAttribute("successMessage") String flashSuccessMessage,
             @ModelAttribute("errorMessage") String flashErrorMessage,
             Model model
     ) {
-        String resolvedSort = (sort == null || sort.isBlank()) ? "name,asc" : sort;
         String normalizedQuery = normalizeOptionalText(q);
         PageResponse<ClubListDto> result = teacherClubClient.getManagedClubs(
                 active,
                 normalizedQuery,
                 page,
                 PAGE_SIZE,
-                resolvedSort
+                null
         );
 
         model.addAttribute("page", result);
         model.addAttribute("clubs", result.getContent());
         model.addAttribute("active", active);
         model.addAttribute("q", nonNull(normalizedQuery));
-        model.addAttribute("sort", resolvedSort);
-        model.addAttribute("size", PAGE_SIZE);
         model.addAttribute("successMessage", firstNonBlank(flashSuccessMessage, successMessage(success)));
         model.addAttribute("errorMessage", firstNonBlank(flashErrorMessage, listErrorMessage(error)));
 

@@ -64,7 +64,7 @@ public class TeacherAnnouncementController {
                     EventViewSupport.parseToDate(toDate),
                     page,
                     EventViewSupport.BROWSER_PAGE_SIZE,
-                    "publishedAt,desc"
+                    null
             );
             model.addAttribute("announcementPage", result);
             model.addAttribute(
@@ -282,7 +282,7 @@ public class TeacherAnnouncementController {
 
     private List<ClubListDto> loadManagedClubs() {
         try {
-            PageResponse<ClubListDto> response = teacherClubClient.getManagedClubs(null, null, 0, 200, "name,asc");
+            PageResponse<ClubListDto> response = teacherClubClient.getManagedClubs(null, null, 0, 200, null);
             return response.getContent() == null ? List.of() : response.getContent();
         } catch (RuntimeException ex) {
             return List.of();

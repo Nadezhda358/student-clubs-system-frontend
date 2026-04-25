@@ -63,7 +63,7 @@ public class EventController {
                     null,
                     page,
                     EventViewSupport.BROWSER_PAGE_SIZE,
-                    EventViewSupport.EVENT_SORT
+                    null
             );
             model.addAttribute("eventPage", result);
             model.addAttribute("events", result.getContent() == null ? Collections.emptyList() : result.getContent());
@@ -238,7 +238,7 @@ public class EventController {
                     null,
                     page,
                     EventViewSupport.BROWSER_PAGE_SIZE,
-                    EventViewSupport.EVENT_SORT
+                    null
             );
             model.addAttribute("eventPage", result);
             model.addAttribute("events", result.getContent() == null ? Collections.emptyList() : result.getContent());
@@ -260,7 +260,7 @@ public class EventController {
 
     private List<ClubListDto> loadClubOptions(boolean activeOnly) {
         try {
-            PageResponse<ClubListDto> response = clubClient.getAll(activeOnly ? true : null, null, 0, 200, "name,asc");
+            PageResponse<ClubListDto> response = clubClient.getAll(activeOnly ? true : null, null, 0, 200, null);
             return response.getContent() == null ? List.of() : response.getContent();
         } catch (RuntimeException ex) {
             return List.of();
@@ -275,7 +275,7 @@ public class EventController {
                 null,
                 0,
                 200,
-                EventViewSupport.PARTICIPATION_SORT
+                null
         );
 
         List<MyEventDto> events = response.getContent() == null ? List.of() : response.getContent();

@@ -75,7 +75,7 @@ public class AdminEventController {
                     status,
                     page,
                     EventViewSupport.BROWSER_PAGE_SIZE,
-                    EventViewSupport.EVENT_SORT
+                    null
             );
             model.addAttribute("eventPage", result);
             model.addAttribute("events", result.getContent() == null ? Collections.emptyList() : result.getContent());
@@ -326,7 +326,7 @@ public class AdminEventController {
                     null,
                     page,
                     EventViewSupport.PARTICIPANTS_PAGE_SIZE,
-                    EventViewSupport.PARTICIPATION_SORT
+                    null
             );
             model.addAttribute("participationPage", result);
             model.addAttribute("participations", result.getContent() == null ? Collections.emptyList() : result.getContent());
@@ -364,7 +364,7 @@ public class AdminEventController {
 
     private List<ClubListDto> loadClubs() {
         try {
-            PageResponse<ClubListDto> response = clubClient.getAll(null, null, 0, 200, "name,asc");
+            PageResponse<ClubListDto> response = clubClient.getAll(null, null, 0, 200, null);
             return response.getContent() == null ? List.of() : response.getContent();
         } catch (RuntimeException ex) {
             return List.of();

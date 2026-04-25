@@ -77,7 +77,7 @@ public class TeacherEventController {
                     status,
                     page,
                     EventViewSupport.BROWSER_PAGE_SIZE,
-                    EventViewSupport.EVENT_SORT
+                    null
             );
             model.addAttribute("eventPage", result);
             model.addAttribute("events", result.getContent() == null ? Collections.emptyList() : result.getContent());
@@ -355,7 +355,7 @@ public class TeacherEventController {
                     EventViewSupport.trimToNull(q),
                     page,
                     EventViewSupport.PARTICIPANTS_PAGE_SIZE,
-                    EventViewSupport.PARTICIPATION_SORT
+                    null
             );
             model.addAttribute("participantPage", result);
             model.addAttribute("participants", result.getContent() == null ? Collections.emptyList() : result.getContent());
@@ -398,7 +398,7 @@ public class TeacherEventController {
 
     private List<ClubListDto> loadManagedClubs() {
         try {
-            PageResponse<ClubListDto> response = teacherClubClient.getManagedClubs(null, null, 0, 200, "name,asc");
+            PageResponse<ClubListDto> response = teacherClubClient.getManagedClubs(null, null, 0, 200, null);
             return response.getContent() == null ? List.of() : response.getContent();
         } catch (RuntimeException ex) {
             return List.of();

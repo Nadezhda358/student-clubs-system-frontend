@@ -66,7 +66,7 @@ public class TeacherMembershipApplicationsController {
                     normalizeQuery(q),
                     page,
                     PAGE_SIZE,
-                    "createdAt,desc"
+                    null
             );
             model.addAttribute("membershipPage", result);
             model.addAttribute("applications", result.getContent() == null ? Collections.emptyList() : result.getContent());
