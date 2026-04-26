@@ -5,6 +5,7 @@ import com.school.ppmg.student_clubs_system_client.clients.AnnouncementClient;
 import com.school.ppmg.student_clubs_system_client.clients.ClubClient;
 import com.school.ppmg.student_clubs_system_client.clients.EventClient;
 import com.school.ppmg.student_clubs_system_client.clients.MembershipApplicationClient;
+import com.school.ppmg.student_clubs_system_client.clients.StudentClubClient;
 import com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport;
 import com.school.ppmg.student_clubs_system_client.dtos.announcement.AnnouncementDto;
 import com.school.ppmg.student_clubs_system_client.dtos.auth.AuthUserDto;
@@ -50,17 +51,39 @@ public class ClubController {
     private final ClubClient clubClient;
     private final EventClient eventClient;
     private final MembershipApplicationClient membershipApplicationClient;
+    private final StudentClubClient studentClubClient;
     private static final int PUBLIC_PAGE_SIZE = 9;
     private static final int ADMIN_PAGE_SIZE = 10;
 
     @GetMapping("/clubs")
     public String clubsPage(
             @RequestParam(required = false) String q,
+            @RequestParam(defaultValue = "all") String scope,
             @RequestParam(defaultValue = "0") int page,
+            @ModelAttribute("sessionUser") AuthUserDto sessionUser,
             Model model
     ) {
         String normalizedQuery = trimToNull(q);
-        PageResponse<ClubListDto> result = clubClient.getAll(true, normalizedQuery, page, PUBLIC_PAGE_SIZE, null);
+        String normalizedScope = normalizeScope(scope);
+
+        model.addAttribute("scope", normalizedScope);
+        model.addAttribute("scopeMessage", null);
+
+        PageResponse<ClubListDto> result;
+        if ("mine".equals(normalizedScope)) {
+            if (sessionUser == null) {
+                return "redirect:/login";
+            }
+
+            if (!isStudent(sessionUser)) {
+                result = emptyPage(page, PUBLIC_PAGE_SIZE);
+                model.addAttribute("scopeMessage", "Only students can filter clubs by active membership.");
+            } else {
+                result = studentClubClient.getMyClubs(true, normalizedQuery, page, PUBLIC_PAGE_SIZE, null);
+            }
+        } else {
+            result = clubClient.getAll(true, normalizedQuery, page, PUBLIC_PAGE_SIZE, null);
+        }
 
         model.addAttribute("page", result);
         model.addAttribute("clubs", result.getContent());
@@ -860,6 +883,24 @@ public class ClubController {
 
         String normalized = value.trim();
         return normalized.isEmpty() ? null : normalized;
+    }
+
+    private String normalizeScope(String scope) {
+        return "mine".equalsIgnoreCase(scope) ? "mine" : "all";
+    }
+
+    private <T> PageResponse<T> emptyPage(int page, int size) {
+        PageResponse<T> response = new PageResponse<>();
+        response.setContent(List.of());
+        response.setNumber(Math.max(page, 0));
+        response.setSize(size);
+        response.setNumberOfElements(0);
+        response.setTotalElements(0);
+        response.setTotalPages(0);
+        response.setFirst(true);
+        response.setLast(true);
+        response.setEmpty(true);
+        return response;
     }
 
     private String toClubSaveErrorMessage(FeignException ex) {

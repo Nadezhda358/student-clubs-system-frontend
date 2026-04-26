@@ -277,6 +277,10 @@
         flex: 1 1 320px;
       }
 
+      .club-search__field--scope {
+        flex: 0 1 220px;
+      }
+
       .club-search__label {
         font-size: 0.78rem;
         font-weight: 700;
@@ -285,7 +289,8 @@
         color: rgba(34, 22, 28, 0.52);
       }
 
-      .club-search__input {
+      .club-search__input,
+      .club-search__select {
         width: 100%;
         min-height: 50px;
         border-radius: 999px;
@@ -297,7 +302,8 @@
         color: var(--ink);
       }
 
-      .club-search__input:focus {
+      .club-search__input:focus,
+      .club-search__select:focus {
         outline: none;
         border-color: rgba(107, 63, 160, 0.38);
         box-shadow: 0 0 0 3px rgba(107, 63, 160, 0.08);

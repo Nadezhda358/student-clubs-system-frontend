@@ -164,11 +164,15 @@
 }
 
 .events-filter--search {
-  grid-column: span 5;
+  grid-column: span 4;
 }
 
 .events-filter--club {
-  grid-column: span 3;
+  grid-column: span 2;
+}
+
+.events-filter--scope {
+  grid-column: span 2;
 }
 
 .events-filter--date {
@@ -936,6 +940,7 @@
   }
 
   .events-filter--club,
+  .events-filter--scope,
   .events-filter--date {
     grid-column: span 1;
   }
@@ -963,6 +968,7 @@
 
   .events-filter--search,
   .events-filter--club,
+  .events-filter--scope,
   .events-filter--date {
     grid-column: span 1;
   }

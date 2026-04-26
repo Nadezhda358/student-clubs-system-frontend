@@ -34,6 +34,7 @@
           <div class="events-alert events-alert--warning" th:if="${eventActionWarningMessage}" th:text="${eventActionWarningMessage}"></div>
           <div class="events-alert events-alert--error" th:if="${eventActionErrorMessage}" th:text="${eventActionErrorMessage}"></div>
           <div class="events-alert events-alert--error" th:if="${loadErrorMessage}" th:text="${loadErrorMessage}"></div>
+          <div class="events-alert events-alert--warning" th:if="${scopeMessage}" th:text="${scopeMessage}"></div>
 
           <form method="get" th:action="@{/events}" class="events-filters">
             <div class="events-filters__grid">
@@ -52,6 +53,14 @@
                     th:selected="${selectedClubId != null and selectedClubId == club.id}"
                     th:text="${club.name}"
                   ></option>
+                </select>
+              </div>
+
+              <div class="events-filter events-filter--scope">
+                <label for="eventsScope">Show</label>
+                <select id="eventsScope" class="events-select" name="scope">
+                  <option value="all" th:selected="${scope == null or scope == 'all'}">All events</option>
+                  <option value="mine" th:selected="${scope == 'mine'}">My registered events</option>
                 </select>
               </div>
 
@@ -176,7 +185,7 @@
             <a
               class="events-link events-link--ghost"
               th:classappend="${eventPage.first} ? ' disabled' : ''"
-              th:href="${eventPage.first} ? '#' : @{/events(page=0, clubId=${selectedClubId}, q=${q}, fromDate=${fromDate}, toDate=${toDate}, view=${view})}"
+              th:href="${eventPage.first} ? '#' : @{/events(page=0, clubId=${selectedClubId}, q=${q}, fromDate=${fromDate}, toDate=${toDate}, view=${view}, scope=${scope})}"
               th:attr="aria-disabled=${eventPage.first}"
             >
               First
@@ -184,7 +193,7 @@
             <a
               class="events-link events-link--ghost"
               th:classappend="${eventPage.first} ? ' disabled' : ''"
-              th:href="${eventPage.first} ? '#' : @{/events(page=${eventPage.number - 1}, clubId=${selectedClubId}, q=${q}, fromDate=${fromDate}, toDate=${toDate}, view=${view})}"
+              th:href="${eventPage.first} ? '#' : @{/events(page=${eventPage.number - 1}, clubId=${selectedClubId}, q=${q}, fromDate=${fromDate}, toDate=${toDate}, view=${view}, scope=${scope})}"
               th:attr="aria-disabled=${eventPage.first}"
             >
               Previous
@@ -196,6 +205,7 @@
               <input type="hidden" name="fromDate" th:value="${fromDate}" />
               <input type="hidden" name="toDate" th:value="${toDate}" />
               <input type="hidden" name="view" th:value="${view}" />
+              <input type="hidden" name="scope" th:value="${scope}" />
               <label class="events-sr-only" for="eventsPageNumber">Page</label>
               <input
                 id="eventsPageNumber"
@@ -212,7 +222,7 @@
             <a
               class="events-link events-link--ghost"
               th:classappend="${eventPage.last} ? ' disabled' : ''"
-              th:href="${eventPage.last} ? '#' : @{/events(page=${eventPage.number + 1}, clubId=${selectedClubId}, q=${q}, fromDate=${fromDate}, toDate=${toDate}, view=${view})}"
+              th:href="${eventPage.last} ? '#' : @{/events(page=${eventPage.number + 1}, clubId=${selectedClubId}, q=${q}, fromDate=${fromDate}, toDate=${toDate}, view=${view}, scope=${scope})}"
               th:attr="aria-disabled=${eventPage.last}"
             >
               Next
@@ -220,7 +230,7 @@
             <a
               class="events-link events-link--ghost"
               th:classappend="${eventPage.last} ? ' disabled' : ''"
-              th:href="${eventPage.last} ? '#' : @{/events(page=${lastIndex}, clubId=${selectedClubId}, q=${q}, fromDate=${fromDate}, toDate=${toDate}, view=${view})}"
+              th:href="${eventPage.last} ? '#' : @{/events(page=${lastIndex}, clubId=${selectedClubId}, q=${q}, fromDate=${fromDate}, toDate=${toDate}, view=${view}, scope=${scope})}"
               th:attr="aria-disabled=${eventPage.last}"
             >
               Last

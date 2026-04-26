@@ -43,8 +43,11 @@ public class EventController {
             @RequestParam(required = false) String toDate,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(required = false) String view,
+            @RequestParam(defaultValue = "all") String scope,
+            @ModelAttribute("sessionUser") AuthUserDto sessionUser,
             Model model
     ) {
+        String normalizedScope = normalizeScope(scope);
         model.addAttribute("clubOptions", loadClubOptions(true));
         model.addAttribute("events", Collections.emptyList());
         model.addAttribute("eventPage", null);
@@ -53,21 +56,50 @@ public class EventController {
         model.addAttribute("fromDate", fromDate == null ? "" : fromDate.trim());
         model.addAttribute("toDate", toDate == null ? "" : toDate.trim());
         model.addAttribute("view", normalizeView(view));
+        model.addAttribute("scope", normalizedScope);
+        model.addAttribute("scopeMessage", null);
+
+        if ("mine".equals(normalizedScope) && sessionUser == null) {
+            return "redirect:/login";
+        }
+
+        if ("mine".equals(normalizedScope) && !EventViewSupport.isStudent(sessionUser)) {
+            model.addAttribute("eventPage", emptyPage(page, EventViewSupport.BROWSER_PAGE_SIZE));
+            model.addAttribute("scopeMessage", "Only students can filter events by active registration.");
+            return "events/index";
+        }
 
         try {
-            PageResponse<EventListDto> result = eventClient.getPublicEvents(
-                    clubId,
-                    EventViewSupport.trimToNull(q),
-                    EventViewSupport.parseFromDate(fromDate),
-                    EventViewSupport.parseToDate(toDate),
-                    null,
-                    page,
-                    EventViewSupport.BROWSER_PAGE_SIZE,
-                    null
-            );
+            OffsetDateTime from = EventViewSupport.parseFromDate(fromDate);
+            OffsetDateTime to = EventViewSupport.parseToDate(toDate);
+            PageResponse<EventListDto> result = "mine".equals(normalizedScope)
+                    ? eventClient.getMyRegisteredPublicEvents(
+                            clubId,
+                            EventViewSupport.trimToNull(q),
+                            from,
+                            to,
+                            null,
+                            page,
+                            EventViewSupport.BROWSER_PAGE_SIZE,
+                            null
+                    )
+                    : eventClient.getPublicEvents(
+                            clubId,
+                            EventViewSupport.trimToNull(q),
+                            from,
+                            to,
+                            null,
+                            page,
+                            EventViewSupport.BROWSER_PAGE_SIZE,
+                            null
+                    );
             model.addAttribute("eventPage", result);
             model.addAttribute("events", result.getContent() == null ? Collections.emptyList() : result.getContent());
         } catch (FeignException ex) {
+            if (ex.status() == HttpStatus.UNAUTHORIZED.value()) {
+                return "redirect:/login";
+            }
+
             model.addAttribute("loadErrorMessage", toEventsLoadErrorMessage(ex));
         }
 
@@ -302,6 +334,24 @@ public class EventController {
 
     private String normalizeView(String view) {
         return "calendar".equalsIgnoreCase(view) ? "calendar" : "list";
+    }
+
+    private String normalizeScope(String scope) {
+        return "mine".equalsIgnoreCase(scope) ? "mine" : "all";
+    }
+
+    private <T> PageResponse<T> emptyPage(int page, int size) {
+        PageResponse<T> response = new PageResponse<>();
+        response.setContent(List.of());
+        response.setNumber(Math.max(page, 0));
+        response.setSize(size);
+        response.setNumberOfElements(0);
+        response.setTotalElements(0);
+        response.setTotalPages(0);
+        response.setFirst(true);
+        response.setLast(true);
+        response.setEmpty(true);
+        return response;
     }
 
     private String resolveReturnTo(String returnTo, String fallback) {

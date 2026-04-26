@@ -67,11 +67,20 @@
                 placeholder="Search by club name"
               />
             </label>
+            <label class="club-search__field club-search__field--scope" for="clubScope">
+              <span class="club-search__label">Show</span>
+              <select id="clubScope" class="club-search__select" name="scope">
+                <option value="all" th:selected="${scope == null or scope == 'all'}">All clubs</option>
+                <option value="mine" th:selected="${scope == 'mine'}">My clubs</option>
+              </select>
+            </label>
             <div class="club-search__actions">
               <button class="club-search__button" type="submit">Search</button>
               <a class="club-search__button club-search__button--ghost" th:href="@{/clubs#clubs-section}">Reset</a>
             </div>
           </form>
+
+          <div class="club-empty" th:if="${scopeMessage}" th:text="${scopeMessage}"></div>
 
           <div class="club-grid">
             <article
@@ -131,7 +140,7 @@
             <a
               class="page-button"
               th:classappend="${page.first} ? ' disabled' : ''"
-              th:href="${page.first} ? '#' : (@{/clubs(page=0, q=${q})} + '#clubs-section')"
+              th:href="${page.first} ? '#' : (@{/clubs(page=0, q=${q}, scope=${scope})} + '#clubs-section')"
               th:attr="aria-disabled=${page.first}"
             >
               First
@@ -139,7 +148,7 @@
             <a
               class="page-button"
               th:classappend="${page.first} ? ' disabled' : ''"
-              th:href="${page.first} ? '#' : (@{/clubs(page=${page.number - 1}, q=${q})} + '#clubs-section')"
+              th:href="${page.first} ? '#' : (@{/clubs(page=${page.number - 1}, q=${q}, scope=${scope})} + '#clubs-section')"
               th:attr="aria-disabled=${page.first}"
             >
               Previous
@@ -147,6 +156,7 @@
 
             <form class="page-input" th:action="@{/clubs#clubs-section}" method="get">
               <input type="hidden" name="q" th:value="${q}" />
+              <input type="hidden" name="scope" th:value="${scope}" />
               <input type="hidden" name="size" th:value="${size}" />
               <label class="sr-only" for="pageNumber">Page</label>
               <input
@@ -164,7 +174,7 @@
             <a
               class="page-button"
               th:classappend="${page.last} ? ' disabled' : ''"
-              th:href="${page.last} ? '#' : (@{/clubs(page=${page.number + 1}, q=${q})} + '#clubs-section')"
+              th:href="${page.last} ? '#' : (@{/clubs(page=${page.number + 1}, q=${q}, scope=${scope})} + '#clubs-section')"
               th:attr="aria-disabled=${page.last}"
             >
               Next
@@ -172,7 +182,7 @@
             <a
               class="page-button"
               th:classappend="${page.last} ? ' disabled' : ''"
-              th:href="${page.last} ? '#' : (@{/clubs(page=${lastIndex}, q=${q})} + '#clubs-section')"
+              th:href="${page.last} ? '#' : (@{/clubs(page=${lastIndex}, q=${q}, scope=${scope})} + '#clubs-section')"
               th:attr="aria-disabled=${page.last}"
             >
               Last
