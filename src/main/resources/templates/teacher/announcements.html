@@ -143,12 +143,29 @@
 
             <section
               class="manage-events__pagination"
-              th:if="${announcementPage != null and announcementPage.totalPages > 1}"
-              th:with="lastIndex=${announcementPage.totalPages - 1}"
+              th:if="${announcementPage != null}"
+              th:with="currentPage=${announcementPage.totalPages > 0 ? announcementPage.number + 1 : 1}, totalPages=${announcementPage.totalPages > 0 ? announcementPage.totalPages : 1}, lastIndex=${announcementPage.totalPages > 0 ? announcementPage.totalPages - 1 : 0}"
             >
               <a class="events-link events-link--ghost" th:href="${announcementPage.first} ? '#' : @{/teacher/announcements(page=0, clubId=${selectedClubId}, q=${q}, fromDate=${fromDate}, toDate=${toDate}, published=${selectedPublished})}" th:classappend="${announcementPage.first} ? ' disabled' : ''">First</a>
               <a class="events-link events-link--ghost" th:href="${announcementPage.first} ? '#' : @{/teacher/announcements(page=${announcementPage.number - 1}, clubId=${selectedClubId}, q=${q}, fromDate=${fromDate}, toDate=${toDate}, published=${selectedPublished})}" th:classappend="${announcementPage.first} ? ' disabled' : ''">Previous</a>
-              <span>Page <strong th:text="${announcementPage.number + 1}">1</strong> of <strong th:text="${announcementPage.totalPages}">1</strong></span>
+              <form class="pagination-input" th:action="@{/teacher/announcements}" method="get" data-page-input>
+                <input type="hidden" name="clubId" th:value="${selectedClubId}" />
+                <input type="hidden" name="q" th:value="${q}" />
+                <input type="hidden" name="fromDate" th:value="${fromDate}" />
+                <input type="hidden" name="toDate" th:value="${toDate}" />
+                <input type="hidden" name="published" th:value="${selectedPublished}" />
+                <label class="pagination-input__sr-only" for="teacherAnnouncementsPageNumber">Page</label>
+                <input
+                  id="teacherAnnouncementsPageNumber"
+                  name="pageDisplay"
+                  type="number"
+                  min="1"
+                  inputmode="numeric"
+                  th:attr="max=${totalPages}"
+                  th:value="${currentPage}"
+                />
+                <span class="pagination-input__state">of <strong th:text="${totalPages}">1</strong></span>
+              </form>
               <a class="events-link events-link--ghost" th:href="${announcementPage.last} ? '#' : @{/teacher/announcements(page=${announcementPage.number + 1}, clubId=${selectedClubId}, q=${q}, fromDate=${fromDate}, toDate=${toDate}, published=${selectedPublished})}" th:classappend="${announcementPage.last} ? ' disabled' : ''">Next</a>
               <a class="events-link events-link--ghost" th:href="${announcementPage.last} ? '#' : @{/teacher/announcements(page=${lastIndex}, clubId=${selectedClubId}, q=${q}, fromDate=${fromDate}, toDate=${toDate}, published=${selectedPublished})}" th:classappend="${announcementPage.last} ? ' disabled' : ''">Last</a>
             </section>
@@ -157,6 +174,8 @@
       </div>
     </th:block>
 
-    <th:block th:fragment="pageScripts"></th:block>
+    <th:block th:fragment="pageScripts">
+      <script th:src="@{/js/pagination-input.js}" defer></script>
+    </th:block>
   </body>
 </html>

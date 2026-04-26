@@ -50,7 +50,8 @@ public class ClubController {
     private final ClubClient clubClient;
     private final EventClient eventClient;
     private final MembershipApplicationClient membershipApplicationClient;
-    private static final int PAGE_SIZE = 9;
+    private static final int PUBLIC_PAGE_SIZE = 9;
+    private static final int ADMIN_PAGE_SIZE = 10;
 
     @GetMapping("/clubs")
     public String clubsPage(
@@ -59,7 +60,7 @@ public class ClubController {
             Model model
     ) {
         String normalizedQuery = trimToNull(q);
-        PageResponse<ClubListDto> result = clubClient.getAll(true, normalizedQuery, page, PAGE_SIZE, null);
+        PageResponse<ClubListDto> result = clubClient.getAll(true, normalizedQuery, page, PUBLIC_PAGE_SIZE, null);
 
         model.addAttribute("page", result);
         model.addAttribute("clubs", result.getContent());
@@ -77,7 +78,7 @@ public class ClubController {
             @ModelAttribute("errorMessage") String flashErrorMessage,
             Model model
     ) {
-        PageResponse<ClubListDto> result = clubClient.getAll(active, null, page, PAGE_SIZE, null);
+        PageResponse<ClubListDto> result = clubClient.getAll(active, null, page, ADMIN_PAGE_SIZE, null);
 
         model.addAttribute("page", result);
         model.addAttribute("clubs", result.getContent());

@@ -27,6 +27,8 @@ import java.util.List;
 @Controller
 @RequiredArgsConstructor
 public class TeacherAnnouncementController {
+    private static final int PAGE_SIZE = 10;
+
     private final TeacherAnnouncementClient teacherAnnouncementClient;
     private final TeacherClubClient teacherClubClient;
 
@@ -63,7 +65,7 @@ public class TeacherAnnouncementController {
                     EventViewSupport.parseFromDate(fromDate),
                     EventViewSupport.parseToDate(toDate),
                     page,
-                    EventViewSupport.BROWSER_PAGE_SIZE,
+                    PAGE_SIZE,
                     null
             );
             model.addAttribute("announcementPage", result);

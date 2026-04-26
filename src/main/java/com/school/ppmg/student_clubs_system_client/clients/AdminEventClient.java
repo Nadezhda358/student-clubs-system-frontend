@@ -68,7 +68,7 @@ public interface AdminEventClient {
             @RequestParam(required = false) String sort
     );
 
-    @PatchMapping("/events/{eventId}/participants/{studentId}")
+    @PostMapping("/events/{eventId}/participants/{studentId}")
     EventParticipationDto updateAdminParticipationStatus(
             @PathVariable Long eventId,
             @PathVariable Long studentId,

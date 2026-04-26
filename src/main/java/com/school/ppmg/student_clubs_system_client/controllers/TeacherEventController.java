@@ -36,6 +36,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TeacherEventController {
     private static final long MAX_IMAGE_FILE_SIZE_BYTES = 5L * 1024 * 1024;
+    private static final int PAGE_SIZE = 10;
+    private static final int PARTICIPANTS_PAGE_SIZE = 10;
 
     private final TeacherEventClient teacherEventClient;
     private final TeacherClubClient teacherClubClient;
@@ -76,7 +78,7 @@ public class TeacherEventController {
                     null,
                     status,
                     page,
-                    EventViewSupport.BROWSER_PAGE_SIZE,
+                    PAGE_SIZE,
                     null
             );
             model.addAttribute("eventPage", result);
@@ -354,7 +356,7 @@ public class TeacherEventController {
                     selectedStatus,
                     EventViewSupport.trimToNull(q),
                     page,
-                    EventViewSupport.PARTICIPANTS_PAGE_SIZE,
+                    PARTICIPANTS_PAGE_SIZE,
                     null
             );
             model.addAttribute("participantPage", result);
@@ -383,6 +385,15 @@ public class TeacherEventController {
             RedirectAttributes redirectAttributes
     ) {
         try {
+            EventDto event = teacherEventClient.getTeacherEventById(eventId);
+            if (EventViewSupport.hasEventStarted(event)) {
+                redirectAttributes.addFlashAttribute(
+                        "errorMessage",
+                        "Participant status can only be changed before the event starts."
+                );
+                return "redirect:/teacher/events/" + eventId + "/participants";
+            }
+
             teacherEventClient.updateTeacherParticipationStatus(
                     eventId,
                     studentId,

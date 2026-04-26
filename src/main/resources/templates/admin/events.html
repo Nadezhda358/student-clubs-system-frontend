@@ -148,12 +148,29 @@
 
             <section
               class="manage-events__pagination"
-              th:if="${eventPage != null and eventPage.totalPages > 1}"
-              th:with="lastIndex=${eventPage.totalPages - 1}"
+              th:if="${eventPage != null}"
+              th:with="currentPage=${eventPage.totalPages > 0 ? eventPage.number + 1 : 1}, totalPages=${eventPage.totalPages > 0 ? eventPage.totalPages : 1}, lastIndex=${eventPage.totalPages > 0 ? eventPage.totalPages - 1 : 0}"
             >
               <a class="events-link events-link--ghost" th:href="${eventPage.first} ? '#' : @{/admin/events(page=0, clubId=${selectedClubId}, q=${q}, fromDate=${fromDate}, toDate=${toDate}, status=${selectedStatus})}" th:classappend="${eventPage.first} ? ' disabled' : ''">First</a>
               <a class="events-link events-link--ghost" th:href="${eventPage.first} ? '#' : @{/admin/events(page=${eventPage.number - 1}, clubId=${selectedClubId}, q=${q}, fromDate=${fromDate}, toDate=${toDate}, status=${selectedStatus})}" th:classappend="${eventPage.first} ? ' disabled' : ''">Previous</a>
-              <span>Page <strong th:text="${eventPage.number + 1}">1</strong> of <strong th:text="${eventPage.totalPages}">1</strong></span>
+              <form class="pagination-input" th:action="@{/admin/events}" method="get" data-page-input>
+                <input type="hidden" name="clubId" th:value="${selectedClubId}" />
+                <input type="hidden" name="q" th:value="${q}" />
+                <input type="hidden" name="fromDate" th:value="${fromDate}" />
+                <input type="hidden" name="toDate" th:value="${toDate}" />
+                <input type="hidden" name="status" th:value="${selectedStatus != null ? selectedStatus.name() : ''}" />
+                <label class="pagination-input__sr-only" for="adminEventsPageNumber">Page</label>
+                <input
+                  id="adminEventsPageNumber"
+                  name="pageDisplay"
+                  type="number"
+                  min="1"
+                  inputmode="numeric"
+                  th:attr="max=${totalPages}"
+                  th:value="${currentPage}"
+                />
+                <span class="pagination-input__state">of <strong th:text="${totalPages}">1</strong></span>
+              </form>
               <a class="events-link events-link--ghost" th:href="${eventPage.last} ? '#' : @{/admin/events(page=${eventPage.number + 1}, clubId=${selectedClubId}, q=${q}, fromDate=${fromDate}, toDate=${toDate}, status=${selectedStatus})}" th:classappend="${eventPage.last} ? ' disabled' : ''">Next</a>
               <a class="events-link events-link--ghost" th:href="${eventPage.last} ? '#' : @{/admin/events(page=${lastIndex}, clubId=${selectedClubId}, q=${q}, fromDate=${fromDate}, toDate=${toDate}, status=${selectedStatus})}" th:classappend="${eventPage.last} ? ' disabled' : ''">Last</a>
             </section>
@@ -162,6 +179,8 @@
       </div>
     </th:block>
 
-    <th:block th:fragment="pageScripts"></th:block>
+    <th:block th:fragment="pageScripts">
+      <script th:src="@{/js/pagination-input.js}" defer></script>
+    </th:block>
   </body>
 </html>

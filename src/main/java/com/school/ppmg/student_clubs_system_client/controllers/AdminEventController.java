@@ -36,6 +36,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AdminEventController {
     private static final long MAX_IMAGE_FILE_SIZE_BYTES = 5L * 1024 * 1024;
+    private static final int PAGE_SIZE = 10;
+    private static final int PARTICIPANTS_PAGE_SIZE = 10;
 
     private final AdminEventClient adminEventClient;
     private final ClubClient clubClient;
@@ -74,7 +76,7 @@ public class AdminEventController {
                     null,
                     status,
                     page,
-                    EventViewSupport.BROWSER_PAGE_SIZE,
+                    PAGE_SIZE,
                     null
             );
             model.addAttribute("eventPage", result);
@@ -325,7 +327,7 @@ public class AdminEventController {
                     EventViewSupport.trimToNull(q),
                     null,
                     page,
-                    EventViewSupport.PARTICIPANTS_PAGE_SIZE,
+                    PARTICIPANTS_PAGE_SIZE,
                     null
             );
             model.addAttribute("participationPage", result);
@@ -349,6 +351,15 @@ public class AdminEventController {
             RedirectAttributes redirectAttributes
     ) {
         try {
+            EventDto event = adminEventClient.getAdminEventById(eventId);
+            if (EventViewSupport.hasEventStarted(event)) {
+                redirectAttributes.addFlashAttribute(
+                        "errorMessage",
+                        "Participation status can only be changed before the event starts."
+                );
+                return "redirect:/admin/event-participations?eventId=" + eventId;
+            }
+
             adminEventClient.updateAdminParticipationStatus(
                     eventId,
                     studentId,

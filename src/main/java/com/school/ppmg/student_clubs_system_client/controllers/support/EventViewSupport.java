@@ -3,6 +3,7 @@ package com.school.ppmg.student_clubs_system_client.controllers.support;
 import com.school.ppmg.student_clubs_system_client.dtos.auth.AuthUserDto;
 import com.school.ppmg.student_clubs_system_client.dtos.event.EventDto;
 import com.school.ppmg.student_clubs_system_client.dtos.event.EventListDto;
+import com.school.ppmg.student_clubs_system_client.dtos.event.EventParticipationDto;
 import com.school.ppmg.student_clubs_system_client.enums.RegistrationStatus;
 import com.school.ppmg.student_clubs_system_client.enums.UserRole;
 import feign.FeignException;
@@ -119,6 +120,18 @@ public final class EventViewSupport {
         }
 
         return value.atZoneSameInstant(BUSINESS_ZONE).toLocalDateTime().format(DISPLAY_DATE_TIME);
+    }
+
+    public static boolean hasEventStarted(EventDto event) {
+        return event != null && hasEventStarted(event.startAt());
+    }
+
+    public static boolean hasEventStarted(EventParticipationDto participation) {
+        return participation != null && hasEventStarted(participation.eventStartAt());
+    }
+
+    public static boolean hasEventStarted(OffsetDateTime startAt) {
+        return startAt != null && !OffsetDateTime.now(BUSINESS_ZONE).isBefore(startAt);
     }
 
     public static boolean isRegistrationCutoffPassed(EventListDto event) {

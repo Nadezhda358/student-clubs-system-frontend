@@ -177,8 +177,8 @@
 
           <section
             class="admin-pagination"
-            th:if="${membershipPage != null and membershipPage.totalPages > 1}"
-            th:with="lastIndex=${membershipPage.totalPages - 1}"
+            th:if="${membershipPage != null}"
+            th:with="currentPage=${membershipPage.totalPages > 0 ? membershipPage.number + 1 : 1}, totalPages=${membershipPage.totalPages > 0 ? membershipPage.totalPages : 1}, lastIndex=${membershipPage.totalPages > 0 ? membershipPage.totalPages - 1 : 0}"
           >
             <a
               class="page-link"
@@ -194,10 +194,20 @@
             >
               Previous
             </a>
-            <span class="page-state">
-              Page <strong th:text="${membershipPage.number + 1}">1</strong> of
-              <strong th:text="${membershipPage.totalPages}">1</strong>
-            </span>
+            <form class="pagination-input" th:action="@{/me/membership-applications}" method="get" data-page-input>
+              <input type="hidden" name="status" th:value="${selectedStatus != null ? selectedStatus.name() : ''}" />
+              <label class="pagination-input__sr-only" for="myMembershipApplicationsPageNumber">Page</label>
+              <input
+                id="myMembershipApplicationsPageNumber"
+                name="pageDisplay"
+                type="number"
+                min="1"
+                inputmode="numeric"
+                th:attr="max=${totalPages}"
+                th:value="${currentPage}"
+              />
+              <span class="pagination-input__state">of <strong th:text="${totalPages}">1</strong></span>
+            </form>
             <a
               class="page-link"
               th:classappend="${membershipPage.last} ? ' disabled' : ''"
@@ -218,5 +228,6 @@
     </main>
 
     <footer th:replace="fragments/site-chrome :: siteFooter"></footer>
+    <script th:src="@{/js/pagination-input.js}" defer></script>
   </body>
 </html>

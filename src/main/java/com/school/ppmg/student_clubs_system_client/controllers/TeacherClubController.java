@@ -26,7 +26,7 @@ import java.util.Locale;
 @RequiredArgsConstructor
 public class TeacherClubController {
     private static final long MAX_IMAGE_FILE_SIZE_BYTES = 5L * 1024 * 1024;
-    private static final int PAGE_SIZE = 9;
+    private static final int PAGE_SIZE = 10;
 
     private final ClubClient clubClient;
     private final TeacherClubClient teacherClubClient;

@@ -66,8 +66,8 @@
 
         <section
           class="admin-pagination"
-          th:if="${page != null and page.totalPages > 1}"
-          th:with="lastIndex=${page.totalPages - 1}"
+          th:if="${page != null}"
+          th:with="currentPage=${page.totalPages > 0 ? page.number + 1 : 1}, totalPages=${page.totalPages > 0 ? page.totalPages : 1}, lastIndex=${page.totalPages > 0 ? page.totalPages - 1 : 0}"
         >
           <a
             class="page-link"
@@ -85,10 +85,20 @@
           >
             Previous
           </a>
-          <span class="page-state">
-            Page <strong th:text="${page.number + 1}">1</strong> of
-            <strong th:text="${page.totalPages}">1</strong>
-          </span>
+          <form class="pagination-input" th:action="@{/admin/clubs}" method="get" data-page-input>
+            <input type="hidden" name="active" th:value="${active}" />
+            <label class="pagination-input__sr-only" for="adminClubsPageNumber">Page</label>
+            <input
+              id="adminClubsPageNumber"
+              name="pageDisplay"
+              type="number"
+              min="1"
+              inputmode="numeric"
+              th:attr="max=${totalPages}"
+              th:value="${currentPage}"
+            />
+            <span class="pagination-input__state">of <strong th:text="${totalPages}">1</strong></span>
+          </form>
           <a
             class="page-link"
             th:classappend="${page.last} ? ' disabled' : ''"
@@ -110,6 +120,8 @@
       </div>
     </th:block>
 
-    <th:block th:fragment="pageScripts"></th:block>
+    <th:block th:fragment="pageScripts">
+      <script th:src="@{/js/pagination-input.js}" defer></script>
+    </th:block>
   </body>
 </html>

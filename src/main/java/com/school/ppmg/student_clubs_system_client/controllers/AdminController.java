@@ -26,7 +26,7 @@ import java.util.function.Consumer;
 @Controller
 @RequiredArgsConstructor
 public class AdminController {
-    private static final int PAGE_SIZE = 20;
+    private static final int PAGE_SIZE = 10;
 
     private final MembershipApplicationClient membershipApplicationClient;
 

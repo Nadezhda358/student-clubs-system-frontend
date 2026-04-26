@@ -68,7 +68,7 @@ public interface TeacherEventClient {
             @RequestParam(required = false) String sort
     );
 
-    @PatchMapping("/{eventId}/participants/{studentId}")
+    @PostMapping("/{eventId}/participants/{studentId}")
     EventParticipationDto updateTeacherParticipationStatus(
             @PathVariable Long eventId,
             @PathVariable Long studentId,

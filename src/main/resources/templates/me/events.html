@@ -130,8 +130,8 @@
 
           <section
             class="me-events-pagination"
-            th:if="${eventPage != null and eventPage.totalPages > 1}"
-            th:with="lastIndex=${eventPage.totalPages - 1}"
+            th:if="${eventPage != null}"
+            th:with="currentPage=${eventPage.totalPages > 0 ? eventPage.number + 1 : 1}, totalPages=${eventPage.totalPages > 0 ? eventPage.totalPages : 1}, lastIndex=${eventPage.totalPages > 0 ? eventPage.totalPages - 1 : 0}"
           >
             <a
               class="me-events-link"
@@ -147,10 +147,21 @@
             >
               Previous
             </a>
-            <span class="me-events-pagination__state">
-              Page <strong th:text="${eventPage.number + 1}">1</strong> of
-              <strong th:text="${eventPage.totalPages}">1</strong>
-            </span>
+            <form class="pagination-input" th:action="@{/me/events}" method="get" data-page-input>
+              <input type="hidden" name="status" th:value="${selectedStatus != null ? selectedStatus.name() : ''}" />
+              <input type="hidden" name="q" th:value="${q}" />
+              <label class="pagination-input__sr-only" for="myEventsPageNumber">Page</label>
+              <input
+                id="myEventsPageNumber"
+                name="pageDisplay"
+                type="number"
+                min="1"
+                inputmode="numeric"
+                th:attr="max=${totalPages}"
+                th:value="${currentPage}"
+              />
+              <span class="pagination-input__state">of <strong th:text="${totalPages}">1</strong></span>
+            </form>
             <a
               class="me-events-link"
               th:href="${eventPage.last} ? '#' : @{/me/events(page=${eventPage.number + 1}, status=${selectedStatus}, q=${q})}"
@@ -171,5 +182,6 @@
     </main>
 
     <footer th:replace="fragments/site-chrome :: siteFooter"></footer>
+    <script th:src="@{/js/pagination-input.js}" defer></script>
   </body>
 </html>

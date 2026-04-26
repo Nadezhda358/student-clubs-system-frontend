@@ -101,7 +101,10 @@
                       </span>
                     </td>
                     <td>
-                      <form class="event-status-form" method="post" th:action="@{/teacher/events/{eventId}/participants/{studentId}(eventId=${event.id},studentId=${participant.studentId})}">
+                      <form class="event-status-form"
+                            method="post"
+                            th:if="${!T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).hasEventStarted(event)}"
+                            th:action="@{/teacher/events/{eventId}/participants/{studentId}(eventId=${event.id},studentId=${participant.studentId})}">
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                         <select class="event-status-form__select" name="status">
                           <option
@@ -113,6 +116,7 @@
                         </select>
                         <button class="event-status-form__button" type="submit">Save</button>
                       </form>
+                      <span th:if="${T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).hasEventStarted(event)}">Event started</span>
                     </td>
                   </tr>
                 </tbody>
@@ -121,12 +125,26 @@
 
             <section
               class="event-participants__pagination"
-              th:if="${participantPage != null and participantPage.totalPages > 1}"
-              th:with="lastIndex=${participantPage.totalPages - 1}"
+              th:if="${participantPage != null}"
+              th:with="currentPage=${participantPage.totalPages > 0 ? participantPage.number + 1 : 1}, totalPages=${participantPage.totalPages > 0 ? participantPage.totalPages : 1}, lastIndex=${participantPage.totalPages > 0 ? participantPage.totalPages - 1 : 0}"
             >
               <a class="events-link events-link--ghost" th:href="${participantPage.first} ? '#' : @{/teacher/events/{id}/participants(id=${event.id},page=0,status=${selectedStatus},q=${q})}" th:classappend="${participantPage.first} ? ' disabled' : ''">First</a>
               <a class="events-link events-link--ghost" th:href="${participantPage.first} ? '#' : @{/teacher/events/{id}/participants(id=${event.id},page=${participantPage.number - 1},status=${selectedStatus},q=${q})}" th:classappend="${participantPage.first} ? ' disabled' : ''">Previous</a>
-              <span>Page <strong th:text="${participantPage.number + 1}">1</strong> of <strong th:text="${participantPage.totalPages}">1</strong></span>
+              <form class="pagination-input" th:action="@{/teacher/events/{id}/participants(id=${event.id})}" method="get" data-page-input>
+                <input type="hidden" name="status" th:value="${selectedStatus != null ? selectedStatus.name() : ''}" />
+                <input type="hidden" name="q" th:value="${q}" />
+                <label class="pagination-input__sr-only" for="teacherEventParticipantsPageNumber">Page</label>
+                <input
+                  id="teacherEventParticipantsPageNumber"
+                  name="pageDisplay"
+                  type="number"
+                  min="1"
+                  inputmode="numeric"
+                  th:attr="max=${totalPages}"
+                  th:value="${currentPage}"
+                />
+                <span class="pagination-input__state">of <strong th:text="${totalPages}">1</strong></span>
+              </form>
               <a class="events-link events-link--ghost" th:href="${participantPage.last} ? '#' : @{/teacher/events/{id}/participants(id=${event.id},page=${participantPage.number + 1},status=${selectedStatus},q=${q})}" th:classappend="${participantPage.last} ? ' disabled' : ''">Next</a>
               <a class="events-link events-link--ghost" th:href="${participantPage.last} ? '#' : @{/teacher/events/{id}/participants(id=${event.id},page=${lastIndex},status=${selectedStatus},q=${q})}" th:classappend="${participantPage.last} ? ' disabled' : ''">Last</a>
             </section>
@@ -135,6 +153,8 @@
       </div>
     </th:block>
 
-    <th:block th:fragment="pageScripts"></th:block>
+    <th:block th:fragment="pageScripts">
+      <script th:src="@{/js/pagination-input.js}" defer></script>
+    </th:block>
   </body>
 </html>
