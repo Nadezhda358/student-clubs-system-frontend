@@ -55,7 +55,7 @@ public class ClubController {
     private static final int PUBLIC_PAGE_SIZE = 9;
     private static final int ADMIN_PAGE_SIZE = 10;
 
-    @GetMapping("/clubs")
+    @GetMapping({"/", "/clubs"})
     public String clubsPage(
             @RequestParam(required = false) String q,
             @RequestParam(defaultValue = "all") String scope,
