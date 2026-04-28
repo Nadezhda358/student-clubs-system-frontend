@@ -76,7 +76,7 @@ public class AuthController {
         }
 
         if (bindingResult.hasErrors()) {
-            model.addAttribute("error", "Please complete all required fields.");
+            model.addAttribute("error", "Попълнете всички задължителни полета.");
             return "register";
         }
 
@@ -84,11 +84,11 @@ public class AuthController {
             authClient.registerStudent(registerStudentRequest);
             redirectAttributes.addFlashAttribute(
                     "success",
-                    "Registration complete. Please sign in to continue."
+                    "Регистрацията е завършена. Влезте, за да продължите."
             );
             return "redirect:/login";
         } catch (Exception ex) {
-            model.addAttribute("error", "Unable to register. Please review your details and try again.");
+            model.addAttribute("error", "Регистрацията не може да бъде завършена. Прегледайте данните си и опитайте отново.");
             return "register";
         }
     }
@@ -128,7 +128,7 @@ public class AuthController {
         }
 
         if (bindingResult.hasErrors()) {
-            model.addAttribute("error", "Please complete all required fields.");
+            model.addAttribute("error", "Попълнете всички задължителни полета.");
             return "register-teacher";
         }
 
@@ -136,11 +136,11 @@ public class AuthController {
             authClient.registerTeacher(registerTeacherRequest);
             redirectAttributes.addFlashAttribute(
                     "success",
-                    "Teacher registration complete. Please sign in to continue."
+                    "Регистрацията на учител е завършена. Влезте, за да продължите."
             );
             return "redirect:/login";
         } catch (Exception ex) {
-            model.addAttribute("error", "Unable to register with this invite token. Please try again.");
+            model.addAttribute("error", "Регистрацията с този код от покана не може да бъде завършена. Опитайте отново.");
             return "register-teacher";
         }
     }
@@ -153,20 +153,20 @@ public class AuthController {
             Model model
     ) {
         if (bindingResult.hasErrors()) {
-            model.addAttribute("error", "Please enter a valid email and password.");
+            model.addAttribute("error", "Въведете валиден имейл и парола.");
             return "login";
         }
 
         try {
             LoginResponse response = authClient.login(loginRequest);
             if (response == null || response.accessToken() == null || response.accessToken().isBlank()) {
-                model.addAttribute("error", "Invalid login response. Please try again.");
+                model.addAttribute("error", "Невалиден отговор при вход. Опитайте отново.");
                 return "login";
             }
 
             AuthUserDto user = response.user();
             if (user == null) {
-                model.addAttribute("error", "Invalid login response. Please try again.");
+                model.addAttribute("error", "Невалиден отговор при вход. Опитайте отново.");
                 return "login";
             }
 
@@ -190,7 +190,7 @@ public class AuthController {
 
             return "redirect:/clubs";
         } catch (Exception ex) {
-            model.addAttribute("error", "Invalid email or password.");
+            model.addAttribute("error", "Невалиден имейл или парола.");
             return "login";
         }
     }

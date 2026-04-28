@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -33,7 +32,6 @@ public class AdminController {
     @GetMapping({"/admin/applications/clubs", "/admin/membership-applications"})
     public String adminClubMembershipApplications(
             @RequestParam(required = false) MembershipRequestStatus status,
-            @RequestParam(required = false) Long clubId,
             @RequestParam(required = false) String q,
             @RequestParam(defaultValue = "0") int page,
             Model model
@@ -41,28 +39,26 @@ public class AdminController {
         model.addAttribute("applications", Collections.emptyList());
         model.addAttribute("membershipPage", null);
         model.addAttribute("status", status);
-        model.addAttribute("clubId", clubId);
         model.addAttribute("q", q == null ? "" : q.trim());
-        model.addAttribute("membershipPageBaseHref", buildMembershipPageBaseHref(status, clubId, q));
+        model.addAttribute("membershipPageBaseHref", buildMembershipPageBaseHref(status, q));
         model.addAttribute("statusValues", MembershipRequestStatus.values());
         model.addAttribute("pendingStatus", MembershipRequestStatus.PENDING);
         model.addAttribute("approvedStatusName", MembershipRequestStatus.APPROVED.name());
         model.addAttribute("rejectedStatusName", MembershipRequestStatus.REJECTED.name());
-        model.addAttribute("membershipWorkspaceLabel", "Admin Workspace");
-        model.addAttribute("membershipPageTitle", "Club Membership Applications");
+        model.addAttribute("membershipPageTitle", "Кандидатури за членство в клубове");
         model.addAttribute(
                 "membershipPageSubtitle",
-                "Review pending requests quickly, approve eligible students, and keep membership decisions consistent."
+                "Преглеждайте чакащите заявки бързо, одобрявайте подходящите ученици и поддържайте последователни решения за членство."
         );
         model.addAttribute("membershipFilterAction", "/admin/membership-applications");
         model.addAttribute("membershipResetAction", "/admin/membership-applications");
         model.addAttribute("membershipActionBasePath", "/admin/membership-applications");
-        model.addAttribute("membershipEmptyMessage", "No membership applications found.");
+        model.addAttribute("membershipEmptyMessage", "Няма намерени кандидатури за членство.");
 
         try {
             PageResponse<MembershipApplicationDto> result = membershipApplicationClient.adminGetAll(
                     status,
-                    clubId,
+                    null,
                     normalizeQuery(q),
                     page,
                     PAGE_SIZE,
@@ -101,13 +97,10 @@ public class AdminController {
         return normalized.isEmpty() ? null : normalized;
     }
 
-    private String buildMembershipPageBaseHref(MembershipRequestStatus status, Long clubId, String q) {
+    private String buildMembershipPageBaseHref(MembershipRequestStatus status, String q) {
         StringBuilder href = new StringBuilder("/admin/membership-applications?");
         if (status != null) {
             href.append("status=").append(status.name()).append("&");
-        }
-        if (clubId != null) {
-            href.append("clubId=").append(clubId).append("&");
         }
 
         String normalizedQuery = normalizeQuery(q);
@@ -142,10 +135,10 @@ public class AdminController {
         }
 
         return switch (resolveStatus(ex)) {
-            case NOT_FOUND -> "Membership applications endpoint is not available.";
-            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Please review the filters and try again.";
-            case FORBIDDEN -> "You are not authorized to view membership applications.";
-            default -> "Unable to load membership applications right now. Please try again.";
+            case NOT_FOUND -> "Кандидатурите за членство не са налични в момента.";
+            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Прегледайте филтрите и опитайте отново.";
+            case FORBIDDEN -> "Нямате право да виждате кандидатурите за членство.";
+            default -> "Кандидатурите за членство не могат да се заредят в момента. Опитайте отново.";
         };
     }
 
@@ -156,11 +149,11 @@ public class AdminController {
         }
 
         return switch (resolveStatus(ex)) {
-            case NOT_FOUND -> "This membership application no longer exists.";
-            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Unable to update this membership application. Please refresh and try again.";
-            case FORBIDDEN -> "You are not authorized to update this membership application.";
-            case CONFLICT -> "This membership application has already been updated.";
-            default -> "Unable to update membership application.";
+            case NOT_FOUND -> "Тази кандидатура за членство вече не съществува.";
+            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Тази кандидатура за членство не може да бъде обновена. Обновете страницата и опитайте отново.";
+            case FORBIDDEN -> "Нямате право да обновявате тази кандидатура за членство.";
+            case CONFLICT -> "Тази кандидатура за членство вече е обновена.";
+            default -> "Кандидатурата за членство не може да бъде обновена.";
         };
     }
 

@@ -94,7 +94,7 @@ public class TeacherAnnouncementController {
         if (clubOptions.isEmpty()) {
             redirectAttributes.addFlashAttribute(
                     "errorMessage",
-                    "You need at least one managed club before creating announcements."
+                    "Трябва да имате поне един управляван клуб, преди да създавате съобщения."
             );
             return "redirect:/teacher/announcements";
         }
@@ -110,10 +110,9 @@ public class TeacherAnnouncementController {
                 model,
                 form,
                 clubOptions,
-                "Teacher Workspace",
-                "Create Announcement",
-                "Publish an update for one of the clubs you manage.",
-                "Create Announcement",
+                "Създай съобщение",
+                "Публикувайте съобщение за един от клубовете, които управлявате.",
+                "Създай съобщение",
                 "/teacher/announcements/create",
                 buildTeacherAnnouncementsHref(form.getClubId())
         );
@@ -133,10 +132,9 @@ public class TeacherAnnouncementController {
                     model,
                     form,
                     clubOptions,
-                    "Teacher Workspace",
-                    "Create Announcement",
-                    "Publish an update for one of the clubs you manage.",
-                    "Create Announcement",
+                    "Създай съобщение",
+                    "Публикувайте съобщение за един от клубовете, които управлявате.",
+                    "Създай съобщение",
                     "/teacher/announcements/create",
                     buildTeacherAnnouncementsHref(form.getClubId())
             );
@@ -146,17 +144,16 @@ public class TeacherAnnouncementController {
 
         try {
             teacherAnnouncementClient.createTeacherAnnouncement(toUpsertAnnouncementDto(form));
-            redirectAttributes.addFlashAttribute("successMessage", "Announcement created successfully.");
+            redirectAttributes.addFlashAttribute("successMessage", "Съобщението е създадено успешно.");
             return "redirect:" + buildTeacherAnnouncementsHref(form.getClubId());
         } catch (FeignException ex) {
             populateFormModel(
                     model,
                     form,
                     clubOptions,
-                    "Teacher Workspace",
-                    "Create Announcement",
-                    "Publish an update for one of the clubs you manage.",
-                    "Create Announcement",
+                    "Създай съобщение",
+                    "Публикувайте съобщение за един от клубовете, които управлявате.",
+                    "Създай съобщение",
                     "/teacher/announcements/create",
                     buildTeacherAnnouncementsHref(form.getClubId())
             );
@@ -178,10 +175,9 @@ public class TeacherAnnouncementController {
                     model,
                     toFormRequest(announcement),
                     loadManagedClubs(),
-                    "Teacher Workspace",
-                    "Edit Announcement",
-                    "Update the timing and visibility of this club announcement.",
-                    "Save Changes",
+                    "Редактирай съобщение",
+                    "Обновете времето и видимостта на това клубно съобщение.",
+                    "Запази промените",
                     "/teacher/announcements/" + id + "/edit",
                     buildTeacherAnnouncementsHref(announcement.clubId())
             );
@@ -196,7 +192,7 @@ public class TeacherAnnouncementController {
             if (ex.status() == HttpStatus.FORBIDDEN.value()) {
                 redirectAttributes.addFlashAttribute(
                         "errorMessage",
-                        "You can only manage announcements for clubs assigned to you."
+                        "Можете да управлявате само съобщения за клубове, които са ви назначени."
                 );
                 return "redirect:/teacher/announcements";
             }
@@ -219,10 +215,9 @@ public class TeacherAnnouncementController {
                     model,
                     form,
                     clubOptions,
-                    "Teacher Workspace",
-                    "Edit Announcement",
-                    "Update the timing and visibility of this club announcement.",
-                    "Save Changes",
+                    "Редактирай съобщение",
+                    "Обновете времето и видимостта на това клубно съобщение.",
+                    "Запази промените",
                     "/teacher/announcements/" + id + "/edit",
                     buildTeacherAnnouncementsHref(form.getClubId())
             );
@@ -233,7 +228,7 @@ public class TeacherAnnouncementController {
 
         try {
             teacherAnnouncementClient.updateTeacherAnnouncement(id, toUpsertAnnouncementDto(form));
-            redirectAttributes.addFlashAttribute("successMessage", "Announcement updated successfully.");
+            redirectAttributes.addFlashAttribute("successMessage", "Съобщението е обновено успешно.");
             return "redirect:" + buildTeacherAnnouncementsHref(form.getClubId());
         } catch (FeignException.NotFound ex) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -244,7 +239,7 @@ public class TeacherAnnouncementController {
             if (ex.status() == HttpStatus.FORBIDDEN.value()) {
                 redirectAttributes.addFlashAttribute(
                         "errorMessage",
-                        "You can only manage announcements for clubs assigned to you."
+                        "Можете да управлявате само съобщения за клубове, които са ви назначени."
                 );
                 return "redirect:/teacher/announcements";
             }
@@ -253,10 +248,9 @@ public class TeacherAnnouncementController {
                     model,
                     form,
                     clubOptions,
-                    "Teacher Workspace",
-                    "Edit Announcement",
-                    "Update the timing and visibility of this club announcement.",
-                    "Save Changes",
+                    "Редактирай съобщение",
+                    "Обновете времето и видимостта на това клубно съобщение.",
+                    "Запази промените",
                     "/teacher/announcements/" + id + "/edit",
                     buildTeacherAnnouncementsHref(form.getClubId())
             );
@@ -274,7 +268,7 @@ public class TeacherAnnouncementController {
     ) {
         try {
             teacherAnnouncementClient.deleteTeacherAnnouncement(id);
-            redirectAttributes.addFlashAttribute("successMessage", "Announcement deleted successfully.");
+            redirectAttributes.addFlashAttribute("successMessage", "Съобщението е изтрито успешно.");
         } catch (FeignException ex) {
             redirectAttributes.addFlashAttribute("errorMessage", toDeleteErrorMessage(ex));
         }
@@ -295,14 +289,12 @@ public class TeacherAnnouncementController {
             Model model,
             AnnouncementFormRequest form,
             List<ClubListDto> clubOptions,
-            String workspaceLabel,
             String pageTitle,
             String pageSubtitle,
             String submitLabel,
             String formAction,
             String cancelHref
     ) {
-        model.addAttribute("workspaceLabel", workspaceLabel);
         model.addAttribute("pageTitle", pageTitle);
         model.addAttribute("pageSubtitle", pageSubtitle);
         model.addAttribute("submitLabel", submitLabel);
@@ -314,15 +306,15 @@ public class TeacherAnnouncementController {
 
     private String validateAnnouncementForm(AnnouncementFormRequest form) {
         if (form.getClubId() == null) {
-            return "Please choose a club.";
+            return "Изберете клуб.";
         }
 
         if (EventViewSupport.trimToNull(form.getTitle()) == null) {
-            return "Announcement title is required.";
+            return "Заглавието на съобщението е задължително.";
         }
 
         if (EventViewSupport.trimToNull(form.getBody()) == null) {
-            return "Announcement body is required.";
+            return "Текстът на съобщението е задължителен.";
         }
 
         return null;
@@ -361,9 +353,9 @@ public class TeacherAnnouncementController {
         }
 
         return switch (EventViewSupport.resolveStatus(ex)) {
-            case FORBIDDEN -> "You can only manage announcements for clubs assigned to you.";
-            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Please review the filters and try again.";
-            default -> "Unable to load your announcements right now. Please try again.";
+            case FORBIDDEN -> "Можете да управлявате само съобщения за клубове, които са ви назначени.";
+            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Прегледайте филтрите и опитайте отново.";
+            default -> "Вашите съобщения не могат да се заредят в момента. Опитайте отново.";
         };
     }
 
@@ -374,14 +366,14 @@ public class TeacherAnnouncementController {
         }
 
         return switch (EventViewSupport.resolveStatus(ex)) {
-            case FORBIDDEN -> "You can only manage announcements for clubs assigned to you.";
+            case FORBIDDEN -> "Можете да управлявате само съобщения за клубове, които са ви назначени.";
             case BAD_REQUEST, UNPROCESSABLE_ENTITY -> creating
-                    ? "Please review the new announcement details and try again."
-                    : "Please review the updated announcement details and try again.";
-            case NOT_FOUND -> "The selected club or announcement is no longer available.";
+                    ? "Прегледайте данните за новото съобщение и опитайте отново."
+                    : "Прегледайте обновените данни за съобщението и опитайте отново.";
+            case NOT_FOUND -> "Избраният клуб или съобщение вече не е налично.";
             default -> creating
-                    ? "Unable to create the announcement right now. Please try again."
-                    : "Unable to save the announcement right now. Please try again.";
+                    ? "Съобщението не може да бъде създадено в момента. Опитайте отново."
+                    : "Съобщението не може да бъде запазено в момента. Опитайте отново.";
         };
     }
 
@@ -392,9 +384,9 @@ public class TeacherAnnouncementController {
         }
 
         return switch (EventViewSupport.resolveStatus(ex)) {
-            case FORBIDDEN -> "You can only delete announcements for clubs assigned to you.";
-            case NOT_FOUND -> "This announcement no longer exists.";
-            default -> "Unable to delete the announcement right now. Please try again.";
+            case FORBIDDEN -> "Можете да изтривате само съобщения за клубове, които са ви назначени.";
+            case NOT_FOUND -> "Това съобщение вече не съществува.";
+            default -> "Съобщението не може да бъде изтрито в момента. Опитайте отново.";
         };
     }
 }

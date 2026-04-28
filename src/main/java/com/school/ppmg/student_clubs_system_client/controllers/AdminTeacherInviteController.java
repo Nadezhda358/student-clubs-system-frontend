@@ -43,7 +43,7 @@ public class AdminTeacherInviteController {
         model.addAttribute("emailsText", emailsText != null ? emailsText : "");
 
         if (emails.isEmpty()) {
-            model.addAttribute("error", "Please provide at least one email address.");
+            model.addAttribute("error", "Моля, въведете поне един имейл адрес.");
             return "admin/teacher-invites-new";
         }
 
@@ -53,12 +53,12 @@ public class AdminTeacherInviteController {
             );
 
             model.addAttribute("invites", invites);
-            model.addAttribute("success", "Invites sent: " + invites.size());
+            model.addAttribute("success", "Изпратени покани: " + invites.size());
 
             if (invites.size() < emails.size()) {
                 model.addAttribute(
                         "warning",
-                        "Some emails were skipped because they already have accounts."
+                        "Някои имейли бяха пропуснати, защото вече имат профили."
                 );
             }
 
@@ -97,13 +97,13 @@ public class AdminTeacherInviteController {
         String lowered = message.toLowerCase(Locale.ROOT);
 
         if (lowered.contains("409") || lowered.contains("conflict")) {
-            return "No invites were created. Those emails may already be registered.";
+            return "Не бяха създадени покани. Тези имейли може вече да са регистрирани.";
         }
 
         if (lowered.contains("bad request") || lowered.contains("400")) {
-            return "Some email addresses look invalid. Please review and try again.";
+            return "Някои имейл адреси изглеждат невалидни. Прегледайте ги и опитайте отново.";
         }
 
-        return "Unable to send invites right now. Please try again.";
+        return "Поканите не могат да бъдат изпратени в момента. Опитайте отново.";
     }
 }

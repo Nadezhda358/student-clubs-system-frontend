@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<html lang="bg" xmlns:th="http://www.w3.org/1999/xhtml">
   <body>
     <th:block th:fragment="pageContent">
       <main class="me-page">
@@ -8,15 +8,14 @@
           class="container admin-membership-page"
           th:attr="
             data-action-base-path=${membershipActionBasePath},
-            data-success-message=${membershipSuccessMessage != null ? membershipSuccessMessage : 'Membership application updated successfully.'}
+            data-success-message=${membershipSuccessMessage != null ? membershipSuccessMessage : 'Кандидатурата за членство е обновена успешно.'}
           "
         >
           <section class="membership-surface">
             <header class="membership-page-header">
-              <p class="membership-page-kicker" th:text="${membershipWorkspaceLabel}">Admin Workspace</p>
-              <h1 th:text="${membershipPageTitle}">Club Membership Applications</h1>
+              <h1 th:text="${membershipPageTitle}">Кандидатури за членство в клубове</h1>
               <p class="membership-page-subtitle" th:text="${membershipPageSubtitle}">
-                Review pending requests quickly, approve eligible students, and keep membership decisions consistent.
+                Преглеждайте чакащите заявки бързо, одобрявайте подходящите ученици и поддържайте последователни решения за членство.
               </p>
             </header>
 
@@ -26,36 +25,31 @@
               th:if="${loadErrorMessage}"
               th:text="${loadErrorMessage}"
             >
-              Unable to load membership applications right now. Please try again.
+              Кандидатурите за членство не могат да се заредят в момента. Опитайте отново.
             </div>
 
             <form method="get" th:action="${membershipFilterAction}" class="membership-filters">
               <label class="membership-filter">
-                <span class="membership-filter-label">Status</span>
+                <span class="membership-filter-label">Статус</span>
                 <select class="membership-filter-control" name="status">
-                  <option value="" th:selected="${status == null}">All</option>
+                  <option value="" th:selected="${status == null}">Всички</option>
                   <option
                     th:each="s : ${statusValues}"
                     th:value="${s.name()}"
                     th:selected="${status != null and status == s}"
-                    th:text="${s.name()}"
+                    th:text="${T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatLabel(s)}"
                   ></option>
                 </select>
               </label>
 
-              <label class="membership-filter">
-                <span class="membership-filter-label">Club ID</span>
-                <input class="membership-filter-control" type="number" min="1" name="clubId" th:value="${clubId}" />
-              </label>
-
               <label class="membership-filter membership-filter--search">
-                <span class="membership-filter-label">Search</span>
+                <span class="membership-filter-label">Търсене</span>
                 <input class="membership-filter-control" type="text" name="q" th:value="${q}" />
               </label>
 
               <div class="membership-filter-actions">
-                <button class="membership-filter-btn membership-filter-btn--apply" type="submit">Apply</button>
-                <a class="membership-filter-btn membership-filter-btn--reset" th:href="${membershipResetAction}">Reset</a>
+                <button class="membership-filter-btn membership-filter-btn--apply" type="submit">Приложи</button>
+                <a class="membership-filter-btn membership-filter-btn--reset" th:href="${membershipResetAction}">Изчисти</a>
               </div>
             </form>
 
@@ -63,18 +57,18 @@
               <table id="membershipAppsTable" class="display membership-table">
                 <thead>
                   <tr>
-                    <th>Created At</th>
-                    <th>Club Name</th>
-                    <th>Student Full Name</th>
-                    <th>Student Email</th>
-                    <th>Status</th>
-                    <th>Motivation Text</th>
-                    <th>Actions</th>
+                    <th>Създадено на</th>
+                    <th>Име на клуба</th>
+                    <th>Име на ученика</th>
+                    <th>Имейл на ученика</th>
+                    <th>Статус</th>
+                    <th>Мотивация</th>
+                    <th>Действия</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr class="membership-empty-row" th:if="${#lists.isEmpty(applications) and loadErrorMessage == null}">
-                    <td colspan="7" th:text="${membershipEmptyMessage}">No membership applications found.</td>
+                    <td colspan="7" th:text="${membershipEmptyMessage}">Няма намерени кандидатури за членство.</td>
                   </tr>
 
                   <tr
@@ -83,19 +77,19 @@
                     th:with="statusName=${app.status != null ? app.status.name() : ''}"
                   >
                     <td th:text="${app.createdAt != null ? T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatDateTime(app.createdAt) : '-'}">2026-02-27 10:00</td>
-                    <td th:text="${app.clubName}">Math Club</td>
-                    <td th:text="${app.studentFullName}">John Doe</td>
+                    <td th:text="${app.clubName}">Математически клуб</td>
+                    <td th:text="${app.studentFullName}">Иван Петров</td>
                     <td th:text="${app.studentEmail}">john@school.edu</td>
                     <td class="membership-col-status">
                       <span
                         class="status-chip"
                         th:classappend="${app.status == pendingStatus} ? ' status-chip--pending' : (${statusName == approvedStatusName} ? ' status-chip--approved' : (${statusName == rejectedStatusName} ? ' status-chip--rejected' : ' status-chip--neutral'))"
-                        th:text="${statusName != '' ? statusName : 'UNKNOWN'}"
+                        th:text="${app.status != null ? T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatLabel(app.status) : 'Неизвестно'}"
                       >
-                        STATUS
+                        СТАТУС
                       </span>
                     </td>
-                    <td th:text="${app.motivationText}">I want to join.</td>
+                    <td th:text="${app.motivationText}">Искам да се присъединя.</td>
                     <td class="membership-col-actions">
                       <div class="membership-action-group" th:if="${app.status == pendingStatus}">
                         <button
@@ -106,10 +100,10 @@
                             data-action='approve',
                             data-student=${app.studentFullName},
                             data-club=${app.clubName},
-                            data-action-label='approve'
+                            data-action-label='одобрите'
                           "
                         >
-                          Approve
+                          Одобри
                         </button>
                         <button
                           type="button"
@@ -119,14 +113,14 @@
                             data-action='reject',
                             data-student=${app.studentFullName},
                             data-club=${app.clubName},
-                            data-action-label='reject'
+                            data-action-label='отхвърлите'
                           "
                         >
-                          Reject
+                          Отхвърли
                         </button>
                       </div>
-                      <span class="status-chip status-chip--decided" th:if="${app.status != pendingStatus}">
-                        Decided
+                      <span class="membership-action-empty" th:if="${app.status != pendingStatus}" aria-label="Няма налични действия">
+                        -
                       </span>
                     </td>
                   </tr>
@@ -144,20 +138,19 @@
                 th:classappend="${membershipPage.first} ? ' disabled' : ''"
                 th:href="${membershipPage.first ? '#' : membershipPageBaseHref + 'page=0'}"
               >
-                First
+                Първа
               </a>
               <a
                 class="page-link"
                 th:classappend="${membershipPage.first} ? ' disabled' : ''"
                 th:href="${membershipPage.first ? '#' : membershipPageBaseHref + 'page=' + (membershipPage.number - 1)}"
               >
-                Previous
+                Предишна
               </a>
               <form class="pagination-input" th:action="${membershipFilterAction}" method="get" data-page-input>
                 <input type="hidden" name="status" th:value="${status != null ? status.name() : ''}" />
-                <input type="hidden" name="clubId" th:value="${clubId}" />
                 <input type="hidden" name="q" th:value="${q}" />
-                <label class="pagination-input__sr-only" for="membershipApplicationsPageNumber">Page</label>
+                <label class="pagination-input__sr-only" for="membershipApplicationsPageNumber">Страница</label>
                 <input
                   id="membershipApplicationsPageNumber"
                   name="pageDisplay"
@@ -167,27 +160,28 @@
                   th:attr="max=${totalPages}"
                   th:value="${currentPage}"
                 />
-                <span class="pagination-input__state">of <strong th:text="${totalPages}">1</strong></span>
+                <span class="pagination-input__state">от <strong th:text="${totalPages}">1</strong></span>
               </form>
               <a
                 class="page-link"
                 th:classappend="${membershipPage.last} ? ' disabled' : ''"
                 th:href="${membershipPage.last ? '#' : membershipPageBaseHref + 'page=' + (membershipPage.number + 1)}"
               >
-                Next
+                Следваща
               </a>
               <a
                 class="page-link"
                 th:classappend="${membershipPage.last} ? ' disabled' : ''"
                 th:href="${membershipPage.last ? '#' : membershipPageBaseHref + 'page=' + lastIndex}"
               >
-                Last
+                Последна
               </a>
             </section>
           </section>
         </div>
 
         <div id="membershipActionModal" class="membership-modal" hidden aria-hidden="true">
+          <div class="membership-modal__backdrop" data-membership-modal-close aria-hidden="true"></div>
           <div
             class="membership-modal__content"
             role="dialog"
@@ -196,21 +190,36 @@
             aria-describedby="membershipModalMessage"
             tabindex="-1"
           >
-            <h3 id="membershipModalTitle" class="membership-modal__title">Confirm action</h3>
-            <p id="membershipModalMessage" class="membership-modal__message">Are you sure?</p>
-            <dl class="membership-modal__summary">
-              <div class="membership-modal__summary-row">
-                <dt>Student</dt>
-                <dd id="membershipModalStudent">-</dd>
+            <div class="membership-modal__header">
+              <div>
+                <p class="membership-modal__eyebrow">Кандидатура за членство</p>
+                <h3 id="membershipModalTitle" class="membership-modal__title">Потвърди действието</h3>
               </div>
-              <div class="membership-modal__summary-row">
-                <dt>Club</dt>
-                <dd id="membershipModalClub">-</dd>
+              <button
+                class="membership-modal__close"
+                type="button"
+                data-membership-modal-close
+                aria-label="Затвори потвърждението"
+              >
+                X
+              </button>
+            </div>
+            <div class="membership-modal__body">
+              <p id="membershipModalMessage" class="membership-modal__message">Сигурни ли сте?</p>
+              <dl class="membership-modal__summary">
+                <div class="membership-modal__summary-row">
+                  <dt>Ученик</dt>
+                  <dd id="membershipModalStudent">-</dd>
+                </div>
+                <div class="membership-modal__summary-row">
+                  <dt>Клуб</dt>
+                  <dd id="membershipModalClub">-</dd>
+                </div>
+              </dl>
+              <div class="membership-modal__actions">
+                <button id="membershipModalCancel" class="modal-btn modal-btn--secondary" type="button">Отказ</button>
+                <button id="membershipModalConfirm" class="modal-btn modal-btn--primary" type="button">Потвърди</button>
               </div>
-            </dl>
-            <div class="membership-modal__actions">
-              <button id="membershipModalCancel" class="modal-btn modal-btn--secondary" type="button">Cancel</button>
-              <button id="membershipModalConfirm" class="modal-btn modal-btn--primary" type="button">Confirm</button>
             </div>
           </div>
         </div>

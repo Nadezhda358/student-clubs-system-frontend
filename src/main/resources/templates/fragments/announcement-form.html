@@ -1,14 +1,13 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<html lang="bg" xmlns:th="http://www.w3.org/1999/xhtml">
   <body>
     <th:block th:fragment="pageContent">
       <div class="event-form-layout">
         <section class="event-form-hero">
           <div>
-            <p class="event-form-hero__tag" th:text="${workspaceLabel}">Workspace</p>
-            <h1 th:text="${pageTitle}">Create Announcement</h1>
+            <h1 th:text="${pageTitle}">Създай съобщение</h1>
             <p class="event-form-hero__subtitle" th:text="${pageSubtitle}">
-              Share an update with the club community.
+              Споделете обновление с клубната общност.
             </p>
           </div>
         </section>
@@ -21,9 +20,9 @@
 
           <div class="event-form__grid">
             <div class="event-form__field event-form__field--wide">
-              <label for="clubId">Club</label>
+              <label for="clubId">Клуб</label>
               <select id="clubId" class="event-form__select" th:field="*{clubId}">
-                <option value="">Choose a club</option>
+                <option value="">Изберете клуб</option>
                 <option
                   th:each="club : ${clubOptions}"
                   th:value="${club.id}"
@@ -33,33 +32,33 @@
             </div>
 
             <div class="event-form__field event-form__field--wide">
-              <label for="title">Title</label>
+              <label for="title">Заглавие</label>
               <input id="title" class="event-form__input" type="text" maxlength="200" th:field="*{title}" />
             </div>
 
             <div class="event-form__field event-form__field--wide">
-              <label for="body">Body</label>
+              <label for="body">Текст</label>
               <textarea
                 id="body"
                 class="event-form__textarea"
                 maxlength="8000"
                 th:field="*{body}"
               ></textarea>
-              <p class="event-form__hint">Write the announcement exactly as students should see it. Maximum 8000 characters.</p>
+              <p class="event-form__hint">Напишете съобщението точно както трябва да го видят учениците. Максимум 8000 знака.</p>
             </div>
 
             <div class="event-form__field">
-              <label for="published">Visibility</label>
+              <label for="published">Видимост</label>
               <select id="published" class="event-form__select" th:field="*{published}">
-                <option th:value="false">Draft</option>
-                <option th:value="true">Published</option>
+                <option th:value="false">Чернова</option>
+                <option th:value="true">Публикувано</option>
               </select>
             </div>
           </div>
 
           <div class="event-form__actions" style="margin-top: 1.1rem;">
-            <button class="events-button events-button--primary" type="submit" th:text="${submitLabel}">Save</button>
-            <a class="events-link events-link--ghost" th:href="${cancelHref}">Cancel</a>
+            <button class="events-button events-button--primary" type="submit" th:text="${submitLabel}">Запази</button>
+            <a class="events-link events-link--ghost" th:href="${cancelHref}">Отказ</a>
           </div>
         </form>
       </div>

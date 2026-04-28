@@ -77,7 +77,7 @@ public class GlobalModelAttributes {
         }
 
         FlashMap flashMap = RequestContextUtils.getOutputFlashMap(request);
-        flashMap.put("errorMessage", "Uploaded file is too large. Maximum size is 5 MB per file.");
+        flashMap.put("errorMessage", "Каченият файл е твърде голям. Максималният размер е 5 MB на файл.");
         RequestContextUtils.saveOutputFlashMap(targetUrl, request, response);
         return "redirect:" + targetUrl;
     }

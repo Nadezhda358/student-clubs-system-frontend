@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<html lang="bg" xmlns:th="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title th:text="${club.name} + ' | ClubsHub'">Club Details | ClubsHub</title>
+    <title th:text="${club.name} + ' | ClubsHub'">Детайли за клуба | ClubsHub</title>
     <link th:href="@{/assets/logo.png}" rel="icon" type="image/png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -66,30 +66,30 @@
                 <div class="club-hero__top">
                   <div class="club-hero__copy">
                     <div class="club-hero__title-row">
-                      <h1 class="club-hero__title" th:text="${club.name}">Club Name</h1>
+                      <h1 class="club-hero__title" th:text="${club.name}">Име на клуба</h1>
 
                       <div class="club-hero__cta">
                         <span
                           class="status-badge"
                           th:if="${showApplicationStatusBadge}"
                           th:classappend="${isApplicationPending ? ' status-badge--pending' : (isApplicationApproved ? ' status-badge--member' : (isApplicationRejected ? ' status-badge--rejected' : ' status-badge--cancelled'))}"
-                          th:text="${isApplicationPending ? 'Application pending' : (isApplicationApproved ? 'You are a member' : (isApplicationRejected ? 'Application rejected' : 'Application cancelled'))}"
+                          th:text="${isApplicationPending ? 'Кандидатурата чака преглед' : (isApplicationApproved ? 'Вече сте член' : (isApplicationRejected ? 'Кандидатурата е отхвърлена' : 'Кандидатурата е отменена'))}"
                         >
-                          Application pending
+                          Кандидатурата чака преглед
                         </span>
                         <button
                           type="button"
                           class="club-hero__apply-button"
                           th:if="${isStudent}"
                           th:disabled="${applyButtonDisabled}"
-                          th:text="${isApplicationPending ? 'Pending' : (isApplicationApproved ? 'Member' : ((isApplicationRejected or isApplicationCancelled) ? 'Apply again' : 'Apply'))}"
+                          th:text="${isApplicationPending ? 'Изчаква' : (isApplicationApproved ? 'Член' : ((isApplicationRejected or isApplicationCancelled) ? 'Кандидатствай отново' : 'Кандидатствай'))}"
                           th:attr="
                             data-open-apply-modal=${canOpenApplyModal ? 'true' : null},
                             aria-controls=${canOpenApplyModal ? 'club-apply-modal' : null},
-                            title=${isApplicationPending ? 'Application pending review.' : (isApplicationApproved ? 'You are already a member.' : null)}
+                            title=${isApplicationPending ? 'Кандидатурата очаква преглед.' : (isApplicationApproved ? 'Вече сте член.' : null)}
                           "
                         >
-                          Apply
+                          Кандидатствай
                         </button>
                       </div>
                     </div>
@@ -99,7 +99,7 @@
                       th:if="${club.description != null and !#strings.isEmpty(club.description)}"
                       th:text="${club.description}"
                     >
-                      Club description preview goes here.
+                      Тук е краткият преглед на описанието.
                     </p>
                   </div>
                 </div>
@@ -109,29 +109,29 @@
                     class="club-chip"
                     th:if="${club.isActive != null and isAdminOrTeacher}"
                     th:classappend="${club.isActive} ? ' club-chip--active' : ' club-chip--inactive'"
-                    th:text="${club.isActive} ? 'Active' : 'Inactive'"
+                    th:text="${club.isActive} ? 'Активен' : 'Неактивен'"
                   >
-                    Active
+                    Активен
                   </span>
                   <span
                     class="club-chip"
                     th:if="${club.room != null and !#strings.isEmpty(club.room)}"
                   >
-                    <span class="club-chip__label">Room</span>
+                    <span class="club-chip__label">Стая</span>
                     <span th:text="${club.room}">A-101</span>
                   </span>
                   <span
                     class="club-chip"
                     th:if="${club.scheduleText != null and !#strings.isEmpty(club.scheduleText)}"
                   >
-                    <span class="club-chip__label">Schedule</span>
-                    <span th:text="${club.scheduleText}">Mondays 15:00</span>
+                    <span class="club-chip__label">График</span>
+                    <span th:text="${club.scheduleText}">Понеделник 15:00</span>
                   </span>
                 </div>
               </div>
             </section>
 
-            <div class="club-tabs club-tabs--under-hero" role="tablist" aria-label="Club tabs">
+            <div class="club-tabs club-tabs--under-hero" role="tablist" aria-label="Раздели на клуба">
               <button
                 class="tab-button is-active"
                 type="button"
@@ -139,7 +139,7 @@
                 aria-controls="tab-general"
                 aria-selected="true"
               >
-                General
+                Обща информация
               </button>
               <button
                 class="tab-button"
@@ -148,7 +148,7 @@
                 aria-controls="tab-events"
                 aria-selected="false"
               >
-                Events
+                Събития
               </button>
               <button
                 class="tab-button"
@@ -157,7 +157,7 @@
                 aria-controls="tab-media"
                 aria-selected="false"
               >
-                Media
+                Медия
               </button>
               <button
                 class="tab-button"
@@ -166,7 +166,7 @@
                 aria-controls="tab-announcements"
                 aria-selected="false"
               >
-                Announcements
+                Съобщения
               </button>
             </div>
 
@@ -176,10 +176,10 @@
                 th:if="${club.description != null and !#strings.isEmpty(club.description)}"
               >
                 <div class="club-section__heading">
-                  <h2 class="club-section__title">About</h2>
+                  <h2 class="club-section__title">За нас</h2>
                 </div>
                 <p class="club-section__text" th:text="${club.description}">
-                  Club description goes here.
+                  Тук е описанието на клуба.
                 </p>
               </section>
 
@@ -193,7 +193,7 @@
                 }"
               >
                 <div class="club-section__heading">
-                  <h2 class="club-section__title">Details</h2>
+                  <h2 class="club-section__title">Детайли</h2>
                 </div>
 
                 <div class="club-details-grid">
@@ -201,9 +201,9 @@
                     class="club-detail-block"
                     th:if="${club.scheduleText != null and !#strings.isEmpty(club.scheduleText)}"
                   >
-                    <span class="club-detail-block__label">Schedule</span>
+                    <span class="club-detail-block__label">График</span>
                     <span class="club-detail-block__value" th:text="${club.scheduleText}">
-                      Mondays 15:00
+                      Понеделник 15:00
                     </span>
                   </div>
 
@@ -211,7 +211,7 @@
                     class="club-detail-block"
                     th:if="${club.room != null and !#strings.isEmpty(club.room)}"
                   >
-                    <span class="club-detail-block__label">Room</span>
+                    <span class="club-detail-block__label">Стая</span>
                     <span class="club-detail-block__value" th:text="${club.room}">A-101</span>
                   </div>
 
@@ -219,7 +219,7 @@
                     class="club-detail-block"
                     th:if="${club.contactEmail != null and !#strings.isEmpty(club.contactEmail)}"
                   >
-                    <span class="club-detail-block__label">Contact Email</span>
+                    <span class="club-detail-block__label">Имейл за контакт</span>
                     <span class="club-detail-block__value">
                       <a th:href="'mailto:' + ${club.contactEmail}" th:text="${club.contactEmail}">
                         contact@school.bg
@@ -231,7 +231,7 @@
                     class="club-detail-block"
                     th:if="${club.contactPhone != null and !#strings.isEmpty(club.contactPhone)}"
                   >
-                    <span class="club-detail-block__label">Contact Phone</span>
+                    <span class="club-detail-block__label">Телефон за контакт</span>
                     <span class="club-detail-block__value">
                       <a th:href="'tel:' + ${club.contactPhone}" th:text="${club.contactPhone}">
                         +1 555-123-4567
@@ -246,7 +246,7 @@
                 th:if="${club.teachers != null and !#lists.isEmpty(club.teachers)}"
               >
                 <div class="club-section__heading">
-                  <h2 class="club-section__title">Teachers</h2>
+                  <h2 class="club-section__title">Учители</h2>
                 </div>
 
                 <div class="teacher-list" role="list">
@@ -263,9 +263,9 @@
                     </span>
                     <span
                       class="teacher-pill__name"
-                      th:text="${teacher.fullName != null and !#strings.isEmpty(teacher.fullName) ? teacher.fullName : 'Teacher'}"
+                      th:text="${teacher.fullName != null and !#strings.isEmpty(teacher.fullName) ? teacher.fullName : 'Учител'}"
                     >
-                      Teacher Name
+                      Име на учител
                     </span>
                   </div>
                 </div>
@@ -292,13 +292,13 @@
             >
               <div class="club-apply-modal__header">
                 <h2 id="club-apply-modal-title" class="club-apply-modal__title">
-                  Apply to join <span th:text="${club.name}">Club Name</span>
+                  Кандидатствай за членство <span th:text="${club.name}">Име на клуба</span>
                 </h2>
                 <button
                   type="button"
                   class="club-apply-modal__close"
                   data-close-apply-modal
-                  aria-label="Close application form"
+                  aria-label="Затвори формата за кандидатстване"
                 >
                   X
                 </button>
@@ -311,7 +311,7 @@
                   th:if="${membershipApplyWarningMessage}"
                   th:text="${membershipApplyWarningMessage}"
                 >
-                  Only students can apply.
+                  Само ученици могат да кандидатстват.
                 </div>
                 <div
                   class="membership-alert membership-alert--error"
@@ -319,27 +319,27 @@
                   th:if="${membershipApplyErrorMessage}"
                   th:text="${membershipApplyErrorMessage}"
                 >
-                  Unable to submit your application right now.
+                  Кандидатурата ви не може да бъде подадена в момента.
                 </div>
 
                 <div class="membership-panel__empty" th:if="${!isStudent}">
-                  <p class="membership-panel__empty-text">Only students can apply.</p>
+                  <p class="membership-panel__empty-text">Само ученици могат да кандидатстват.</p>
                   <p class="membership-panel__empty-text" th:if="${sessionUser == null}">
-                    <a th:href="@{/login}">Sign in</a> with a student account to continue.
+                    <a th:href="@{/login}">Влез</a> с ученически профил, за да продължите.
                   </p>
                 </div>
 
                 <div class="membership-panel__empty" th:if="${isStudent and applyButtonDisabled}">
                   <p class="membership-panel__empty-text">
                     <span th:if="${isApplicationPending}">
-                      You already have a pending application for this club.
+                      Вече имате чакаща кандидатура за този клуб.
                     </span>
                     <span th:if="${isApplicationApproved}">
-                      You are already a member of this club.
+                      Вече сте член на този клуб.
                     </span>
                   </p>
                   <p class="membership-panel__empty-text" th:if="${isApplicationPending}">
-                    We will notify you when it is reviewed.
+                    Ще ви уведомим, когато бъде прегледана.
                   </p>
                 </div>
 
@@ -352,7 +352,7 @@
                   <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
                   <label class="membership-form__label" for="applyMotivationText">
-                    Motivation (optional)
+                    Мотивация (по избор)
                   </label>
                   <textarea
                     id="applyMotivationText"
@@ -360,12 +360,12 @@
                     class="membership-form__textarea"
                     rows="6"
                     maxlength="2000"
-                    placeholder="Tell the club why you want to join (optional)."
+                    placeholder="Кажете на клуба защо искате да се присъедините (по избор)."
                     th:text="${membershipApplyDraft}"
                   ></textarea>
 
                   <div class="membership-form__meta">
-                    <p class="membership-form__hint">Maximum 2000 characters.</p>
+                    <p class="membership-form__hint">Максимум 2000 знака.</p>
                   </div>
 
                   <div class="club-apply-modal__actions">
@@ -374,13 +374,13 @@
                       class="club-apply-modal__button club-apply-modal__button--ghost"
                       data-close-apply-modal
                     >
-                      Close
+                      Затвори
                     </button>
                     <button
                       type="submit"
                       class="club-apply-modal__button club-apply-modal__button--primary"
                     >
-                      Submit application
+                      Подай кандидатура
                     </button>
                   </div>
                 </form>
@@ -391,7 +391,7 @@
                     class="club-apply-modal__button club-apply-modal__button--ghost"
                     data-close-apply-modal
                   >
-                    Close
+                    Затвори
                   </button>
                 </div>
               </div>
@@ -406,7 +406,7 @@
           th:attr="data-tab-url=@{/clubs/{id}/tabs/events(id=${club.id})}"
         >
           <div class="tab-placeholder">
-            Open this tab to load events.
+            Отворете този раздел, за да заредите събитията.
           </div>
         </section>
 
@@ -417,7 +417,7 @@
           th:attr="data-tab-url=@{/clubs/{id}/tabs/media(id=${club.id})}"
         >
           <div class="tab-placeholder">
-            Open this tab to load media.
+            Отворете този раздел, за да заредите медията.
           </div>
         </section>
 
@@ -428,7 +428,7 @@
           th:attr="data-tab-url=@{/clubs/{id}/tabs/announcements(id=${club.id})}"
         >
           <div class="tab-placeholder">
-            Open this tab to load announcements.
+            Отворете този раздел, за да заредите съобщенията.
           </div>
         </section>
       </div>
@@ -493,7 +493,7 @@
               })
               .catch(() => {
                 activePanel.innerHTML =
-                  '<div class="tab-placeholder">Not available yet.</div>';
+                  '<div class="tab-placeholder">Все още не е налично.</div>';
               });
           }
         };

@@ -103,7 +103,7 @@ public class TeacherClubController {
             throw ex;
         } catch (RuntimeException ex) {
             String message = ex.getMessage() == null ? "" : ex.getMessage().toLowerCase();
-            if (message.contains("not found")) {
+            if ((message.contains("not found") || message.contains("не е намер"))) {
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 model.addAttribute("missingClubId", id);
                 return "errors/404";
@@ -145,7 +145,7 @@ public class TeacherClubController {
                     isActive,
                     resolveCurrentMainImageUrl(id)
             );
-            model.addAttribute("errorMessage", "Club Name is required.");
+            model.addAttribute("errorMessage", "Името на клуба е задължително.");
             return "teacher/club-form";
         }
 
@@ -162,7 +162,7 @@ public class TeacherClubController {
                     isActive,
                     resolveCurrentMainImageUrl(id)
             );
-            model.addAttribute("errorMessage", "Description is required.");
+            model.addAttribute("errorMessage", "Описанието е задължително.");
             return "teacher/club-form";
         }
 
@@ -210,26 +210,26 @@ public class TeacherClubController {
             RedirectAttributes redirectAttributes
     ) {
         if (!hasFile(mainImage)) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Please choose an image to upload.");
+            redirectAttributes.addFlashAttribute("errorMessage", "Изберете изображение за качване.");
             return "redirect:/teacher/clubs/" + id + "/edit";
         }
 
         if (mainImage.getSize() > MAX_IMAGE_FILE_SIZE_BYTES) {
             redirectAttributes.addFlashAttribute(
                     "errorMessage",
-                    "Main image must be 5 MB or smaller. Please choose another file."
+                    "Основното изображение трябва да е 5 MB или по-малко. Изберете друг файл."
             );
             return "redirect:/teacher/clubs/" + id + "/edit";
         }
 
         if (!isImageFile(mainImage)) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Main image must be an image file.");
+            redirectAttributes.addFlashAttribute("errorMessage", "Основното изображение трябва да е файл с изображение.");
             return "redirect:/teacher/clubs/" + id + "/edit";
         }
 
         try {
             teacherClubClient.uploadManagedClubMainImage(id, mainImage);
-            redirectAttributes.addFlashAttribute("successMessage", "Main image updated successfully.");
+            redirectAttributes.addFlashAttribute("successMessage", "Основното изображение е обновено успешно.");
             return "redirect:/teacher/clubs/" + id + "/edit";
         } catch (FeignException ex) {
             if (ex.status() == HttpStatus.FORBIDDEN.value()) {
@@ -242,7 +242,7 @@ public class TeacherClubController {
 
             redirectAttributes.addFlashAttribute(
                     "errorMessage",
-                    firstNonBlank(extractUserMessage(ex), "Unable to upload the main image right now. Please try again.")
+                    firstNonBlank(extractUserMessage(ex), "Основното изображение не може да бъде качено в момента. Опитайте отново.")
             );
             return "redirect:/teacher/clubs/" + id + "/edit";
         }
@@ -257,7 +257,7 @@ public class TeacherClubController {
             clubClient.delete(id);
             redirectAttributes.addFlashAttribute(
                     "successMessage",
-                    "Club deleted. Future events were cancelled and active memberships were marked as left."
+                    "Клубът е изтрит. Бъдещите събития бяха отменени, а активните членства бяха отбелязани като напуснали."
             );
         } catch (FeignException ex) {
             redirectAttributes.addFlashAttribute("errorMessage", toClubDeleteErrorMessage(ex));
@@ -287,9 +287,9 @@ public class TeacherClubController {
         model.addAttribute("clubContactPhone", nonNull(contactPhone));
         model.addAttribute("clubIsActive", isActive);
         model.addAttribute("clubMainImageUrl", nonNull(mainImageUrl));
-        model.addAttribute("pageTitle", "Edit Club");
-        model.addAttribute("pageSubtitle", "Update details for the clubs you manage.");
-        model.addAttribute("submitLabel", "Save Changes");
+        model.addAttribute("pageTitle", "Редактирай клуб");
+        model.addAttribute("pageSubtitle", "Обновявайте данните за клубовете, които управлявате.");
+        model.addAttribute("submitLabel", "Запази промените");
     }
 
     private String successMessage(String success) {
@@ -298,11 +298,11 @@ public class TeacherClubController {
         }
 
         if ("updated".equalsIgnoreCase(success)) {
-            return "Club updated successfully.";
+            return "Клубът е обновен успешно.";
         }
 
         if ("deleted".equalsIgnoreCase(success)) {
-            return "Club deleted successfully.";
+            return "Клубът е изтрит успешно.";
         }
 
         return null;
@@ -314,11 +314,11 @@ public class TeacherClubController {
         }
 
         if ("forbidden".equalsIgnoreCase(error)) {
-            return "You can only manage clubs assigned to you.";
+            return "Можете да управлявате само клубове, които са ви назначени.";
         }
 
         if ("not-found".equalsIgnoreCase(error)) {
-            return "That club is no longer available.";
+            return "Този клуб вече не е наличен.";
         }
 
         return null;
@@ -383,10 +383,10 @@ public class TeacherClubController {
         }
 
         return switch (status) {
-            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Please review the club details and try again.";
-            case UNAUTHORIZED, FORBIDDEN -> "You are not authorized to manage this club.";
-            case NOT_FOUND -> "Requested resource not found.";
-            default -> "Unable to save the club right now. Please try again.";
+            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Прегледайте данните за клуба и опитайте отново.";
+            case UNAUTHORIZED, FORBIDDEN -> "Нямате право да управлявате този клуб.";
+            case NOT_FOUND -> "Заявеният ресурс не е намерен.";
+            default -> "Клубът не може да бъде запазен в момента. Опитайте отново.";
         };
     }
 
@@ -397,10 +397,10 @@ public class TeacherClubController {
         }
 
         String fallback = switch (status) {
-            case FORBIDDEN, UNAUTHORIZED -> "You can only delete clubs assigned to you.";
-            case NOT_FOUND -> "This club no longer exists.";
-            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "This club could not be deleted right now. Please refresh and try again.";
-            default -> "Unable to delete the club right now. Please try again.";
+            case FORBIDDEN, UNAUTHORIZED -> "Можете да изтривате само клубове, които са ви назначени.";
+            case NOT_FOUND -> "Този клуб вече не съществува.";
+            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Този клуб не може да бъде изтрит в момента. Обновете страницата и опитайте отново.";
+            default -> "Клубът не може да бъде изтрит в момента. Опитайте отново.";
         };
 
         return firstNonBlank(extractUserMessage(ex), fallback);

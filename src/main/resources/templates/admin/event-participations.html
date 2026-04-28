@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<html lang="bg" xmlns:th="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Event Participations | ClubsHub Admin</title>
+    <title>Регистрации за събития | ClubsHub Администрация</title>
     <link th:href="@{/assets/logo.png}" rel="icon" type="image/png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -26,9 +26,8 @@
           <div class="event-participants">
             <section class="event-participants__hero">
               <div>
-                <p class="event-participants__tag">Admin Workspace</p>
-                <h1>Event Participations</h1>
-                <p class="event-participants__subtitle">Review registration activity across all clubs and update participation records when corrections are required.</p>
+                <h1>Регистрации за събития</h1>
+                <p class="event-participants__subtitle">Преглеждайте регистрациите във всички клубове и обновявайте записите за участие, когато са нужни корекции.</p>
               </div>
             </section>
 
@@ -38,9 +37,9 @@
             <form method="get" th:action="@{/admin/event-participations}" class="event-participants__filters">
               <div class="event-participants__filters-grid">
                 <div class="event-participants__field">
-                  <label for="adminParticipationClub">Club</label>
+                  <label for="adminParticipationClub">Клуб</label>
                   <select id="adminParticipationClub" class="event-participants__select" name="clubId">
-                    <option value="">All clubs</option>
+                    <option value="">Всички клубове</option>
                     <option
                       th:each="club : ${clubOptions}"
                       th:value="${club.id}"
@@ -51,14 +50,9 @@
                 </div>
 
                 <div class="event-participants__field">
-                  <label for="adminParticipationEventId">Event ID</label>
-                  <input id="adminParticipationEventId" class="event-participants__input" type="number" min="1" name="eventId" th:value="${selectedEventId}" />
-                </div>
-
-                <div class="event-participants__field">
-                  <label for="adminParticipationStatus">Registration Status</label>
+                  <label for="adminParticipationStatus">Статус на регистрацията</label>
                   <select id="adminParticipationStatus" class="event-participants__select" name="registrationStatus">
-                    <option value="">All statuses</option>
+                    <option value="">Всички статуси</option>
                     <option
                       th:each="statusValue : ${registrationStatusValues}"
                       th:value="${statusValue.name()}"
@@ -69,9 +63,9 @@
                 </div>
 
                 <div class="event-participants__field">
-                  <label for="adminParticipationEventStatus">Event Status</label>
+                  <label for="adminParticipationEventStatus">Статус на събитието</label>
                   <select id="adminParticipationEventStatus" class="event-participants__select" name="eventStatus">
-                    <option value="">All event statuses</option>
+                    <option value="">Всички статуси на събития</option>
                     <option
                       th:each="statusValue : ${eventStatusValues}"
                       th:value="${statusValue.name()}"
@@ -82,40 +76,40 @@
                 </div>
 
                 <div class="event-participants__field event-participants__field--wide">
-                  <label for="adminParticipationSearch">Search</label>
-                  <input id="adminParticipationSearch" class="event-participants__input" type="text" name="q" th:value="${q}" placeholder="Search by student, email, or title" />
+                  <label for="adminParticipationSearch">Търсене</label>
+                  <input id="adminParticipationSearch" class="event-participants__input" type="text" name="q" th:value="${q}" placeholder="Търсене по ученик, имейл или заглавие" />
                 </div>
               </div>
 
               <div class="event-participants__filter-actions" style="margin-top: 0.9rem;">
-                <button class="events-button events-button--primary" type="submit">Apply Filters</button>
-                <a class="events-link events-link--ghost" th:href="@{/admin/event-participations}">Reset</a>
+                <button class="events-button events-button--primary" type="submit">Приложи филтрите</button>
+                <a class="events-link events-link--ghost" th:href="@{/admin/event-participations}">Изчисти</a>
               </div>
             </form>
 
             <div class="manage-events__empty" th:if="${#lists.isEmpty(participations)}">
-              No event participations matched the current filters.
+              Няма регистрации за събития по текущите филтри.
             </div>
 
             <div class="event-participants__table-wrap" th:if="${!#lists.isEmpty(participations)}">
               <table class="event-participants__table">
                 <thead>
                   <tr>
-                    <th>Event</th>
-                    <th>Student</th>
-                    <th>Registered At</th>
-                    <th>Status</th>
-                    <th>Update</th>
+                    <th>Събитие</th>
+                    <th>Ученик</th>
+                    <th>Регистриран на</th>
+                    <th>Статус</th>
+                    <th>Обновяване</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr th:each="participation : ${participations}">
                     <td>
-                      <strong th:text="${participation.eventTitle}">Event</strong>
-                      <div th:text="${participation.clubName}">Club</div>
+                      <strong th:text="${participation.eventTitle}">Събитие</strong>
+                      <div th:text="${participation.clubName}">Клуб</div>
                     </td>
                     <td>
-                      <strong th:text="${participation.studentFullName}">Student</strong>
+                      <strong th:text="${participation.studentFullName}">Ученик</strong>
                       <div th:text="${participation.studentEmail}">student@example.com</div>
                     </td>
                     <td th:text="${participation.registeredAt != null ? T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatDateTime(participation.registeredAt) : '-'}">2026-04-18 12:00</td>
@@ -125,7 +119,7 @@
                         th:classappend="${' manage-event-chip--' + #strings.toLowerCase(participation.status.name())}"
                         th:text="${T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatLabel(participation.status)}"
                       >
-                        Registered
+                        Регистриран
                       </span>
                     </td>
                     <td>
@@ -142,9 +136,9 @@
                             th:text="${T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatLabel(statusValue)}"
                           ></option>
                         </select>
-                        <button class="event-status-form__button" type="submit">Save</button>
+                        <button class="event-status-form__button" type="submit">Запази</button>
                       </form>
-                      <span th:if="${T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).hasEventStarted(participation)}">Event started</span>
+                      <span th:if="${T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).hasEventStarted(participation)}">Събитието е започнало</span>
                     </td>
                   </tr>
                 </tbody>
@@ -156,15 +150,14 @@
               th:if="${participationPage != null}"
               th:with="currentPage=${participationPage.totalPages > 0 ? participationPage.number + 1 : 1}, totalPages=${participationPage.totalPages > 0 ? participationPage.totalPages : 1}, lastIndex=${participationPage.totalPages > 0 ? participationPage.totalPages - 1 : 0}"
             >
-              <a class="events-link events-link--ghost" th:href="${participationPage.first} ? '#' : @{/admin/event-participations(page=0,clubId=${selectedClubId},eventId=${selectedEventId},registrationStatus=${selectedRegistrationStatus},eventStatus=${selectedEventStatus},q=${q})}" th:classappend="${participationPage.first} ? ' disabled' : ''">First</a>
-              <a class="events-link events-link--ghost" th:href="${participationPage.first} ? '#' : @{/admin/event-participations(page=${participationPage.number - 1},clubId=${selectedClubId},eventId=${selectedEventId},registrationStatus=${selectedRegistrationStatus},eventStatus=${selectedEventStatus},q=${q})}" th:classappend="${participationPage.first} ? ' disabled' : ''">Previous</a>
+              <a class="events-link events-link--ghost" th:href="${participationPage.first} ? '#' : @{/admin/event-participations(page=0,clubId=${selectedClubId},registrationStatus=${selectedRegistrationStatus},eventStatus=${selectedEventStatus},q=${q})}" th:classappend="${participationPage.first} ? ' disabled' : ''">Първа</a>
+              <a class="events-link events-link--ghost" th:href="${participationPage.first} ? '#' : @{/admin/event-participations(page=${participationPage.number - 1},clubId=${selectedClubId},registrationStatus=${selectedRegistrationStatus},eventStatus=${selectedEventStatus},q=${q})}" th:classappend="${participationPage.first} ? ' disabled' : ''">Предишна</a>
               <form class="pagination-input" th:action="@{/admin/event-participations}" method="get" data-page-input>
                 <input type="hidden" name="clubId" th:value="${selectedClubId}" />
-                <input type="hidden" name="eventId" th:value="${selectedEventId}" />
                 <input type="hidden" name="registrationStatus" th:value="${selectedRegistrationStatus != null ? selectedRegistrationStatus.name() : ''}" />
                 <input type="hidden" name="eventStatus" th:value="${selectedEventStatus != null ? selectedEventStatus.name() : ''}" />
                 <input type="hidden" name="q" th:value="${q}" />
-                <label class="pagination-input__sr-only" for="adminParticipationsPageNumber">Page</label>
+                <label class="pagination-input__sr-only" for="adminParticipationsPageNumber">Страница</label>
                 <input
                   id="adminParticipationsPageNumber"
                   name="pageDisplay"
@@ -174,10 +167,10 @@
                   th:attr="max=${totalPages}"
                   th:value="${currentPage}"
                 />
-                <span class="pagination-input__state">of <strong th:text="${totalPages}">1</strong></span>
+                <span class="pagination-input__state">от <strong th:text="${totalPages}">1</strong></span>
               </form>
-              <a class="events-link events-link--ghost" th:href="${participationPage.last} ? '#' : @{/admin/event-participations(page=${participationPage.number + 1},clubId=${selectedClubId},eventId=${selectedEventId},registrationStatus=${selectedRegistrationStatus},eventStatus=${selectedEventStatus},q=${q})}" th:classappend="${participationPage.last} ? ' disabled' : ''">Next</a>
-              <a class="events-link events-link--ghost" th:href="${participationPage.last} ? '#' : @{/admin/event-participations(page=${lastIndex},clubId=${selectedClubId},eventId=${selectedEventId},registrationStatus=${selectedRegistrationStatus},eventStatus=${selectedEventStatus},q=${q})}" th:classappend="${participationPage.last} ? ' disabled' : ''">Last</a>
+              <a class="events-link events-link--ghost" th:href="${participationPage.last} ? '#' : @{/admin/event-participations(page=${participationPage.number + 1},clubId=${selectedClubId},registrationStatus=${selectedRegistrationStatus},eventStatus=${selectedEventStatus},q=${q})}" th:classappend="${participationPage.last} ? ' disabled' : ''">Следваща</a>
+              <a class="events-link events-link--ghost" th:href="${participationPage.last} ? '#' : @{/admin/event-participations(page=${lastIndex},clubId=${selectedClubId},registrationStatus=${selectedRegistrationStatus},eventStatus=${selectedEventStatus},q=${q})}" th:classappend="${participationPage.last} ? ' disabled' : ''">Последна</a>
             </section>
           </div>
         </div>

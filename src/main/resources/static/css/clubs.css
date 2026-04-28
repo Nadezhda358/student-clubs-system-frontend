@@ -56,6 +56,9 @@
       }
 
       .cta-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         background: var(--royal-purple);
         color: white;
         border: none;
@@ -69,6 +72,12 @@
 
       .cta-button:hover {
         transform: translateY(-1px);
+      }
+
+      .hero-buttons .ghost-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
       }
 
       .avatar {

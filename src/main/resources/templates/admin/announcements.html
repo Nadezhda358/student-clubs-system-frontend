@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<html lang="bg" xmlns:th="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Announcements | ClubsHub Admin</title>
+    <title>Съобщения | ClubsHub Администрация</title>
     <link th:href="@{/assets/logo.png}" rel="icon" type="image/png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -25,11 +25,10 @@
           <div class="manage-events">
             <section class="manage-events__hero">
               <div>
-                <p class="manage-events__tag">Admin Workspace</p>
-                <h1>Manage Announcements</h1>
-                <p class="manage-events__subtitle">Review club announcements, publish updates, and keep messaging accurate across the platform.</p>
+                <h1>Управление на съобщения</h1>
+                <p class="manage-events__subtitle">Преглеждайте клубните съобщения, публикувайте обновления и поддържайте информацията точна в цялата платформа.</p>
               </div>
-              <a class="admin-clubs__create-button" th:href="@{/admin/announcements/create}">Create Announcement</a>
+              <a class="admin-clubs__create-button" th:href="@{/admin/announcements/create}">Създай съобщение</a>
             </section>
 
             <div class="admin-alert admin-alert--success" th:if="${successMessage}" th:text="${successMessage}"></div>
@@ -38,14 +37,14 @@
             <form method="get" th:action="@{/admin/announcements}" class="manage-events__filters">
               <div class="manage-events__filters-grid">
                 <div class="manage-events__field manage-events__field--wide">
-                  <label for="adminAnnouncementSearch">Search</label>
-                  <input id="adminAnnouncementSearch" class="manage-events__input" type="text" name="q" th:value="${q}" placeholder="Search by title or text" />
+                  <label for="adminAnnouncementSearch">Търсене</label>
+                  <input id="adminAnnouncementSearch" class="manage-events__input" type="text" name="q" th:value="${q}" placeholder="Търсене по заглавие или текст" />
                 </div>
 
                 <div class="manage-events__field">
-                  <label for="adminAnnouncementClub">Club</label>
+                  <label for="adminAnnouncementClub">Клуб</label>
                   <select id="adminAnnouncementClub" class="manage-events__select" name="clubId">
-                    <option value="">All clubs</option>
+                    <option value="">Всички клубове</option>
                     <option
                       th:each="club : ${clubOptions}"
                       th:value="${club.id}"
@@ -56,28 +55,28 @@
                 </div>
 
                 <div class="manage-events__field">
-                  <label for="adminAnnouncementPublished">Status</label>
+                  <label for="adminAnnouncementPublished">Статус</label>
                   <select id="adminAnnouncementPublished" class="manage-events__select" name="published">
-                    <option value="" th:selected="${selectedPublished == null}">All statuses</option>
-                    <option value="true" th:selected="${selectedPublished != null and selectedPublished}">Published</option>
-                    <option value="false" th:selected="${selectedPublished != null and !selectedPublished}">Draft</option>
+                    <option value="" th:selected="${selectedPublished == null}">Всички статуси</option>
+                    <option value="true" th:selected="${selectedPublished != null and selectedPublished}">Публикувано</option>
+                    <option value="false" th:selected="${selectedPublished != null and !selectedPublished}">Чернова</option>
                   </select>
                 </div>
 
                 <div class="manage-events__field">
-                  <label for="adminAnnouncementFromDate">From</label>
+                  <label for="adminAnnouncementFromDate">От</label>
                   <input id="adminAnnouncementFromDate" class="manage-events__input" type="date" name="fromDate" th:value="${fromDate}" />
                 </div>
 
                 <div class="manage-events__field">
-                  <label for="adminAnnouncementToDate">To</label>
+                  <label for="adminAnnouncementToDate">До</label>
                   <input id="adminAnnouncementToDate" class="manage-events__input" type="date" name="toDate" th:value="${toDate}" />
                 </div>
               </div>
 
               <div class="manage-events__filter-actions" style="margin-top: 0.9rem;">
-                <button class="events-button events-button--primary" type="submit">Apply Filters</button>
-                <a class="events-link events-link--ghost" th:href="@{/admin/announcements}">Reset</a>
+                <button class="events-button events-button--primary" type="submit">Приложи филтрите</button>
+                <a class="events-link events-link--ghost" th:href="@{/admin/announcements}">Изчисти</a>
               </div>
             </form>
 
@@ -85,10 +84,10 @@
               <article class="manage-event-row" th:each="announcement : ${announcements}">
                 <div class="manage-event-row__top">
                   <div>
-                    <p class="manage-event-row__club" th:text="${announcement.clubName}">Science Club</p>
-                    <h2 class="manage-event-row__title" th:text="${announcement.title != null and !#strings.isEmpty(announcement.title) ? announcement.title : 'Announcement'}">Announcement</h2>
+                    <p class="manage-event-row__club" th:text="${announcement.clubName}">Научен клуб</p>
+                    <h2 class="manage-event-row__title" th:text="${announcement.title != null and !#strings.isEmpty(announcement.title) ? announcement.title : 'Съобщение'}">Съобщение</h2>
                     <p class="manage-event-row__subtitle">
-                      <span th:text="${announcement.authorName != null and !#strings.isEmpty(announcement.authorName) ? 'By ' + announcement.authorName : 'Author unavailable'}">By Teacher</span>
+                      <span th:text="${announcement.authorName != null and !#strings.isEmpty(announcement.authorName) ? 'От ' + announcement.authorName : 'Авторът не е наличен'}">От учител</span>
                     </p>
                   </div>
 
@@ -96,9 +95,9 @@
                     <span
                       class="manage-event-chip"
                       th:classappend="${announcement.isPublished} ? ' manage-event-chip--published' : ' manage-event-chip--draft'"
-                      th:text="${announcement.isPublished} ? 'Published' : 'Draft'"
+                      th:text="${announcement.isPublished} ? 'Публикувано' : 'Чернова'"
                     >
-                      Published
+                      Публикувано
                     </span>
                   </div>
                 </div>
@@ -107,37 +106,37 @@
                   class="manage-announcement-row__body"
                   th:text="${announcement.body != null and #strings.length(announcement.body) > 320 ? #strings.substring(announcement.body, 0, 320) + '...' : announcement.body}"
                 >
-                  Announcement preview text.
+                  Кратък преглед на съобщението.
                 </p>
 
                 <div class="manage-event-row__stats">
                   <div class="manage-event-stat">
-                    <span class="manage-event-stat__label">Created</span>
+                    <span class="manage-event-stat__label">Създадено</span>
                     <span class="manage-event-stat__value" th:text="${announcement.createdAt != null ? T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatDateTime(announcement.createdAt) : '-'}">2026-04-14 09:00</span>
                   </div>
                   <div class="manage-event-stat">
-                    <span class="manage-event-stat__label">Updated</span>
+                    <span class="manage-event-stat__label">Обновено</span>
                     <span class="manage-event-stat__value" th:text="${announcement.updatedAt != null ? T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatDateTime(announcement.updatedAt) : '-'}">2026-04-14 11:00</span>
                   </div>
                   <div class="manage-event-stat">
-                    <span class="manage-event-stat__label">Published At</span>
-                    <span class="manage-event-stat__value" th:text="${announcement.publishedAt != null ? T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatDateTime(announcement.publishedAt) : 'Not published'}">Not published</span>
+                    <span class="manage-event-stat__label">Публикувано на</span>
+                    <span class="manage-event-stat__value" th:text="${announcement.publishedAt != null ? T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatDateTime(announcement.publishedAt) : 'Непубликувано'}">Непубликувано</span>
                   </div>
                 </div>
 
                 <div class="manage-event-row__actions">
-                  <a class="events-link events-link--ghost" th:href="@{/clubs/{id}(id=${announcement.clubId},tab='announcements')}">Open Club</a>
-                  <a class="events-link events-link--primary" th:href="@{/admin/announcements/{id}/edit(id=${announcement.id})}">Edit</a>
-                  <form method="post" th:action="@{/admin/announcements/{id}/delete(id=${announcement.id})}" onsubmit="return confirm('Delete this announcement?');">
+                  <a class="events-link events-link--ghost" th:href="@{/clubs/{id}(id=${announcement.clubId},tab='announcements')}">Отвори клуба</a>
+                  <a class="events-link events-link--primary" th:href="@{/admin/announcements/{id}/edit(id=${announcement.id})}">Редактирай</a>
+                  <form method="post" th:action="@{/admin/announcements/{id}/delete(id=${announcement.id})}" onsubmit="return confirm('Да изтрием ли това съобщение?');">
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                    <button class="events-button events-button--danger" type="submit">Delete</button>
+                    <button class="events-button events-button--danger" type="submit">Изтрий</button>
                   </form>
                 </div>
               </article>
             </section>
 
             <section class="manage-events__empty" th:if="${#lists.isEmpty(announcements)}">
-              No announcements matched the current admin filters.
+              Няма съобщения по текущите администраторски филтри.
             </section>
 
             <section
@@ -145,15 +144,15 @@
               th:if="${announcementPage != null}"
               th:with="currentPage=${announcementPage.totalPages > 0 ? announcementPage.number + 1 : 1}, totalPages=${announcementPage.totalPages > 0 ? announcementPage.totalPages : 1}, lastIndex=${announcementPage.totalPages > 0 ? announcementPage.totalPages - 1 : 0}"
             >
-              <a class="events-link events-link--ghost" th:href="${announcementPage.first} ? '#' : @{/admin/announcements(page=0, clubId=${selectedClubId}, q=${q}, fromDate=${fromDate}, toDate=${toDate}, published=${selectedPublished})}" th:classappend="${announcementPage.first} ? ' disabled' : ''">First</a>
-              <a class="events-link events-link--ghost" th:href="${announcementPage.first} ? '#' : @{/admin/announcements(page=${announcementPage.number - 1}, clubId=${selectedClubId}, q=${q}, fromDate=${fromDate}, toDate=${toDate}, published=${selectedPublished})}" th:classappend="${announcementPage.first} ? ' disabled' : ''">Previous</a>
+              <a class="events-link events-link--ghost" th:href="${announcementPage.first} ? '#' : @{/admin/announcements(page=0, clubId=${selectedClubId}, q=${q}, fromDate=${fromDate}, toDate=${toDate}, published=${selectedPublished})}" th:classappend="${announcementPage.first} ? ' disabled' : ''">Първа</a>
+              <a class="events-link events-link--ghost" th:href="${announcementPage.first} ? '#' : @{/admin/announcements(page=${announcementPage.number - 1}, clubId=${selectedClubId}, q=${q}, fromDate=${fromDate}, toDate=${toDate}, published=${selectedPublished})}" th:classappend="${announcementPage.first} ? ' disabled' : ''">Предишна</a>
               <form class="pagination-input" th:action="@{/admin/announcements}" method="get" data-page-input>
                 <input type="hidden" name="clubId" th:value="${selectedClubId}" />
                 <input type="hidden" name="q" th:value="${q}" />
                 <input type="hidden" name="fromDate" th:value="${fromDate}" />
                 <input type="hidden" name="toDate" th:value="${toDate}" />
                 <input type="hidden" name="published" th:value="${selectedPublished}" />
-                <label class="pagination-input__sr-only" for="adminAnnouncementsPageNumber">Page</label>
+                <label class="pagination-input__sr-only" for="adminAnnouncementsPageNumber">Страница</label>
                 <input
                   id="adminAnnouncementsPageNumber"
                   name="pageDisplay"
@@ -163,10 +162,10 @@
                   th:attr="max=${totalPages}"
                   th:value="${currentPage}"
                 />
-                <span class="pagination-input__state">of <strong th:text="${totalPages}">1</strong></span>
+                <span class="pagination-input__state">от <strong th:text="${totalPages}">1</strong></span>
               </form>
-              <a class="events-link events-link--ghost" th:href="${announcementPage.last} ? '#' : @{/admin/announcements(page=${announcementPage.number + 1}, clubId=${selectedClubId}, q=${q}, fromDate=${fromDate}, toDate=${toDate}, published=${selectedPublished})}" th:classappend="${announcementPage.last} ? ' disabled' : ''">Next</a>
-              <a class="events-link events-link--ghost" th:href="${announcementPage.last} ? '#' : @{/admin/announcements(page=${lastIndex}, clubId=${selectedClubId}, q=${q}, fromDate=${fromDate}, toDate=${toDate}, published=${selectedPublished})}" th:classappend="${announcementPage.last} ? ' disabled' : ''">Last</a>
+              <a class="events-link events-link--ghost" th:href="${announcementPage.last} ? '#' : @{/admin/announcements(page=${announcementPage.number + 1}, clubId=${selectedClubId}, q=${q}, fromDate=${fromDate}, toDate=${toDate}, published=${selectedPublished})}" th:classappend="${announcementPage.last} ? ' disabled' : ''">Следваща</a>
+              <a class="events-link events-link--ghost" th:href="${announcementPage.last} ? '#' : @{/admin/announcements(page=${lastIndex}, clubId=${selectedClubId}, q=${q}, fromDate=${fromDate}, toDate=${toDate}, published=${selectedPublished})}" th:classappend="${announcementPage.last} ? ' disabled' : ''">Последна</a>
             </section>
           </div>
         </div>

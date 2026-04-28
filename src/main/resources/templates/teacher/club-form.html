@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<html lang="bg" xmlns:th="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title th:text="${pageTitle} + ' | ClubsHub Teacher'">Club Form | ClubsHub Teacher</title>
+    <title th:text="${pageTitle} + ' | ClubsHub Учител'">Форма за клуб | ClubsHub Учител</title>
     <link th:href="@{/assets/logo.png}" rel="icon" type="image/png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -23,11 +23,10 @@
       <div class="club-form-main">
         <div class="container club-form-container">
           <section class="club-form-header">
-            <a class="club-form-back" th:href="@{/teacher/clubs}">Back to My Clubs</a>
-            <p class="club-form-tag">Teacher Workspace</p>
-            <h1 th:text="${pageTitle}">Edit Club</h1>
+            <a class="club-form-back" th:href="@{/teacher/clubs}">Назад към моите клубове</a>
+            <h1 th:text="${pageTitle}">Редактирай клуб</h1>
             <p class="club-form-subtitle" th:text="${pageSubtitle}">
-              Update details for the clubs you manage.
+              Обновявайте данните за клубовете, които управлявате.
             </p>
           </section>
 
@@ -57,7 +56,7 @@
 
             <div class="club-form-grid">
               <label class="club-field club-field--full" for="club-name">
-                <span>Club Name <strong>*</strong></span>
+                <span>Име на клуба <strong>*</strong></span>
                 <input
                   id="club-name"
                   name="name"
@@ -70,7 +69,7 @@
               </label>
 
               <label class="club-field club-field--full" for="club-description">
-                <span>Description <strong>*</strong></span>
+                <span>Описание <strong>*</strong></span>
                 <textarea
                   id="club-description"
                   name="description"
@@ -81,7 +80,7 @@
               </label>
 
               <label class="club-field" for="club-scheduleText">
-                <span>Schedule Text</span>
+                <span>Текст за графика</span>
                 <input
                   id="club-scheduleText"
                   name="scheduleText"
@@ -92,7 +91,7 @@
               </label>
 
               <label class="club-field" for="club-room">
-                <span>Room</span>
+                <span>Стая</span>
                 <input
                   id="club-room"
                   name="room"
@@ -103,7 +102,7 @@
               </label>
 
               <label class="club-field" for="club-contactEmail">
-                <span>Contact Email</span>
+                <span>Имейл за контакт</span>
                 <input
                   id="club-contactEmail"
                   name="contactEmail"
@@ -115,7 +114,7 @@
               </label>
 
               <label class="club-field" for="club-contactPhone">
-                <span>Contact Phone</span>
+                <span>Телефон за контакт</span>
                 <input
                   id="club-contactPhone"
                   name="contactPhone"
@@ -128,7 +127,7 @@
             </div>
 
             <label class="club-switch-row" for="club-isActive">
-              <span class="club-switch-row__label">Is Active</span>
+              <span class="club-switch-row__label">Активен</span>
               <span class="club-switch">
                 <input
                   id="club-isActive"
@@ -143,14 +142,14 @@
             </label>
 
             <div class="club-form-actions">
-              <a class="club-button club-button--ghost" th:href="@{/teacher/clubs}">Cancel</a>
+              <a class="club-button club-button--ghost" th:href="@{/teacher/clubs}">Отказ</a>
               <button
                 id="club-form-submit"
                 class="club-button club-button--primary"
                 type="submit"
                 th:text="${submitLabel}"
               >
-                Save Changes
+                Запази промените
               </button>
             </div>
           </form>
@@ -165,7 +164,7 @@
 
             <div class="club-form-grid club-form-grid--uploads">
               <label class="club-field club-field--full" for="club-mainImage">
-                <span>Main Image</span>
+                <span>Основно изображение</span>
                 <input
                   id="club-mainImage"
                   name="mainImage"
@@ -173,17 +172,17 @@
                   accept="image/*"
                 />
                 <small class="club-field__hint" th:if="${clubMainImageUrl != null and !#strings.isEmpty(clubMainImageUrl)}">
-                  Current main image is already set. Uploading a new file will replace it. Maximum size: 5 MB.
+                  Вече има основно изображение. Качването на нов файл ще го замени. Максимален размер: 5 MB.
                 </small>
                 <small class="club-field__hint" th:unless="${clubMainImageUrl != null and !#strings.isEmpty(clubMainImageUrl)}">
-                  Upload a single main image for this club. Maximum size: 5 MB.
+                  Качете едно основно изображение за този клуб. Максимален размер: 5 MB.
                 </small>
               </label>
             </div>
 
             <div class="club-form-actions">
               <button class="club-button club-button--primary" type="submit">
-                Upload Main Image
+                Качване на основно изображение
               </button>
             </div>
           </form>
@@ -192,20 +191,19 @@
             class="club-form club-form--stacked club-form--danger"
             method="post"
             th:action="@{/teacher/clubs/{id}/delete(id=${clubId})}"
-            onsubmit="return confirm('Delete this club? Future events will be cancelled and active memberships will be marked as left.');"
+            onsubmit="return confirm('Да изтрием ли този клуб? Бъдещите събития ще бъдат отменени, а активните членства ще бъдат отбелязани като напуснали.');"
           >
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
             <div class="club-form-section__header">
-              <h2>Delete Club</h2>
+              <h2>Изтрий клуба</h2>
               <p class="club-form-section__subtitle">
-                Deleting this club cancels its future events and ends active memberships by marking them as left.
-                Historical event and participation reporting still keeps past activity from when the club existed.
+                Изтриването на този клуб отменя бъдещите му събития и приключва активните членства, като ги отбелязва като напуснали. Историческите справки за събития и участия запазват миналата активност от периода, в който клубът е съществувал.
               </p>
             </div>
 
             <div class="club-form-actions">
-              <button class="club-button club-button--danger" type="submit">Delete Club</button>
+              <button class="club-button club-button--danger" type="submit">Изтрий клуба</button>
             </div>
           </form>
         </div>

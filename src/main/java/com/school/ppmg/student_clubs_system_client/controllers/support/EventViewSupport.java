@@ -4,6 +4,7 @@ import com.school.ppmg.student_clubs_system_client.dtos.auth.AuthUserDto;
 import com.school.ppmg.student_clubs_system_client.dtos.event.EventDto;
 import com.school.ppmg.student_clubs_system_client.dtos.event.EventListDto;
 import com.school.ppmg.student_clubs_system_client.dtos.event.EventParticipationDto;
+import com.school.ppmg.student_clubs_system_client.enums.DisplayText;
 import com.school.ppmg.student_clubs_system_client.enums.RegistrationStatus;
 import com.school.ppmg.student_clubs_system_client.enums.UserRole;
 import feign.FeignException;
@@ -216,6 +217,10 @@ public final class EventViewSupport {
     public static String formatLabel(Enum<?> value) {
         if (value == null) {
             return "";
+        }
+
+        if (value instanceof DisplayText displayText) {
+            return displayText.getText();
         }
 
         String normalized = value.name().toLowerCase().replace('_', ' ');

@@ -1,20 +1,20 @@
 <div th:fragment="content">
   <div class="tab-message" th:if="${error}" th:text="${error}">
-    Announcements are not available yet.
+    Съобщенията все още не са налични.
   </div>
 
   <div th:if="${error == null}">
     <div class="tab-message" th:if="${announcements == null or #lists.isEmpty(announcements)}">
-      No announcements yet.
+      Все още няма съобщения.
     </div>
     <ul class="tab-list tab-list--announcements" th:if="${announcements != null and !#lists.isEmpty(announcements)}">
       <li class="announcement-card" th:each="announcement : ${announcements}">
         <div class="announcement-card__header">
           <h3
             class="announcement-card__title"
-            th:text="${announcement.title != null and !#strings.isEmpty(announcement.title) ? announcement.title : 'Announcement'}"
+            th:text="${announcement.title != null and !#strings.isEmpty(announcement.title) ? announcement.title : 'Съобщение'}"
           >
-            Announcement
+            Съобщение
           </h3>
           <p
             class="announcement-card__meta"
@@ -23,7 +23,7 @@
                 ? T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatDateTime(announcement.publishedAt)
                 : (announcement.updatedAt != null
                   ? T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatDateTime(announcement.updatedAt)
-                  : 'Recently updated')
+                  : 'Обновено наскоро')
             }"
           >
             2026-04-11 10:00
@@ -31,15 +31,15 @@
         </div>
         <p
           class="announcement-card__body"
-          th:text="${announcement.body != null and !#strings.isEmpty(announcement.body) ? announcement.body : 'No details provided.'}"
+          th:text="${announcement.body != null and !#strings.isEmpty(announcement.body) ? announcement.body : 'Няма предоставени детайли.'}"
         >
-          Announcement details.
+          Детайли за съобщението.
         </p>
         <p
           class="announcement-card__footer"
           th:if="${announcement.authorName != null and !#strings.isEmpty(announcement.authorName)}"
         >
-          Posted by <span th:text="${announcement.authorName}">Teacher</span>
+          Публикувано от <span th:text="${announcement.authorName}">Учител</span>
         </p>
       </li>
     </ul>

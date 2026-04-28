@@ -65,7 +65,7 @@ public class EventController {
 
         if ("mine".equals(normalizedScope) && !EventViewSupport.isStudent(sessionUser)) {
             model.addAttribute("eventPage", emptyPage(page, EventViewSupport.BROWSER_PAGE_SIZE));
-            model.addAttribute("scopeMessage", "Only students can filter events by active registration.");
+            model.addAttribute("scopeMessage", "Само ученици могат да филтрират събития по активна регистрация.");
             return "events/index";
         }
 
@@ -163,21 +163,21 @@ public class EventController {
             RedirectAttributes redirectAttributes
     ) {
         if (sessionUser == null) {
-            redirectAttributes.addFlashAttribute("success", "Please sign in to register for events.");
+            redirectAttributes.addFlashAttribute("success", "Влезте, за да се записвате за събития.");
             return "redirect:/login";
         }
 
         if (!EventViewSupport.isStudent(sessionUser)) {
-            redirectAttributes.addFlashAttribute("eventActionWarningMessage", "Only students can register for events.");
+            redirectAttributes.addFlashAttribute("eventActionWarningMessage", "Само ученици могат да се записват за събития.");
             return "redirect:" + resolveReturnTo(returnTo, "/events/" + id);
         }
 
         try {
             eventClient.register(id);
-            redirectAttributes.addFlashAttribute("eventActionSuccessMessage", "Registration confirmed.");
+            redirectAttributes.addFlashAttribute("eventActionSuccessMessage", "Регистрацията е потвърдена.");
         } catch (FeignException ex) {
             if (ex.status() == HttpStatus.UNAUTHORIZED.value()) {
-                redirectAttributes.addFlashAttribute("success", "Please sign in to register for events.");
+                redirectAttributes.addFlashAttribute("success", "Влезте, за да се записвате за събития.");
                 return "redirect:/login";
             }
 
@@ -186,7 +186,7 @@ public class EventController {
                         "eventActionWarningMessage",
                         EventViewSupport.firstNonBlank(
                                 EventViewSupport.extractUserMessage(ex),
-                                "You are not allowed to register for this event."
+                                "Нямате право да се запишете за това събитие."
                         )
                 );
             } else {
@@ -205,21 +205,21 @@ public class EventController {
             RedirectAttributes redirectAttributes
     ) {
         if (sessionUser == null) {
-            redirectAttributes.addFlashAttribute("success", "Please sign in to manage your event registrations.");
+            redirectAttributes.addFlashAttribute("success", "Влезте, за да управлявате регистрациите си за събития.");
             return "redirect:/login";
         }
 
         if (!EventViewSupport.isStudent(sessionUser)) {
-            redirectAttributes.addFlashAttribute("eventActionWarningMessage", "Only students can cancel event registrations.");
+            redirectAttributes.addFlashAttribute("eventActionWarningMessage", "Само ученици могат да отменят регистрации за събития.");
             return "redirect:" + resolveReturnTo(returnTo, "/events/" + id);
         }
 
         try {
             eventClient.cancelRegistration(id);
-            redirectAttributes.addFlashAttribute("eventActionSuccessMessage", "Registration cancelled.");
+            redirectAttributes.addFlashAttribute("eventActionSuccessMessage", "Регистрацията е отменена.");
         } catch (FeignException ex) {
             if (ex.status() == HttpStatus.UNAUTHORIZED.value()) {
-                redirectAttributes.addFlashAttribute("success", "Please sign in to manage your event registrations.");
+                redirectAttributes.addFlashAttribute("success", "Влезте, за да управлявате регистрациите си за събития.");
                 return "redirect:/login";
             }
 
@@ -228,7 +228,7 @@ public class EventController {
                         "eventActionWarningMessage",
                         EventViewSupport.firstNonBlank(
                                 EventViewSupport.extractUserMessage(ex),
-                                "You are not allowed to cancel this registration."
+                                "Нямате право да отмените тази регистрация."
                         )
                 );
             } else {
@@ -258,7 +258,7 @@ public class EventController {
         }
 
         if (!EventViewSupport.isStudent(sessionUser)) {
-            model.addAttribute("accessMessage", "Only students can view their event registrations.");
+            model.addAttribute("accessMessage", "Само ученици могат да виждат регистрациите си за събития.");
             return "me/events";
         }
 
@@ -280,7 +280,7 @@ public class EventController {
             }
 
             if (ex.status() == HttpStatus.FORBIDDEN.value()) {
-                model.addAttribute("accessMessage", "Only students can view their event registrations.");
+                model.addAttribute("accessMessage", "Само ученици могат да виждат регистрациите си за събития.");
                 return "me/events";
             }
 
@@ -370,9 +370,9 @@ public class EventController {
         }
 
         return switch (EventViewSupport.resolveStatus(ex)) {
-            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Please review the event filters and try again.";
-            case NOT_FOUND -> "The events endpoint is not available right now.";
-            default -> "Unable to load events right now. Please try again.";
+            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Прегледайте филтрите за събития и опитайте отново.";
+            case NOT_FOUND -> "Събитията не са налични в момента.";
+            default -> "Събитията не могат да се заредят в момента. Опитайте отново.";
         };
     }
 
@@ -383,9 +383,9 @@ public class EventController {
         }
 
         return switch (EventViewSupport.resolveStatus(ex)) {
-            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Please review the selected status filter and try again.";
-            case NOT_FOUND -> "Your event registrations are not available right now.";
-            default -> "Unable to load your events right now. Please try again.";
+            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Прегледайте избрания филтър за статус и опитайте отново.";
+            case NOT_FOUND -> "Регистрациите ви за събития не са налични в момента.";
+            default -> "Вашите събития не могат да се заредят в момента. Опитайте отново.";
         };
     }
 
@@ -396,10 +396,10 @@ public class EventController {
         }
 
         return switch (EventViewSupport.resolveStatus(ex)) {
-            case CONFLICT -> "You already have a registration for this event.";
-            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "This event is no longer open for registration.";
-            case NOT_FOUND -> "This event is not available.";
-            default -> "Unable to complete registration right now. Please try again.";
+            case CONFLICT -> "Вече имате регистрация за това събитие.";
+            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Това събитие вече не е отворено за записване.";
+            case NOT_FOUND -> "Това събитие не е налично.";
+            default -> "Регистрацията не може да бъде завършена в момента. Опитайте отново.";
         };
     }
 
@@ -410,10 +410,10 @@ public class EventController {
         }
 
         return switch (EventViewSupport.resolveStatus(ex)) {
-            case CONFLICT -> "This registration has already been updated.";
-            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "This registration can no longer be cancelled.";
-            case NOT_FOUND -> "This event registration was not found.";
-            default -> "Unable to cancel the registration right now. Please try again.";
+            case CONFLICT -> "Тази регистрация вече е обновена.";
+            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Тази регистрация вече не може да бъде отменена.";
+            case NOT_FOUND -> "Регистрацията за това събитие не беше намерена.";
+            default -> "Регистрацията не може да бъде отменена в момента. Опитайте отново.";
         };
     }
 }

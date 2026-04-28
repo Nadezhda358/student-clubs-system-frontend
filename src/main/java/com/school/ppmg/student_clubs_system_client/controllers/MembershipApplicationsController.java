@@ -45,7 +45,7 @@ public class MembershipApplicationsController {
         }
 
         if (sessionUser.role() != UserRole.STUDENT) {
-            model.addAttribute("accessMessage", "Only students can view membership applications.");
+            model.addAttribute("accessMessage", "Само ученици могат да виждат кандидатурите за членство.");
             return "me/membership-applications";
         }
 
@@ -69,7 +69,7 @@ public class MembershipApplicationsController {
             }
 
             if (ex.status() == HttpStatus.FORBIDDEN.value()) {
-                model.addAttribute("accessMessage", "Only students can view membership applications.");
+                model.addAttribute("accessMessage", "Само ученици могат да виждат кандидатурите за членство.");
                 return "me/membership-applications";
             }
 
@@ -90,7 +90,7 @@ public class MembershipApplicationsController {
         if (sessionUser == null) {
             redirectAttributes.addFlashAttribute(
                     "success",
-                    "Please sign in to manage your membership applications."
+                    "Влезте, за да управлявате кандидатурите си за членство."
             );
             return "redirect:/login";
         }
@@ -98,19 +98,19 @@ public class MembershipApplicationsController {
         if (sessionUser.role() != UserRole.STUDENT) {
             redirectAttributes.addFlashAttribute(
                     "membershipActionWarningMessage",
-                    "Only students can cancel membership applications."
+                    "Само ученици могат да отменят кандидатури за членство."
             );
             return redirectToMembershipApplications(status, page);
         }
 
         try {
             membershipApplicationClient.cancelMyApplication(id);
-            redirectAttributes.addFlashAttribute("membershipActionSuccessMessage", "Application cancelled.");
+            redirectAttributes.addFlashAttribute("membershipActionSuccessMessage", "Кандидатурата е отменена.");
         } catch (FeignException ex) {
             if (ex.status() == HttpStatus.UNAUTHORIZED.value()) {
                 redirectAttributes.addFlashAttribute(
                         "success",
-                        "Please sign in to manage your membership applications."
+                        "Влезте, за да управлявате кандидатурите си за членство."
                 );
                 return "redirect:/login";
             }
@@ -118,7 +118,7 @@ public class MembershipApplicationsController {
             if (resolveStatus(ex) == HttpStatus.FORBIDDEN) {
                 redirectAttributes.addFlashAttribute(
                         "membershipActionWarningMessage",
-                        firstNonBlank(extractUserMessage(ex), "You are not allowed to cancel this application.")
+                        firstNonBlank(extractUserMessage(ex), "Нямате право да отменяте тази кандидатура.")
                 );
             } else {
                 redirectAttributes.addFlashAttribute(
@@ -138,11 +138,11 @@ public class MembershipApplicationsController {
         }
 
         return switch (resolveStatus(ex)) {
-            case NOT_FOUND -> "Membership applications endpoint is not available.";
-            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Invalid status filter. Please choose a valid option.";
-            case UNAUTHORIZED -> "Please sign in to view your applications.";
-            case FORBIDDEN -> "Only students can view membership applications.";
-            default -> "Unable to load your applications right now. Please try again.";
+            case NOT_FOUND -> "Кандидатурите за членство не са налични в момента.";
+            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Невалиден филтър за статус. Изберете валидна опция.";
+            case UNAUTHORIZED -> "Влезте, за да видите кандидатурите си.";
+            case FORBIDDEN -> "Само ученици могат да виждат кандидатурите за членство.";
+            default -> "Вашите кандидатури не могат да се заредят в момента. Опитайте отново.";
         };
     }
 
@@ -153,10 +153,10 @@ public class MembershipApplicationsController {
         }
 
         return switch (resolveStatus(ex)) {
-            case NOT_FOUND -> "This membership application was not found.";
-            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "This application can no longer be cancelled.";
-            case CONFLICT -> "This membership application has already been updated.";
-            default -> "Unable to cancel this membership application right now. Please try again.";
+            case NOT_FOUND -> "Тази кандидатура за членство не беше намерена.";
+            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Тази кандидатура вече не може да бъде отменена.";
+            case CONFLICT -> "Тази кандидатура за членство вече е обновена.";
+            default -> "Кандидатурата за членство не може да бъде отменена в момента. Опитайте отново.";
         };
     }
 

@@ -100,8 +100,8 @@ public class AdminReportController {
         }
 
         return switch (EventViewSupport.resolveStatus(ex)) {
-            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Please review the report date filters and try again.";
-            default -> "Unable to load overview metrics right now. Please try again.";
+            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Прегледайте датите за справката и опитайте отново.";
+            default -> "Обобщените показатели не могат да се заредят в момента. Опитайте отново.";
         };
     }
 
@@ -112,8 +112,8 @@ public class AdminReportController {
         }
 
         return switch (EventViewSupport.resolveStatus(ex)) {
-            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Please review the timeline filters and try again.";
-            default -> "Unable to load events-by-period data right now. Please try again.";
+            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Прегледайте филтрите за хронологията и опитайте отново.";
+            default -> "Данните за събития по период не могат да се заредят в момента. Опитайте отново.";
         };
     }
 }

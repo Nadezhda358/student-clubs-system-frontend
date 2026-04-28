@@ -14,7 +14,7 @@ public record ManageClubDto(
         @Email @Size(max = 255) String contactEmail,
         @Pattern(
                 regexp = "^$|^(?=.*\\d)\\+?[\\d()\\s-]+$",
-                message = "contactPhone can contain only digits, spaces, parentheses, hyphens, and an optional leading +"
+                message = "Телефонът за контакт може да съдържа само цифри, интервали, скоби, тирета и незадължителен начален +."
         )
         @Size(max = 40) String contactPhone,
         @NotNull Boolean isActive

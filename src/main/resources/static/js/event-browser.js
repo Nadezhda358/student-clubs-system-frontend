@@ -10,7 +10,7 @@
     minute: "2-digit",
     hourCycle: "h23",
   });
-  const MONTH_LABEL_FORMATTER = new Intl.DateTimeFormat(undefined, {
+  const MONTH_LABEL_FORMATTER = new Intl.DateTimeFormat("bg-BG", {
     timeZone: BUSINESS_TIME_ZONE,
     month: "long",
     year: "numeric",
@@ -179,7 +179,7 @@
           : null;
 
         return {
-          title: seed.dataset.title || "Event",
+          title: seed.dataset.title || "Събитие",
           club: seed.dataset.club || "",
           location: seed.dataset.location || "",
           href: seed.dataset.href || "#",
@@ -219,7 +219,7 @@
     const prev = document.createElement("button");
     prev.type = "button";
     prev.className = "event-calendar__nav";
-    prev.textContent = "Previous";
+    prev.textContent = "Предишен";
 
     const label = document.createElement("p");
     label.className = "event-calendar__label";
@@ -227,7 +227,7 @@
     const next = document.createElement("button");
     next.type = "button";
     next.className = "event-calendar__nav";
-    next.textContent = "Next";
+    next.textContent = "Следващ";
 
     header.appendChild(prev);
     header.appendChild(label);
@@ -235,7 +235,7 @@
 
     const weekdays = document.createElement("div");
     weekdays.className = "event-calendar__weekdays";
-    ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].forEach((day) => {
+    ["Пон", "Вто", "Сря", "Чет", "Пет", "Съб", "Нед"].forEach((day) => {
       const cell = document.createElement("span");
       cell.textContent = day;
       weekdays.appendChild(cell);
@@ -246,7 +246,7 @@
 
     const empty = document.createElement("div");
     empty.className = "event-calendar__empty";
-    empty.textContent = "No events scheduled for this month.";
+    empty.textContent = "Няма планирани събития за този месец.";
 
     shell.appendChild(header);
     shell.appendChild(weekdays);
@@ -323,7 +323,7 @@
       if (hiddenCount > 0) {
         const more = document.createElement("span");
         more.className = "event-calendar__more";
-        more.textContent = `+${hiddenCount} more`;
+        more.textContent = `+${hiddenCount} още`;
         dayCell.appendChild(more);
       }
 

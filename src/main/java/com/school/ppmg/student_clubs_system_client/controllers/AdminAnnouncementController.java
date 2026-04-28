@@ -89,10 +89,9 @@ public class AdminAnnouncementController {
                 model,
                 new AnnouncementFormRequest(),
                 loadClubs(),
-                "Admin Workspace",
-                "Create Announcement",
-                "Publish a message to a club and control whether it is visible immediately.",
-                "Create Announcement",
+                "Създай съобщение",
+                "Публикувайте съобщение към клуб и изберете дали да бъде видимо веднага.",
+                "Създай съобщение",
                 "/admin/announcements/create",
                 "/admin/announcements"
         );
@@ -112,10 +111,9 @@ public class AdminAnnouncementController {
                     model,
                     form,
                     clubOptions,
-                    "Admin Workspace",
-                    "Create Announcement",
-                    "Publish a message to a club and control whether it is visible immediately.",
-                    "Create Announcement",
+                    "Създай съобщение",
+                    "Публикувайте съобщение към клуб и изберете дали да бъде видимо веднага.",
+                    "Създай съобщение",
                     "/admin/announcements/create",
                     "/admin/announcements"
             );
@@ -125,17 +123,16 @@ public class AdminAnnouncementController {
 
         try {
             adminAnnouncementClient.createAdminAnnouncement(toUpsertAnnouncementDto(form));
-            redirectAttributes.addFlashAttribute("successMessage", "Announcement created successfully.");
+            redirectAttributes.addFlashAttribute("successMessage", "Съобщението е създадено успешно.");
             return "redirect:/admin/announcements";
         } catch (FeignException ex) {
             populateFormModel(
                     model,
                     form,
                     clubOptions,
-                    "Admin Workspace",
-                    "Create Announcement",
-                    "Publish a message to a club and control whether it is visible immediately.",
-                    "Create Announcement",
+                    "Създай съобщение",
+                    "Публикувайте съобщение към клуб и изберете дали да бъде видимо веднага.",
+                    "Създай съобщение",
                     "/admin/announcements/create",
                     "/admin/announcements"
             );
@@ -156,10 +153,9 @@ public class AdminAnnouncementController {
                     model,
                     toFormRequest(announcement),
                     loadClubs(),
-                    "Admin Workspace",
-                    "Edit Announcement",
-                    "Update club communication and control whether it remains visible to students.",
-                    "Save Changes",
+                    "Редактирай съобщение",
+                    "Обновете клубното съобщение и неговата видимост за учениците.",
+                    "Запази промените",
                     "/admin/announcements/" + id + "/edit",
                     "/admin/announcements"
             );
@@ -188,10 +184,9 @@ public class AdminAnnouncementController {
                     model,
                     form,
                     clubOptions,
-                    "Admin Workspace",
-                    "Edit Announcement",
-                    "Update club communication and control whether it remains visible to students.",
-                    "Save Changes",
+                    "Редактирай съобщение",
+                    "Обновете клубното съобщение и неговата видимост за учениците.",
+                    "Запази промените",
                     "/admin/announcements/" + id + "/edit",
                     "/admin/announcements"
             );
@@ -202,7 +197,7 @@ public class AdminAnnouncementController {
 
         try {
             adminAnnouncementClient.updateAdminAnnouncement(id, toUpsertAnnouncementDto(form));
-            redirectAttributes.addFlashAttribute("successMessage", "Announcement updated successfully.");
+            redirectAttributes.addFlashAttribute("successMessage", "Съобщението е обновено успешно.");
             return "redirect:/admin/announcements";
         } catch (FeignException.NotFound ex) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -214,10 +209,9 @@ public class AdminAnnouncementController {
                     model,
                     form,
                     clubOptions,
-                    "Admin Workspace",
-                    "Edit Announcement",
-                    "Update club communication and control whether it remains visible to students.",
-                    "Save Changes",
+                    "Редактирай съобщение",
+                    "Обновете клубното съобщение и неговата видимост за учениците.",
+                    "Запази промените",
                     "/admin/announcements/" + id + "/edit",
                     "/admin/announcements"
             );
@@ -234,7 +228,7 @@ public class AdminAnnouncementController {
     ) {
         try {
             adminAnnouncementClient.deleteAdminAnnouncement(id);
-            redirectAttributes.addFlashAttribute("successMessage", "Announcement deleted successfully.");
+            redirectAttributes.addFlashAttribute("successMessage", "Съобщението е изтрито успешно.");
         } catch (FeignException ex) {
             redirectAttributes.addFlashAttribute("errorMessage", toDeleteErrorMessage(ex));
         }
@@ -255,14 +249,12 @@ public class AdminAnnouncementController {
             Model model,
             AnnouncementFormRequest form,
             List<ClubListDto> clubOptions,
-            String workspaceLabel,
             String pageTitle,
             String pageSubtitle,
             String submitLabel,
             String formAction,
             String cancelHref
     ) {
-        model.addAttribute("workspaceLabel", workspaceLabel);
         model.addAttribute("pageTitle", pageTitle);
         model.addAttribute("pageSubtitle", pageSubtitle);
         model.addAttribute("submitLabel", submitLabel);
@@ -274,15 +266,15 @@ public class AdminAnnouncementController {
 
     private String validateAnnouncementForm(AnnouncementFormRequest form) {
         if (form.getClubId() == null) {
-            return "Please choose a club.";
+            return "Изберете клуб.";
         }
 
         if (EventViewSupport.trimToNull(form.getTitle()) == null) {
-            return "Announcement title is required.";
+            return "Заглавието на съобщението е задължително.";
         }
 
         if (EventViewSupport.trimToNull(form.getBody()) == null) {
-            return "Announcement body is required.";
+            return "Текстът на съобщението е задължителен.";
         }
 
         return null;
@@ -313,8 +305,8 @@ public class AdminAnnouncementController {
         }
 
         return switch (EventViewSupport.resolveStatus(ex)) {
-            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Please review the filters and try again.";
-            default -> "Unable to load announcements right now. Please try again.";
+            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Прегледайте филтрите и опитайте отново.";
+            default -> "Съобщенията не могат да се заредят в момента. Опитайте отново.";
         };
     }
 
@@ -326,12 +318,12 @@ public class AdminAnnouncementController {
 
         return switch (EventViewSupport.resolveStatus(ex)) {
             case BAD_REQUEST, UNPROCESSABLE_ENTITY -> creating
-                    ? "Please review the new announcement details and try again."
-                    : "Please review the updated announcement details and try again.";
-            case NOT_FOUND -> "The selected club or announcement is no longer available.";
+                    ? "Прегледайте данните за новото съобщение и опитайте отново."
+                    : "Прегледайте обновените данни за съобщението и опитайте отново.";
+            case NOT_FOUND -> "Избраният клуб или съобщение вече не е налично.";
             default -> creating
-                    ? "Unable to create the announcement right now. Please try again."
-                    : "Unable to save the announcement right now. Please try again.";
+                    ? "Съобщението не може да бъде създадено в момента. Опитайте отново."
+                    : "Съобщението не може да бъде запазено в момента. Опитайте отново.";
         };
     }
 
@@ -342,8 +334,8 @@ public class AdminAnnouncementController {
         }
 
         return switch (EventViewSupport.resolveStatus(ex)) {
-            case NOT_FOUND -> "This announcement no longer exists.";
-            default -> "Unable to delete the announcement right now. Please try again.";
+            case NOT_FOUND -> "Това съобщение вече не съществува.";
+            default -> "Съобщението не може да бъде изтрито в момента. Опитайте отново.";
         };
     }
 }

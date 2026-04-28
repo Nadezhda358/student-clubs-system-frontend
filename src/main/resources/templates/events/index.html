@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<html lang="bg" xmlns:th="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Events | ClubsHub</title>
+    <title>Събития | ClubsHub</title>
     <link th:href="@{/assets/logo.png}" rel="icon" type="image/png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -23,10 +23,10 @@
       <div class="container">
         <div class="events-shell">
           <section class="events-hero">
-            <p class="events-hero__tag">Campus Calendar</p>
-            <h1>Browse Events</h1>
+            <p class="events-hero__tag">Училищен календар</p>
+            <h1>Разгледай събития</h1>
             <p class="events-hero__subtitle">
-              Explore upcoming club activity, compare schedules in a list or calendar, and jump into the events that fit your interests.
+              Разгледайте предстоящите клубни дейности, сравнете графиците в списък или календар и се включете в събитията, които ви интересуват.
             </p>
           </section>
 
@@ -39,14 +39,14 @@
           <form method="get" th:action="@{/events}" class="events-filters">
             <div class="events-filters__grid">
               <div class="events-filter events-filter--search">
-                <label for="eventsSearch">Search</label>
-                <input id="eventsSearch" class="events-input" type="text" name="q" th:value="${q}" placeholder="Search by title or keyword" />
+                <label for="eventsSearch">Търсене</label>
+                <input id="eventsSearch" class="events-input" type="text" name="q" th:value="${q}" placeholder="Търсене по заглавие или ключова дума" />
               </div>
 
               <div class="events-filter events-filter--club">
-                <label for="eventsClub">Club</label>
+                <label for="eventsClub">Клуб</label>
                 <select id="eventsClub" class="events-select" name="clubId">
-                  <option value="">All clubs</option>
+                  <option value="">Всички клубове</option>
                   <option
                     th:each="club : ${clubOptions}"
                     th:value="${club.id}"
@@ -57,20 +57,20 @@
               </div>
 
               <div class="events-filter events-filter--scope">
-                <label for="eventsScope">Show</label>
+                <label for="eventsScope">Покажи</label>
                 <select id="eventsScope" class="events-select" name="scope">
-                  <option value="all" th:selected="${scope == null or scope == 'all'}">All events</option>
-                  <option value="mine" th:selected="${scope == 'mine'}">My registered events</option>
+                  <option value="all" th:selected="${scope == null or scope == 'all'}">Всички събития</option>
+                  <option value="mine" th:selected="${scope == 'mine'}">Моите регистрации за събития</option>
                 </select>
               </div>
 
               <div class="events-filter events-filter--date">
-                <label for="eventsFromDate">From</label>
+                <label for="eventsFromDate">От</label>
                 <input id="eventsFromDate" class="events-input" type="date" name="fromDate" th:value="${fromDate}" />
               </div>
 
               <div class="events-filter events-filter--date">
-                <label for="eventsToDate">To</label>
+                <label for="eventsToDate">До</label>
                 <input id="eventsToDate" class="events-input" type="date" name="toDate" th:value="${toDate}" />
               </div>
             </div>
@@ -78,25 +78,25 @@
             <input type="hidden" name="view" th:value="${view}" />
 
             <div class="events-filter-actions">
-              <button class="events-button events-button--primary" type="submit">Apply Filters</button>
-              <a class="events-link events-link--ghost" th:href="@{/events}">Reset</a>
+              <button class="events-button events-button--primary" type="submit">Приложи филтрите</button>
+              <a class="events-link events-link--ghost" th:href="@{/events}">Изчисти</a>
             </div>
           </form>
 
           <section class="events-browser" data-event-browser th:attr="data-default-view=${view}">
             <div class="events-browser__toolbar">
-              <p class="events-browser__meta" th:text="${eventPage != null ? 'Showing ' + eventPage.numberOfElements + ' of ' + eventPage.totalElements + ' events' : 'Browse the latest campus events'}">
-                Browse the latest campus events
+              <p class="events-browser__meta" th:text="${eventPage != null ? 'Показани ' + eventPage.numberOfElements + ' от ' + eventPage.totalElements + ' събития' : 'Разгледайте най-новите училищни събития'}">
+                Разгледайте най-новите училищни събития
               </p>
 
-              <div class="events-view-toggle" role="group" aria-label="Switch event view">
-                <button class="events-view-toggle__button" type="button" data-event-view-btn="list">List</button>
-                <button class="events-view-toggle__button" type="button" data-event-view-btn="calendar">Calendar</button>
+              <div class="events-view-toggle" role="group" aria-label="Превключване на изгледа за събития">
+                <button class="events-view-toggle__button" type="button" data-event-view-btn="list">Списък</button>
+                <button class="events-view-toggle__button" type="button" data-event-view-btn="calendar">Календар</button>
               </div>
             </div>
 
             <div class="events-empty" th:if="${#lists.isEmpty(events) and loadErrorMessage == null}">
-              No events matched the current filters.
+              Няма събития по текущите филтри.
             </div>
 
             <section class="events-pane" data-event-pane="list">
@@ -116,7 +116,7 @@
                       class="event-card__image"
                       th:if="${event.mainImageUrl != null and !#strings.isEmpty(event.mainImageUrl)}"
                       th:src="${event.mainImageUrl}"
-                      alt="Event image"
+                      alt="Изображение на събитието"
                     />
                     <span
                       class="event-card__placeholder"
@@ -128,31 +128,31 @@
                   </a>
 
                   <header class="event-card__header">
-                    <span class="event-card__club" th:text="${event.clubName}">Science Club</span>
+                    <span class="event-card__club" th:text="${event.clubName}">Научен клуб</span>
                     <h2 class="event-card__title">
-                      <a th:href="@{/events/{id}(id=${event.id})}" th:text="${event.title}">Event title</a>
+                      <a th:href="@{/events/{id}(id=${event.id})}" th:text="${event.title}">Заглавие на събитие</a>
                     </h2>
                   </header>
 
                   <div class="event-card__chips">
-                    <span class="event-chip" th:text="${T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatLabel(event.audience)}">All students</span>
+                    <span class="event-chip" th:text="${T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatLabel(event.audience)}">Всички ученици</span>
                     <span
                       class="event-chip"
                       th:classappend="${event.status.name() == 'CANCELLED'} ? ' event-chip--cancelled' : (${registrationCutoffPassed} ? ' event-chip--expired' : (${event.registrationOpen} ? ' event-chip--open' : ' event-chip--closed'))"
-                      th:text="${event.status.name() == 'CANCELLED' ? 'Cancelled' : (registrationCutoffPassed ? 'Sign-up closed' : (event.registrationOpen ? 'Registration open' : 'Registration closed'))}"
+                      th:text="${event.status.name() == 'CANCELLED' ? 'Отменено' : (registrationCutoffPassed ? 'Записването е затворено' : (event.registrationOpen ? 'Записването е отворено' : 'Записването е затворено'))}"
                     >
-                      Registration open
+                      Записването е отворено
                     </span>
                   </div>
 
                   <div class="event-card__meta">
                     <span th:text="${event.startAt != null ? T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatDateTime(event.startAt) : '-'}">2026-04-18 16:00</span>
-                    <span th:text="${event.location != null and !#strings.isEmpty(event.location) ? event.location : 'Location to be announced'}">Main Hall</span>
+                    <span th:text="${event.location != null and !#strings.isEmpty(event.location) ? event.location : 'Мястото ще бъде обявено'}">Основна зала</span>
                   </div>
 
                   <footer class="event-card__footer">
-                    <span class="event-card__capacity" th:text="${registrationCutoffPassed ? 'Sign-up no longer available' : (event.availableSpots != null ? event.availableSpots + ' spots left' : 'Capacity flexible')}">12 spots left</span>
-                    <a class="events-link events-link--ghost" th:href="@{/events/{id}(id=${event.id})}">View Details</a>
+                    <span class="event-card__capacity" th:text="${registrationCutoffPassed ? 'Записването вече не е налично' : (event.availableSpots != null ? event.availableSpots + ' свободни места' : 'Капацитетът е гъвкав')}">Остават 12 места</span>
+                    <a class="events-link events-link--ghost" th:href="@{/events/{id}(id=${event.id})}">Виж детайли</a>
                   </footer>
                 </article>
               </div>
@@ -188,7 +188,7 @@
               th:href="${eventPage.first} ? '#' : @{/events(page=0, clubId=${selectedClubId}, q=${q}, fromDate=${fromDate}, toDate=${toDate}, view=${view}, scope=${scope})}"
               th:attr="aria-disabled=${eventPage.first}"
             >
-              First
+              Първа
             </a>
             <a
               class="events-link events-link--ghost"
@@ -196,7 +196,7 @@
               th:href="${eventPage.first} ? '#' : @{/events(page=${eventPage.number - 1}, clubId=${selectedClubId}, q=${q}, fromDate=${fromDate}, toDate=${toDate}, view=${view}, scope=${scope})}"
               th:attr="aria-disabled=${eventPage.first}"
             >
-              Previous
+              Предишна
             </a>
 
             <form class="events-page-input" th:action="@{/events}" method="get" data-event-page-input>
@@ -206,7 +206,7 @@
               <input type="hidden" name="toDate" th:value="${toDate}" />
               <input type="hidden" name="view" th:value="${view}" />
               <input type="hidden" name="scope" th:value="${scope}" />
-              <label class="events-sr-only" for="eventsPageNumber">Page</label>
+              <label class="events-sr-only" for="eventsPageNumber">Страница</label>
               <input
                 id="eventsPageNumber"
                 name="pageDisplay"
@@ -216,7 +216,7 @@
                 th:attr="max=${totalPages}"
                 th:value="${currentPage}"
               />
-              <span class="events-pagination__state">of <strong th:text="${totalPages}">1</strong></span>
+              <span class="events-pagination__state">от <strong th:text="${totalPages}">1</strong></span>
             </form>
 
             <a
@@ -225,7 +225,7 @@
               th:href="${eventPage.last} ? '#' : @{/events(page=${eventPage.number + 1}, clubId=${selectedClubId}, q=${q}, fromDate=${fromDate}, toDate=${toDate}, view=${view}, scope=${scope})}"
               th:attr="aria-disabled=${eventPage.last}"
             >
-              Next
+              Следваща
             </a>
             <a
               class="events-link events-link--ghost"
@@ -233,7 +233,7 @@
               th:href="${eventPage.last} ? '#' : @{/events(page=${lastIndex}, clubId=${selectedClubId}, q=${q}, fromDate=${fromDate}, toDate=${toDate}, view=${view}, scope=${scope})}"
               th:attr="aria-disabled=${eventPage.last}"
             >
-              Last
+              Последна
             </a>
           </section>
         </div>

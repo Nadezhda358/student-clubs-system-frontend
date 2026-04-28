@@ -11,12 +11,14 @@ document.addEventListener("DOMContentLoaded", function () {
   const modalClub = document.getElementById("membershipModalClub");
   const modalCancel = document.getElementById("membershipModalCancel");
   const modalConfirm = document.getElementById("membershipModalConfirm");
+  const modalClose = document.querySelector(".membership-modal__close");
+  const modalCloseButtons = document.querySelectorAll("[data-membership-modal-close]");
   const toastContainer = document.getElementById("toastContainer");
   const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute("content");
   const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute("content");
   const logoUrl = toastContainer?.dataset.logoUrl || "/assets/logo.png";
   const actionBasePath = normalizeBasePath(page.dataset.actionBasePath || "");
-  const successMessage = page.dataset.successMessage || "Membership application updated successfully.";
+  const successMessage = page.dataset.successMessage || "Кандидатурата е обновена успешно.";
 
   let pendingAction = null;
   let lastFocusedElement = null;
@@ -36,7 +38,7 @@ document.addEventListener("DOMContentLoaded", function () {
     button.addEventListener("click", function (event) {
       event.preventDefault();
 
-      const actionLabel = button.dataset.actionLabel || "update";
+      const actionLabel = button.dataset.actionLabel || "обновите";
       pendingAction = {
         id: button.dataset.id || "",
         action: button.dataset.action || "",
@@ -46,7 +48,11 @@ document.addEventListener("DOMContentLoaded", function () {
       };
 
       if (modalMessage) {
-        modalMessage.textContent = capitalize(actionLabel) + " this membership application?";
+        modalMessage.textContent = pendingAction.action === "approve"
+          ? "Да одобрите ли тази кандидатура?"
+          : pendingAction.action === "reject"
+            ? "Да отхвърлите ли тази кандидатура?"
+            : capitalize(actionLabel) + " тази кандидатура?";
       }
       if (modalStudent) {
         modalStudent.textContent = pendingAction.student;
@@ -62,6 +68,13 @@ document.addEventListener("DOMContentLoaded", function () {
   modalCancel?.addEventListener("click", function (event) {
     event.preventDefault();
     closeModal();
+  });
+
+  modalCloseButtons.forEach((button) => {
+    button.addEventListener("click", function (event) {
+      event.preventDefault();
+      closeModal();
+    });
   });
 
   modal?.addEventListener("click", function (event) {
@@ -107,7 +120,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }, 300);
     } catch (error) {
       closeModal();
-      showToast("error", error?.message || "Unable to update membership application.");
+      showToast("error", error?.message || "Кандидатурата за членство не може да бъде обновена.");
     }
   });
 
@@ -125,15 +138,15 @@ document.addEventListener("DOMContentLoaded", function () {
     if (pendingAction?.action === "approve") {
       modalConfirm?.classList.add("is-approve");
       if (modalConfirm) {
-        modalConfirm.textContent = "Approve";
+        modalConfirm.textContent = "Одобри";
       }
     } else if (pendingAction?.action === "reject") {
       modalConfirm?.classList.add("is-reject");
       if (modalConfirm) {
-        modalConfirm.textContent = "Reject";
+        modalConfirm.textContent = "Отхвърли";
       }
     } else if (modalConfirm) {
-      modalConfirm.textContent = "Confirm";
+      modalConfirm.textContent = "Потвърди";
     }
 
     document.addEventListener("keydown", handleModalKeydown);
@@ -153,7 +166,7 @@ document.addEventListener("DOMContentLoaded", function () {
     pendingAction = null;
     modalConfirm?.classList.remove("is-approve", "is-reject");
     if (modalConfirm) {
-      modalConfirm.textContent = "Confirm";
+      modalConfirm.textContent = "Потвърди";
     }
     document.removeEventListener("keydown", handleModalKeydown);
 
@@ -177,7 +190,7 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    const focusable = [modalCancel, modalConfirm].filter((node) => node && !node.disabled);
+    const focusable = [modalClose, modalCancel, modalConfirm].filter((node) => node && !node.disabled);
     if (!focusable.length) {
       return;
     }
@@ -195,7 +208,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   async function readErrorMessage(response) {
-    const fallback = "Unable to update membership application.";
+    const fallback = "Кандидатурата за членство не може да бъде обновена.";
     const text = await response.text();
     if (!text || !text.trim()) {
       return fallback;
@@ -228,17 +241,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const tone = ["success", "error", "warning", "info"].includes(type) ? type : "info";
     const title = tone === "success"
-      ? "Success"
+      ? "Успешно"
       : tone === "error"
-        ? "Error"
+        ? "Грешка"
         : tone === "warning"
-          ? "Warning"
-          : "Info";
+          ? "Предупреждение"
+          : "Информация";
 
     const toast = document.createElement("div");
     toast.className = "toast-item toast-item--" + tone;
     toast.innerHTML =
-      '<img class="toast-item__logo" src="' + escapeHtml(logoUrl) + '" alt="Logo" />' +
+      '<img class="toast-item__logo" src="' + escapeHtml(logoUrl) + '" alt="Лого" />' +
       '<div class="toast-item__body">' +
       '<p class="toast-item__title">' + escapeHtml(title) + "</p>" +
       '<p class="toast-item__text">' + escapeHtml(message) + "</p>" +
@@ -269,7 +282,7 @@ document.addEventListener("DOMContentLoaded", function () {
   function capitalize(value) {
     const normalized = String(value || "").trim();
     if (!normalized) {
-      return "Confirm";
+      return "Потвърди";
     }
 
     return normalized.charAt(0).toUpperCase() + normalized.slice(1);

@@ -1,14 +1,13 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<html lang="bg" xmlns:th="http://www.w3.org/1999/xhtml">
   <body>
     <th:block th:fragment="pageContent">
       <div class="event-form-layout">
         <section class="event-form-hero">
           <div>
-            <p class="event-form-hero__tag" th:text="${workspaceLabel}">Workspace</p>
-            <h1 th:text="${pageTitle}">Create Event</h1>
+            <h1 th:text="${pageTitle}">Създай събитие</h1>
             <p class="event-form-hero__subtitle" th:text="${pageSubtitle}">
-              Configure event timing, capacity, and visibility.
+              Настройте времето, капацитета и видимостта на събитието.
             </p>
           </div>
         </section>
@@ -26,9 +25,9 @@
 
           <div class="event-form__grid">
             <div class="event-form__field event-form__field--wide">
-              <label for="clubId">Club</label>
+              <label for="clubId">Клуб</label>
               <select id="clubId" class="event-form__select" th:field="*{clubId}">
-                <option value="">Choose a club</option>
+                <option value="">Изберете клуб</option>
                 <option
                   th:each="club : ${clubOptions}"
                   th:value="${club.id}"
@@ -38,33 +37,33 @@
             </div>
 
             <div class="event-form__field event-form__field--wide">
-              <label for="title">Title</label>
+              <label for="title">Заглавие</label>
               <input id="title" class="event-form__input" type="text" maxlength="200" th:field="*{title}" />
             </div>
 
             <div class="event-form__field event-form__field--wide">
-              <label for="description">Description</label>
+              <label for="description">Описание</label>
               <textarea
                 id="description"
                 class="event-form__textarea"
                 maxlength="5000"
                 th:field="*{description}"
               ></textarea>
-              <p class="event-form__hint">Keep the description clear and specific so students understand what to expect.</p>
+              <p class="event-form__hint">Нека описанието е ясно и конкретно, за да знаят учениците какво да очакват.</p>
             </div>
 
             <div class="event-form__field">
-              <label for="startAt">Start</label>
+              <label for="startAt">Начало</label>
               <input id="startAt" class="event-form__input" type="datetime-local" th:field="*{startAt}" />
             </div>
 
             <div class="event-form__field">
-              <label for="endAt">End</label>
+              <label for="endAt">Край</label>
               <input id="endAt" class="event-form__input" type="datetime-local" th:field="*{endAt}" />
             </div>
 
             <div class="event-form__field">
-              <label for="registrationDeadline">Registration Deadline</label>
+              <label for="registrationDeadline">Краен срок за записване</label>
               <input
                 id="registrationDeadline"
                 class="event-form__input"
@@ -74,14 +73,14 @@
             </div>
 
             <div class="event-form__field">
-              <label for="capacity">Capacity</label>
+              <label for="capacity">Капацитет</label>
               <input id="capacity" class="event-form__input" type="number" min="1" th:field="*{capacity}" />
             </div>
 
             <div class="event-form__field">
-              <label for="status">Status</label>
+              <label for="status">Статус</label>
               <select id="status" class="event-form__select" th:field="*{status}">
-                <option value="">Choose a status</option>
+                <option value="">Изберете статус</option>
                 <option
                   th:each="status : ${statusValues}"
                   th:value="${status.name()}"
@@ -91,9 +90,9 @@
             </div>
 
             <div class="event-form__field">
-              <label for="audience">Audience</label>
+              <label for="audience">Видимост</label>
               <select id="audience" class="event-form__select" th:field="*{audience}">
-                <option value="">Choose visibility</option>
+                <option value="">Изберете видимост</option>
                 <option
                   th:each="audience : ${audienceValues}"
                   th:value="${audience.name()}"
@@ -103,24 +102,24 @@
             </div>
 
             <div class="event-form__field event-form__field--wide">
-              <label for="location">Location</label>
+              <label for="location">Място</label>
               <input id="location" class="event-form__input" type="text" maxlength="200" th:field="*{location}" />
             </div>
 
             <div class="event-form__field event-form__field--wide">
-              <label for="mainImage">Main Image</label>
+              <label for="mainImage">Основно изображение</label>
               <div class="event-form__media">
                 <div
                   class="event-form__image-preview"
                   th:if="${eventMainImageUrl != null and !#strings.isEmpty(eventMainImageUrl)}"
                 >
-                  <img th:src="${eventMainImageUrl}" alt="Current event image" />
+                  <img th:src="${eventMainImageUrl}" alt="Текущо изображение на събитието" />
                 </div>
                 <div
                   class="event-form__image-placeholder"
                   th:unless="${eventMainImageUrl != null and !#strings.isEmpty(eventMainImageUrl)}"
                 >
-                  No image uploaded yet.
+                  Все още няма качено изображение.
                 </div>
 
                 <input
@@ -132,7 +131,7 @@
                 />
 
                 <p class="event-form__hint">
-                  Upload a single image up to 5 MB. On edit, selecting a new file will replace the current image.
+                  Качете едно изображение до 5 MB. При редакция изборът на нов файл ще замени текущото изображение.
                 </p>
               </div>
             </div>
@@ -147,8 +146,8 @@
           ></div>
 
           <div class="event-form__actions">
-            <button class="events-button events-button--primary" type="submit" th:text="${submitLabel}">Save</button>
-            <a class="events-link events-link--ghost" th:href="${cancelHref}">Cancel</a>
+            <button class="events-button events-button--primary" type="submit" th:text="${submitLabel}">Запази</button>
+            <a class="events-link events-link--ghost" th:href="${cancelHref}">Отказ</a>
           </div>
         </form>
       </div>

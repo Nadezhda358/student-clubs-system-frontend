@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<html lang="bg" xmlns:th="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Not Found | ClubsHub</title>
+    <title>Не е намерено | ClubsHub</title>
     <link th:href="@{/assets/logo.png}" rel="icon" type="image/png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -21,16 +21,16 @@
       <div class="container">
         <section class="error-panel">
           <p class="error-code">404</p>
-          <h1 class="error-title" th:text="${missingResourceType != null ? #strings.capitalize(missingResourceType) + ' not found' : 'Club not found'}">
-            Club not found
+          <h1 class="error-title" th:text="${missingResourceType != null ? 'Заявеният ресурс не е намерен' : 'Клубът не е намерен'}">
+            Клубът не е намерен
           </h1>
           <p class="error-text">
-            We could not find
-            <span th:text="${missingResourceType != null ? 'the requested ' + missingResourceType : 'a club'}">a club</span>
-            with ID
+            Не успяхме да намерим
+            <span th:text="${missingResourceType != null ? 'заявения ресурс' : 'клуб'}">клуб</span>
+            с ID
             <span th:text="${missingResourceId != null ? missingResourceId : missingClubId}">0</span>.
           </p>
-          <a class="ghost-button" th:href="@{/clubs}">Back to clubs</a>
+          <a class="ghost-button" th:href="@{/clubs}">Назад към клубовете</a>
         </section>
       </div>
     </main>
