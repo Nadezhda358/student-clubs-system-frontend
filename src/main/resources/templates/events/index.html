@@ -23,11 +23,15 @@
       <div class="container">
         <div class="events-shell">
           <section class="events-hero">
-            <p class="events-hero__tag">Училищен календар</p>
-            <h1>Разгледай събития</h1>
-            <p class="events-hero__subtitle">
-              Разгледайте предстоящите клубни дейности, сравнете графиците в списък или календар и се включете в събитията, които ви интересуват.
-            </p>
+            <div class="events-hero__content">
+              <p class="events-hero__tag">Училищен календар</p>
+              <h1>Разгледай събития</h1>
+              <p class="events-hero__subtitle">
+                Разгледайте предстоящите клубни дейности, сравнете графиците в списък или календар и се включете в събитията, които ви интересуват.
+              </p>
+            </div>
+
+            <img class="events-hero__image" th:src="@{/assets/calendar.png}" alt="" />
           </section>
 
           <div class="events-alert events-alert--success" th:if="${eventActionSuccessMessage}" th:text="${eventActionSuccessMessage}"></div>

@@ -27,45 +27,95 @@
 }
 
 .events-hero {
-  display: grid;
-  gap: 0.8rem;
-  padding: 2.1rem 2.2rem;
+  position: relative;
+  overflow: hidden;
+  min-height: 250px;
+  display: flex;
+  align-items: center;
+  padding: 2.4rem 2.2rem;
   border-radius: 26px;
   background:
-    radial-gradient(circle at top left, rgba(242, 201, 76, 0.26), transparent 36%),
-    radial-gradient(circle at top right, rgba(107, 63, 160, 0.18), transparent 42%),
-    linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(247, 242, 251, 0.92));
+    radial-gradient(circle at left bottom, rgba(242, 201, 76, 0.26), transparent 28%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(247, 242, 251, 0.92));
   border: 1px solid rgba(59, 42, 44, 0.09);
   box-shadow: 0 18px 34px rgba(59, 42, 44, 0.08);
 }
 
-.events-hero__tag,
-.event-detail__eyebrow,
-.club-events-tab__tag {
-  margin: 0;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: rgba(59, 42, 44, 0.62);
+.events-hero__content {
+  position: relative;
+  z-index: 2;
+  max-width: 58%;
 }
 
-.events-hero h1,
-.event-detail__title,
-.club-events-tab__title {
-  margin: 0;
-  font-family: "Playfair Display", serif;
-  font-size: clamp(2.1rem, 3.6vw, 3.2rem);
-  color: var(--deep-brown);
+.events-hero__image {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 42%;
+  object-fit: cover;
+  object-position: center;
+  z-index: 1;
 }
 
-.events-hero__subtitle,
-.event-detail__subtitle,
-.club-events-tab__subtitle {
-  margin: 0;
-  max-width: 60ch;
-  color: rgba(34, 22, 28, 0.74);
-  line-height: 1.5;
+.events-hero::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 28%;
+  width: 22%;
+  height: 100%;
+  z-index: 1;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.96) 0%,
+    rgba(255, 255, 255, 0.78) 35%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  pointer-events: none;
+}
+
+.events-hero h1 {
+  font-size: clamp(1.8rem, 2vw, 2rem);
+  line-height: 1;
+}
+
+.events-hero__subtitle {
+  font-size: 1.4rem;
+  line-height: 1.6;
+}
+
+.events-hero__tag {
+  font-size: 1rem;
+}
+
+@media (max-width: 760px) {
+  .events-hero {
+    display: grid;
+    padding: 1.4rem;
+  }
+
+  @media (max-width: 640px) {
+    .events-hero {
+      padding: 1.2rem;
+    }
+  }
+
+  .events-hero__content {
+    max-width: 100%;
+  }
+
+  .events-hero__image {
+    position: relative;
+    width: 100%;
+    height: 190px;
+    margin-top: 1rem;
+    border-radius: 20px;
+  }
+
+  .events-hero::after {
+    display: none;
+  }
 }
 
 .events-alert {
