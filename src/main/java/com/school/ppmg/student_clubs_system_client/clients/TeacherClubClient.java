@@ -40,4 +40,16 @@ public interface TeacherClubClient {
             @PathVariable Long id,
             @RequestPart("file") MultipartFile file
     );
+
+    @PostMapping(value = "/{id}/media", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    ClubDto uploadManagedClubMedia(
+            @PathVariable Long id,
+            @RequestPart("files") MultipartFile[] files
+    );
+
+    @DeleteMapping("/{id}/media/{mediaId}")
+    void removeManagedClubMedia(
+            @PathVariable Long id,
+            @PathVariable Long mediaId
+    );
 }

@@ -9,7 +9,6 @@ import com.school.ppmg.student_clubs_system_client.dtos.event.EventDto;
 import com.school.ppmg.student_clubs_system_client.dtos.event.EventFormRequest;
 import com.school.ppmg.student_clubs_system_client.dtos.event.EventListDto;
 import com.school.ppmg.student_clubs_system_client.dtos.event.EventParticipationDto;
-import com.school.ppmg.student_clubs_system_client.dtos.event.UpdateEventParticipationStatusRequest;
 import com.school.ppmg.student_clubs_system_client.dtos.event.UpsertEventDto;
 import com.school.ppmg.student_clubs_system_client.enums.EventAudience;
 import com.school.ppmg.student_clubs_system_client.enums.EventStatus;
@@ -320,6 +319,56 @@ public class TeacherEventController {
         return "redirect:" + buildTeacherEventsHref(clubId);
     }
 
+    @GetMapping("/teacher/event-participations")
+    public String teacherEventParticipations(
+            @RequestParam(required = false) Long clubId,
+            @RequestParam(required = false) String registrationStatus,
+            @RequestParam(required = false) EventStatus eventStatus,
+            @RequestParam(required = false) String q,
+            @RequestParam(defaultValue = "0") int page,
+            @ModelAttribute("successMessage") String successMessage,
+            @ModelAttribute("errorMessage") String errorMessage,
+            Model model
+    ) {
+        RegistrationStatus selectedRegistrationStatus = EventViewSupport.parseRegistrationStatus(registrationStatus);
+
+        model.addAttribute("clubOptions", loadManagedClubs());
+        model.addAttribute("participations", Collections.emptyList());
+        model.addAttribute("participationPage", null);
+        model.addAttribute("selectedClubId", clubId);
+        model.addAttribute("selectedRegistrationStatus", selectedRegistrationStatus);
+        model.addAttribute("selectedEventStatus", eventStatus);
+        model.addAttribute("q", q == null ? "" : q.trim());
+        model.addAttribute("registrationStatusValues", RegistrationStatus.values());
+        model.addAttribute("eventStatusValues", EventStatus.values());
+        model.addAttribute("successMessage", EventViewSupport.trimToNull(successMessage));
+        model.addAttribute("errorMessage", EventViewSupport.trimToNull(errorMessage));
+
+        try {
+            PageResponse<EventParticipationDto> result = teacherEventClient.getTeacherParticipations(
+                    clubId,
+                    null,
+                    selectedRegistrationStatus,
+                    eventStatus,
+                    EventViewSupport.trimToNull(q),
+                    null,
+                    page,
+                    PARTICIPANTS_PAGE_SIZE,
+                    null
+            );
+            model.addAttribute("participationPage", result);
+            model.addAttribute("participations", result.getContent() == null ? Collections.emptyList() : result.getContent());
+        } catch (FeignException ex) {
+            if (ex.status() == HttpStatus.UNAUTHORIZED.value()) {
+                return "redirect:/login";
+            }
+
+            model.addAttribute("errorMessage", toParticipationLoadErrorMessage(ex));
+        }
+
+        return "teacher/event-participations";
+    }
+
     @GetMapping("/teacher/events/{id}/participants")
     public String teacherEventParticipants(
             @PathVariable Long id,
@@ -369,36 +418,6 @@ public class TeacherEventController {
 
             throw ex;
         }
-    }
-
-    @PostMapping("/teacher/events/{eventId}/participants/{studentId}")
-    public String updateTeacherParticipation(
-            @PathVariable Long eventId,
-            @PathVariable Long studentId,
-            @RequestParam RegistrationStatus status,
-            RedirectAttributes redirectAttributes
-    ) {
-        try {
-            EventDto event = teacherEventClient.getTeacherEventById(eventId);
-            if (EventViewSupport.hasEventStarted(event)) {
-                redirectAttributes.addFlashAttribute(
-                        "errorMessage",
-                        "Статусът на участника може да се променя само преди началото на събитието."
-                );
-                return "redirect:/teacher/events/" + eventId + "/participants";
-            }
-
-            teacherEventClient.updateTeacherParticipationStatus(
-                    eventId,
-                    studentId,
-                    new UpdateEventParticipationStatusRequest(status)
-            );
-            redirectAttributes.addFlashAttribute("successMessage", "Статусът на участника е обновен.");
-        } catch (FeignException ex) {
-            redirectAttributes.addFlashAttribute("errorMessage", toParticipantUpdateErrorMessage(ex));
-        }
-
-        return "redirect:/teacher/events/" + eventId + "/participants";
     }
 
     private List<ClubListDto> loadManagedClubs() {
@@ -557,6 +576,19 @@ public class TeacherEventController {
         };
     }
 
+    private String toParticipationLoadErrorMessage(FeignException ex) {
+        String extracted = EventViewSupport.extractUserMessage(ex);
+        if (!extracted.isBlank()) {
+            return extracted;
+        }
+
+        return switch (EventViewSupport.resolveStatus(ex)) {
+            case FORBIDDEN -> "Можете да виждате регистрации само за събития в клубове, които са ви назначени.";
+            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Прегледайте филтрите за участия и опитайте отново.";
+            default -> "Регистрациите за събития не могат да се заредят в момента. Опитайте отново.";
+        };
+    }
+
     private String toEventSaveErrorMessage(FeignException ex, boolean creating) {
         String extracted = EventViewSupport.extractUserMessage(ex);
         if (!extracted.isBlank()) {
@@ -585,20 +617,6 @@ public class TeacherEventController {
             case FORBIDDEN -> "Можете да изтривате само събития за клубове, които са ви назначени.";
             case NOT_FOUND -> "Това събитие вече не съществува.";
             default -> "Събитието не може да бъде изтрито в момента. Опитайте отново.";
-        };
-    }
-
-    private String toParticipantUpdateErrorMessage(FeignException ex) {
-        String extracted = EventViewSupport.extractUserMessage(ex);
-        if (!extracted.isBlank()) {
-            return extracted;
-        }
-
-        return switch (EventViewSupport.resolveStatus(ex)) {
-            case FORBIDDEN -> "Нямате право да обновявате този участник.";
-            case NOT_FOUND -> "Регистрацията на този участник вече не съществува.";
-            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Статусът на участника не може да бъде обновен. Обновете страницата и опитайте отново.";
-            default -> "Участникът не може да бъде обновен в момента. Опитайте отново.";
         };
     }
 

@@ -85,15 +85,15 @@
   font-size: var(--scale-font-ui);
 }
 
-.me-page .membership-table.dataTable thead th,
-.me-page .membership-table.dataTable thead td {
+.me-page .membership-table thead th,
+.me-page .membership-table thead td {
   border-bottom-width: 2px;
   padding: 0.98rem 0.8rem;
   font-size: 0.86rem;
   letter-spacing: 0.07em;
 }
 
-.me-page .membership-table.dataTable tbody td {
+.me-page .membership-table tbody td {
   padding: 1rem 0.8rem;
   font-size: 1.08rem;
   line-height: 1.4;
@@ -123,38 +123,6 @@
   padding: 0 0.78rem;
   font-size: 0.84rem;
   letter-spacing: 0.07em;
-}
-
-.me-page .dataTables_wrapper {
-  margin-top: 0.35rem;
-}
-
-.me-page .dataTables_wrapper .dataTables_length,
-.me-page .dataTables_wrapper .dataTables_filter {
-  margin-bottom: 0.95rem;
-  font-size: 0.92rem;
-}
-
-.me-page .dataTables_wrapper .dataTables_length select,
-.me-page .dataTables_wrapper .dataTables_filter input {
-  min-height: 2.5rem;
-  font-size: 0.92rem;
-  padding: 0 0.82rem;
-}
-
-.me-page .dataTables_wrapper .dataTables_info {
-  margin-top: 0.92rem;
-  font-size: 0.9rem;
-}
-
-.me-page .dataTables_wrapper .dataTables_paginate {
-  margin-top: 0.75rem;
-}
-
-.me-page .dataTables_wrapper .paginate_button {
-  min-width: 2.4rem;
-  padding: 0.36rem 0.68rem !important;
-  font-size: 0.9rem;
 }
 
 .admin-membership-page {
@@ -342,12 +310,8 @@
   border-spacing: 0;
 }
 
-.membership-table.dataTable.no-footer {
-  border-bottom: 0;
-}
-
-.membership-table.dataTable thead th,
-.membership-table.dataTable thead td {
+.membership-table thead th,
+.membership-table thead td {
   border-bottom: 1px solid var(--membership-divider);
   background: linear-gradient(120deg, rgba(255, 255, 255, 0.64), rgba(255, 255, 255, 0.35));
   color: rgba(59, 42, 44, 0.85);
@@ -358,7 +322,7 @@
   text-transform: uppercase;
 }
 
-.membership-table.dataTable tbody td {
+.membership-table tbody td {
   border-bottom: 1px solid rgba(59, 42, 44, 0.08);
   padding: 0.82rem 0.7rem;
   font-size: 0.81rem;
@@ -366,20 +330,15 @@
   vertical-align: middle;
 }
 
-.membership-table.dataTable tbody tr {
+.membership-table tbody tr {
   transition: background-color 0.2s ease;
 }
 
-.membership-table.dataTable.display tbody tr.odd,
-.membership-table.dataTable.stripe tbody tr.odd {
-  background: transparent;
-}
-
-.membership-table.dataTable tbody tr:hover {
+.membership-table tbody tr:hover {
   background: linear-gradient(90deg, rgba(107, 63, 160, 0.07), rgba(242, 201, 76, 0.08));
 }
 
-.membership-table.dataTable tbody tr:last-child td {
+.membership-table tbody tr:last-child td {
   border-bottom: 0;
 }
 
@@ -493,67 +452,6 @@
 .membership-action-empty {
   color: var(--membership-muted);
   font-weight: 700;
-}
-
-.admin-membership-page .dataTables_wrapper {
-  margin-top: 0.25rem;
-}
-
-.admin-membership-page .dataTables_wrapper .dataTables_length,
-.admin-membership-page .dataTables_wrapper .dataTables_filter {
-  margin-bottom: 0.9rem;
-  color: var(--membership-muted);
-  font-size: 0.76rem;
-  font-weight: 600;
-}
-
-.admin-membership-page .dataTables_wrapper .dataTables_filter input,
-.admin-membership-page .dataTables_wrapper .dataTables_length select {
-  border: 1px solid rgba(59, 42, 44, 0.15);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.88);
-  color: var(--membership-ink);
-  min-height: 2rem;
-  font-size: 0.76rem;
-}
-
-.admin-membership-page .dataTables_wrapper .dataTables_filter input:focus-visible,
-.admin-membership-page .dataTables_wrapper .dataTables_length select:focus-visible {
-  outline: none;
-  border-color: rgba(107, 63, 160, 0.58);
-  box-shadow: 0 0 0 3px var(--membership-focus);
-}
-
-.admin-membership-page .dataTables_wrapper .dataTables_info {
-  margin-top: 0.95rem;
-  color: var(--membership-muted);
-  font-size: 0.74rem;
-  padding-top: 0.45rem;
-}
-
-.admin-membership-page .dataTables_wrapper .dataTables_paginate {
-  margin-top: 0.75rem;
-}
-
-.admin-membership-page .dataTables_wrapper .paginate_button {
-  border-radius: 999px !important;
-  border: 1px solid transparent !important;
-  background: rgba(255, 255, 255, 0.8) !important;
-  color: var(--deep-brown) !important;
-  min-width: 2rem;
-}
-
-.admin-membership-page .dataTables_wrapper .paginate_button.current,
-.admin-membership-page .dataTables_wrapper .paginate_button.current:hover {
-  border-color: rgba(107, 63, 160, 0.32) !important;
-  background: linear-gradient(120deg, rgba(107, 63, 160, 0.18), rgba(242, 201, 76, 0.2)) !important;
-  color: #4d286f !important;
-}
-
-.admin-membership-page .dataTables_wrapper .paginate_button:hover {
-  border-color: rgba(59, 42, 44, 0.14) !important;
-  background: rgba(255, 255, 255, 0.94) !important;
-  color: var(--deep-brown) !important;
 }
 
 .membership-modal {
@@ -895,8 +793,8 @@
     flex: 1 1 48%;
   }
 
-  .membership-table.dataTable thead th,
-  .membership-table.dataTable tbody td {
+  .membership-table thead th,
+  .membership-table tbody td {
     padding-left: 0.54rem;
     padding-right: 0.54rem;
   }
@@ -957,13 +855,13 @@
     font-size: var(--scale-font-ui);
   }
 
-  .me-page .membership-table.dataTable thead th,
-  .me-page .membership-table.dataTable tbody td {
+  .me-page .membership-table thead th,
+  .me-page .membership-table tbody td {
     padding-top: 0.82rem;
     padding-bottom: 0.82rem;
   }
 
-  .me-page .membership-table.dataTable tbody td {
+  .me-page .membership-table tbody td {
     font-size: 1rem;
   }
 }

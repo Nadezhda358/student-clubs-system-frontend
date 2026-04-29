@@ -97,7 +97,9 @@
       </div>
     </main>
 
+    <th:block th:replace="fragments/delete-confirmation :: deleteConfirmationModal"></th:block>
     <footer th:replace="fragments/site-chrome :: siteFooter"></footer>
+    <script th:src="@{/js/delete-confirmation.js}" defer></script>
     <th:block th:if="${pageScripts != null}" th:replace="${pageScripts}"></th:block>
   </body>
 </html>

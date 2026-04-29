@@ -47,7 +47,6 @@
         <form
           id="club-form"
           class="club-form"
-          novalidate
           method="post"
           th:attr="enctype=${mode == 'create'} ? 'multipart/form-data' : null"
           th:action="${mode == 'edit'} ? @{/admin/clubs/{id}/edit(id=${clubId})} : @{/admin/clubs/create}"
@@ -243,6 +242,82 @@
 
           <section class="club-form club-form--stacked">
             <div class="club-form-section__header">
+              <h2>Медийни изображения</h2>
+              <p class="club-form-section__subtitle">
+                Управлявайте допълнителните изображения в галерията на клуба.
+              </p>
+            </div>
+
+            <div class="club-media-manager" th:if="${clubMedia != null and !#lists.isEmpty(clubMedia)}">
+              <article class="club-media-manager__item" th:each="item : ${clubMedia}">
+                <a
+                  class="club-media-manager__preview"
+                  th:if="${item.url != null and !#strings.isEmpty(item.url)}"
+                  th:href="${item.url}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <img th:src="${item.url}" th:alt="${'Медийно изображение ' + item.id}" loading="lazy" />
+                </a>
+                <div
+                  class="club-media-manager__preview club-media-manager__preview--empty"
+                  th:if="${item.url == null or #strings.isEmpty(item.url)}"
+                >
+                  Изображението не е налично
+                </div>
+                <form
+                  class="club-media-manager__action"
+                  method="post"
+                  th:action="@{/admin/clubs/{id}/media/{mediaId}/remove(id=${clubId}, mediaId=${item.id})}"
+                  data-delete-confirm
+                >
+                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                  <button class="club-button club-button--ghost club-button--danger" type="submit">Премахни</button>
+                </form>
+              </article>
+            </div>
+
+            <p class="club-form-empty" th:if="${clubMedia == null or #lists.isEmpty(clubMedia)}">
+              Все още няма качени медийни изображения към този клуб.
+            </p>
+          </section>
+
+          <form
+            class="club-form club-form--stacked"
+            method="post"
+            enctype="multipart/form-data"
+            th:action="@{/admin/clubs/{id}/media(id=${clubId})}"
+          >
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+            <div class="club-form-section__header">
+              <h2>Добави медийни изображения</h2>
+              <p class="club-form-section__subtitle">
+                Качете едно или повече изображения, без да променяте останалите данни на клуба.
+              </p>
+            </div>
+
+            <div class="club-form-grid">
+              <label class="club-field club-field--full" for="club-editMediaFiles">
+                <span>Медийни изображения</span>
+                <input
+                  id="club-editMediaFiles"
+                  name="mediaFiles"
+                  type="file"
+                  accept="image/*"
+                  multiple
+                />
+                <small class="club-field__hint">Максимален размер: 5 MB на изображение.</small>
+              </label>
+            </div>
+
+            <div class="club-form-actions">
+              <button class="club-button club-button--primary" type="submit">Добави изображения</button>
+            </div>
+          </form>
+
+          <section class="club-form club-form--stacked">
+            <div class="club-form-section__header">
               <h2>Назначени учители</h2>
               <p class="club-form-section__subtitle">
                 Премахвайте учителите един по един или използвайте формата по-долу, за да добавите още учители към този клуб.
@@ -265,6 +340,7 @@
                   class="club-teacher-card__action"
                   method="post"
                   th:action="@{/admin/clubs/{id}/teachers/{teacherId}/remove(id=${clubId}, teacherId=${teacher.id})}"
+                  data-delete-confirm
                 >
                   <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                   <button class="club-button club-button--ghost club-button--danger" type="submit">Премахни</button>
@@ -337,7 +413,7 @@
             class="club-form club-form--stacked club-form--danger"
             method="post"
             th:action="@{/admin/clubs/{id}/delete(id=${clubId})}"
-            onsubmit="return confirm('Да изтрием ли този клуб? Бъдещите събития ще бъдат отменени, а активните членства ще бъдат отбелязани като напуснали.');"
+            data-delete-confirm
           >
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 

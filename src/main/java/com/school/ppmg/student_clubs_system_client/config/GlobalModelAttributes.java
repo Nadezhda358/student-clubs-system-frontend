@@ -59,8 +59,12 @@ public class GlobalModelAttributes {
             String uri = request.getRequestURI();
             if (uri != null && uri.startsWith("/admin/clubs/") && uri.endsWith("/main-image")) {
                 targetUrl = uri.substring(0, uri.length() - "/main-image".length()) + "/edit";
+            } else if (uri != null && uri.startsWith("/admin/clubs/") && uri.contains("/media")) {
+                targetUrl = uri.substring(0, uri.indexOf("/media")) + "/edit";
             } else if (uri != null && uri.startsWith("/teacher/clubs/") && uri.endsWith("/main-image")) {
                 targetUrl = uri.substring(0, uri.length() - "/main-image".length()) + "/edit";
+            } else if (uri != null && uri.startsWith("/teacher/clubs/") && uri.contains("/media")) {
+                targetUrl = uri.substring(0, uri.indexOf("/media")) + "/edit";
             } else if ("/admin/events/create".equals(uri)) {
                 targetUrl = "/admin/events/create";
             } else if (uri != null && uri.startsWith("/admin/events/") && uri.endsWith("/edit")) {

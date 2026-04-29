@@ -27,7 +27,7 @@
             <section class="event-participants__hero">
               <div>
                 <h1>Участници в събитието</h1>
-                <p class="event-participants__subtitle">Преглеждайте регистрациите за това събитие и обновявайте статусите на участниците при нужда.</p>
+                <p class="event-participants__subtitle">Преглеждайте регистрациите за това събитие.</p>
               </div>
               <a class="events-link events-link--ghost" th:href="@{/teacher/events}">Назад към събитията</a>
             </section>
@@ -80,7 +80,6 @@
                     <th>Ученик</th>
                     <th>Регистриран на</th>
                     <th>Статус</th>
-                    <th>Обновяване</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -98,24 +97,6 @@
                       >
                         Регистриран
                       </span>
-                    </td>
-                    <td>
-                      <form class="event-status-form"
-                            method="post"
-                            th:if="${!T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).hasEventStarted(event)}"
-                            th:action="@{/teacher/events/{eventId}/participants/{studentId}(eventId=${event.id},studentId=${participant.studentId})}">
-                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                        <select class="event-status-form__select" name="status">
-                          <option
-                            th:each="statusValue : ${statusValues}"
-                            th:value="${statusValue.name()}"
-                            th:selected="${participant.status == statusValue}"
-                            th:text="${T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatLabel(statusValue)}"
-                          ></option>
-                        </select>
-                        <button class="event-status-form__button" type="submit">Запази</button>
-                      </form>
-                      <span th:if="${T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).hasEventStarted(event)}">Събитието е започнало</span>
                     </td>
                   </tr>
                 </tbody>

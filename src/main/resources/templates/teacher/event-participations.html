@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="bg" xmlns:th="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Регистрации за събития | ClubsHub Учител</title>
+    <link th:href="@{/assets/logo.png}" rel="icon" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Sora:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" th:href="@{/css/site-chrome.css}" />
+    <link rel="stylesheet" th:href="@{/css/design-tokens.css}" />
+    <link rel="stylesheet" th:href="@{/css/admin-shell.css}" />
+    <link rel="stylesheet" th:href="@{/css/admin-clubs.css}" />
+    <link rel="stylesheet" th:href="@{/css/events.css}" />
+    <link rel="stylesheet" th:href="@{/css/manage-events.css}" />
+    <link rel="stylesheet" th:href="@{/css/site-ui.css}" />
+  </head>
+  <body th:replace="~{fragments/teacher-shell :: teacherShell('event-participants-page', ~{::teacherPageContent}, ~{::pageScripts})}">
+    <th:block th:fragment="teacherPageContent">
+      <div class="event-participants-page">
+        <div class="container">
+          <div class="event-participants">
+            <section class="event-participants__hero">
+              <div>
+                <h1>Регистрации за събития</h1>
+                <p class="event-participants__subtitle">Преглеждайте регистрациите за събитията в клубовете, които управлявате.</p>
+              </div>
+            </section>
+
+            <div class="admin-alert admin-alert--success" th:if="${successMessage}" th:text="${successMessage}"></div>
+            <div class="admin-alert admin-alert--error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
+            <form method="get" th:action="@{/teacher/event-participations}" class="event-participants__filters">
+              <div class="event-participants__filters-grid">
+                <div class="event-participants__field">
+                  <label for="teacherParticipationClub">Клуб</label>
+                  <select id="teacherParticipationClub" class="event-participants__select" name="clubId">
+                    <option value="">Всички мои клубове</option>
+                    <option
+                      th:each="club : ${clubOptions}"
+                      th:value="${club.id}"
+                      th:selected="${selectedClubId != null and selectedClubId == club.id}"
+                      th:text="${club.name}"
+                    ></option>
+                  </select>
+                </div>
+
+                <div class="event-participants__field">
+                  <label for="teacherParticipationStatus">Статус на регистрацията</label>
+                  <select id="teacherParticipationStatus" class="event-participants__select" name="registrationStatus">
+                    <option value="">Всички статуси</option>
+                    <option
+                      th:each="statusValue : ${registrationStatusValues}"
+                      th:value="${statusValue.name()}"
+                      th:selected="${selectedRegistrationStatus != null and selectedRegistrationStatus == statusValue}"
+                      th:text="${T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatLabel(statusValue)}"
+                    ></option>
+                  </select>
+                </div>
+
+                <div class="event-participants__field">
+                  <label for="teacherParticipationEventStatus">Статус на събитието</label>
+                  <select id="teacherParticipationEventStatus" class="event-participants__select" name="eventStatus">
+                    <option value="">Всички статуси на събития</option>
+                    <option
+                      th:each="statusValue : ${eventStatusValues}"
+                      th:value="${statusValue.name()}"
+                      th:selected="${selectedEventStatus != null and selectedEventStatus == statusValue}"
+                      th:text="${T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatLabel(statusValue)}"
+                    ></option>
+                  </select>
+                </div>
+
+                <div class="event-participants__field event-participants__field--wide">
+                  <label for="teacherParticipationSearch">Търсене</label>
+                  <input id="teacherParticipationSearch" class="event-participants__input" type="text" name="q" th:value="${q}" placeholder="Търсене по ученик, имейл или заглавие" />
+                </div>
+              </div>
+
+              <div class="event-participants__filter-actions" style="margin-top: 0.9rem;">
+                <button class="events-button events-button--primary" type="submit">Приложи филтрите</button>
+                <a class="events-link events-link--ghost" th:href="@{/teacher/event-participations}">Изчисти</a>
+              </div>
+            </form>
+
+            <div class="manage-events__empty" th:if="${#lists.isEmpty(participations)}">
+              Няма регистрации за събития по текущите филтри.
+            </div>
+
+            <div class="event-participants__table-wrap" th:if="${!#lists.isEmpty(participations)}">
+              <table class="event-participants__table">
+                <thead>
+                  <tr>
+                    <th>Събитие</th>
+                    <th>Ученик</th>
+                    <th>Регистриран на</th>
+                    <th>Статус</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr th:each="participation : ${participations}">
+                    <td>
+                      <strong th:text="${participation.eventTitle}">Събитие</strong>
+                      <div th:text="${participation.clubName}">Клуб</div>
+                    </td>
+                    <td>
+                      <strong th:text="${participation.studentFullName}">Ученик</strong>
+                      <div th:text="${participation.studentEmail}">student@example.com</div>
+                    </td>
+                    <td th:text="${participation.registeredAt != null ? T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatDateTime(participation.registeredAt) : '-'}">2026-04-18 12:00</td>
+                    <td>
+                      <span
+                        class="manage-event-chip"
+                        th:classappend="${' manage-event-chip--' + #strings.toLowerCase(participation.status.name())}"
+                        th:text="${T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatLabel(participation.status)}"
+                      >
+                        Регистриран
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <section
+              class="event-participants__pagination"
+              th:if="${participationPage != null}"
+              th:with="currentPage=${participationPage.totalPages > 0 ? participationPage.number + 1 : 1}, totalPages=${participationPage.totalPages > 0 ? participationPage.totalPages : 1}, lastIndex=${participationPage.totalPages > 0 ? participationPage.totalPages - 1 : 0}"
+            >
+              <a class="events-link events-link--ghost" th:href="${participationPage.first} ? '#' : @{/teacher/event-participations(page=0,clubId=${selectedClubId},registrationStatus=${selectedRegistrationStatus},eventStatus=${selectedEventStatus},q=${q})}" th:classappend="${participationPage.first} ? ' disabled' : ''">Първа</a>
+              <a class="events-link events-link--ghost" th:href="${participationPage.first} ? '#' : @{/teacher/event-participations(page=${participationPage.number - 1},clubId=${selectedClubId},registrationStatus=${selectedRegistrationStatus},eventStatus=${selectedEventStatus},q=${q})}" th:classappend="${participationPage.first} ? ' disabled' : ''">Предишна</a>
+              <form class="pagination-input" th:action="@{/teacher/event-participations}" method="get" data-page-input>
+                <input type="hidden" name="clubId" th:value="${selectedClubId}" />
+                <input type="hidden" name="registrationStatus" th:value="${selectedRegistrationStatus != null ? selectedRegistrationStatus.name() : ''}" />
+                <input type="hidden" name="eventStatus" th:value="${selectedEventStatus != null ? selectedEventStatus.name() : ''}" />
+                <input type="hidden" name="q" th:value="${q}" />
+                <label class="pagination-input__sr-only" for="teacherParticipationsPageNumber">Страница</label>
+                <input
+                  id="teacherParticipationsPageNumber"
+                  name="pageDisplay"
+                  type="number"
+                  min="1"
+                  inputmode="numeric"
+                  th:attr="max=${totalPages}"
+                  th:value="${currentPage}"
+                />
+                <span class="pagination-input__state">от <strong th:text="${totalPages}">1</strong></span>
+              </form>
+              <a class="events-link events-link--ghost" th:href="${participationPage.last} ? '#' : @{/teacher/event-participations(page=${participationPage.number + 1},clubId=${selectedClubId},registrationStatus=${selectedRegistrationStatus},eventStatus=${selectedEventStatus},q=${q})}" th:classappend="${participationPage.last} ? ' disabled' : ''">Следваща</a>
+              <a class="events-link events-link--ghost" th:href="${participationPage.last} ? '#' : @{/teacher/event-participations(page=${lastIndex},clubId=${selectedClubId},registrationStatus=${selectedRegistrationStatus},eventStatus=${selectedEventStatus},q=${q})}" th:classappend="${participationPage.last} ? ' disabled' : ''">Последна</a>
+            </section>
+          </div>
+        </div>
+      </div>
+    </th:block>
+
+    <th:block th:fragment="pageScripts">
+      <script th:src="@{/js/pagination-input.js}" defer></script>
+    </th:block>
+  </body>
+</html>

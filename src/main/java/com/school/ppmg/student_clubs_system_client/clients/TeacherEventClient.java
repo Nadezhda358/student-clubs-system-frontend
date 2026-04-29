@@ -68,10 +68,16 @@ public interface TeacherEventClient {
             @RequestParam(required = false) String sort
     );
 
-    @PostMapping("/{eventId}/participants/{studentId}")
-    EventParticipationDto updateTeacherParticipationStatus(
-            @PathVariable Long eventId,
-            @PathVariable Long studentId,
-            @Valid @RequestBody UpdateEventParticipationStatusRequest request
+    @GetMapping("/event-participations")
+    PageResponse<EventParticipationDto> getTeacherParticipations(
+            @RequestParam(required = false) Long clubId,
+            @RequestParam(required = false) Long eventId,
+            @RequestParam(required = false) RegistrationStatus registrationStatus,
+            @RequestParam(required = false) EventStatus eventStatus,
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) EventTimeFilter timeFilter,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String sort
     );
 }

@@ -13,6 +13,7 @@ import com.school.ppmg.student_clubs_system_client.dtos.auth.UserDto;
 import com.school.ppmg.student_clubs_system_client.dtos.club.AddClubTeachersRequest;
 import com.school.ppmg.student_clubs_system_client.dtos.club.ClubDto;
 import com.school.ppmg.student_clubs_system_client.dtos.club.ClubListDto;
+import com.school.ppmg.student_clubs_system_client.dtos.club.CreateClubDto;
 import com.school.ppmg.student_clubs_system_client.dtos.club.CreateClubRequest;
 import com.school.ppmg.student_clubs_system_client.dtos.club.CreateMembershipApplicationRequest;
 import com.school.ppmg.student_clubs_system_client.dtos.club.MediaDto;
@@ -25,6 +26,8 @@ import com.school.ppmg.student_clubs_system_client.enums.MembershipRequestStatus
 import com.school.ppmg.student_clubs_system_client.enums.UserRole;
 import feign.FeignException;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -52,6 +55,7 @@ public class ClubController {
     private final EventClient eventClient;
     private final MembershipApplicationClient membershipApplicationClient;
     private final StudentClubClient studentClubClient;
+    private final Validator validator;
     private static final int PUBLIC_PAGE_SIZE = 9;
     private static final int ADMIN_PAGE_SIZE = 10;
 
@@ -236,6 +240,33 @@ public class ClubController {
             }
         }
 
+        CreateClubDto createDto = new CreateClubDto(
+                normalizedName,
+                normalizedDescription,
+                normalizedScheduleText,
+                normalizedRoom,
+                normalizedContactEmail,
+                normalizedContactPhone,
+                isActive,
+                teacherIds.isEmpty() ? null : teacherIds
+        );
+        String validationMessage = firstValidationMessage(createDto);
+        if (validationMessage != null) {
+            populateCreateFormModel(
+                    model,
+                    normalizedName,
+                    normalizedDescription,
+                    normalizedScheduleText,
+                    normalizedRoom,
+                    normalizedContactEmail,
+                    normalizedContactPhone,
+                    isActive,
+                    teacherIds
+            );
+            model.addAttribute("errorMessage", validationMessage);
+            return "admin/club-form";
+        }
+
         request.setName(normalizedName);
         request.setDescription(normalizedDescription);
         request.setScheduleText(normalizedScheduleText);
@@ -249,7 +280,7 @@ public class ClubController {
 
         try {
             if (mediaFiles.isEmpty()) {
-                ClubDto createdClub = clubClient.create(request.toCreateClubDto());
+                ClubDto createdClub = clubClient.create(createDto);
                 if (mainImage != null) {
                     try {
                         clubClient.uploadMainImage(createdClub.id(), mainImage);
@@ -366,16 +397,36 @@ public class ClubController {
             return "admin/club-form";
         }
 
-        try {
-            clubClient.update(id, new UpsertClubDto(
+        UpsertClubDto dto = new UpsertClubDto(
+                normalizedName,
+                normalizedDescription,
+                normalizedScheduleText,
+                normalizedRoom,
+                normalizedContactEmail,
+                normalizedContactPhone,
+                isActive
+        );
+        String validationMessage = firstValidationMessage(dto);
+        if (validationMessage != null) {
+            populateEditFormModel(
+                    model,
+                    id,
                     normalizedName,
                     normalizedDescription,
                     normalizedScheduleText,
                     normalizedRoom,
                     normalizedContactEmail,
                     normalizedContactPhone,
-                    isActive
-            ));
+                    isActive,
+                    resolveAssignedTeachers(id),
+                    extractSelectedTeacherIds(model)
+            );
+            model.addAttribute("errorMessage", validationMessage);
+            return "admin/club-form";
+        }
+
+        try {
+            clubClient.update(id, dto);
             return "redirect:/admin/clubs?success=updated";
         } catch (FeignException.NotFound ex) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -475,6 +526,48 @@ public class ClubController {
                     "errorMessage",
                     firstNonBlank(extractUserMessage(ex), "Основното изображение не може да бъде качено в момента. Опитайте отново.")
             );
+        }
+
+        return redirectToAdminClubEdit(id);
+    }
+
+    @PostMapping("/admin/clubs/{id}/media")
+    public String uploadClubMedia(
+            @PathVariable Long id,
+            @RequestParam(name = "mediaFiles", required = false) List<MultipartFile> mediaFiles,
+            RedirectAttributes redirectAttributes
+    ) {
+        List<MultipartFile> files = normalizeFiles(mediaFiles);
+        String validationMessage = validateMediaFiles(files);
+        if (validationMessage != null) {
+            redirectAttributes.addFlashAttribute("errorMessage", validationMessage);
+            return redirectToAdminClubEdit(id);
+        }
+
+        try {
+            clubClient.uploadMedia(id, files.toArray(MultipartFile[]::new));
+            redirectAttributes.addFlashAttribute(
+                    "successMessage",
+                    files.size() == 1 ? "Медийното изображение е добавено успешно." : "Медийните изображения са добавени успешно."
+            );
+        } catch (FeignException ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", toClubMediaErrorMessage(ex, true));
+        }
+
+        return redirectToAdminClubEdit(id);
+    }
+
+    @PostMapping("/admin/clubs/{id}/media/{mediaId}/remove")
+    public String removeClubMedia(
+            @PathVariable Long id,
+            @PathVariable Long mediaId,
+            RedirectAttributes redirectAttributes
+    ) {
+        try {
+            clubClient.removeMedia(id, mediaId);
+            redirectAttributes.addFlashAttribute("successMessage", "Медийното изображение е премахнато успешно.");
+        } catch (FeignException ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", toClubMediaErrorMessage(ex, false));
         }
 
         return redirectToAdminClubEdit(id);
@@ -701,6 +794,7 @@ public class ClubController {
                 normalizeTeachers(club.teachers()),
                 selectedTeacherIds
         );
+        model.addAttribute("clubMedia", normalizeMedia(club.media()));
     }
 
     private void populateEditFormModel(
@@ -744,6 +838,7 @@ public class ClubController {
         model.addAttribute("selectedTeacherIds", normalizeTeacherIds(selectedTeacherIds));
         model.addAttribute("teacherOptionsAvailable", !allTeacherOptions.isEmpty());
         model.addAttribute("availableTeacherOptionsAvailable", !availableTeacherOptions.isEmpty());
+        model.addAttribute("clubMedia", resolveClubMedia(clubId));
     }
 
     private String successMessage(String success) {
@@ -876,6 +971,14 @@ public class ClubController {
         return primary != null && !primary.isBlank() ? primary : fallback;
     }
 
+    private <T> String firstValidationMessage(T value) {
+        return validator.validate(value).stream()
+                .sorted(Comparator.comparing(violation -> violation.getPropertyPath().toString()))
+                .map(ConstraintViolation::getMessage)
+                .findFirst()
+                .orElse(null);
+    }
+
     private String trimToNull(String value) {
         if (value == null) {
             return null;
@@ -947,6 +1050,46 @@ public class ClubController {
         }
 
         return message + " Моля, изберете файловете отново, преди да опитате.";
+    }
+
+    private String validateMediaFiles(List<MultipartFile> files) {
+        if (files == null || files.isEmpty()) {
+            return "Изберете поне едно медийно изображение за качване.";
+        }
+
+        for (MultipartFile file : files) {
+            if (file.getSize() > MAX_IMAGE_FILE_SIZE_BYTES) {
+                return "Всяко медийно изображение трябва да е 5 MB или по-малко. Изберете друг файл.";
+            }
+
+            if (!isImageFile(file)) {
+                return "Медийните файлове трябва да са изображения.";
+            }
+        }
+
+        return null;
+    }
+
+    private String toClubMediaErrorMessage(FeignException ex, boolean addOperation) {
+        HttpStatus status = HttpStatus.resolve(ex.status());
+        if (status == null) {
+            status = HttpStatus.BAD_GATEWAY;
+        }
+
+        String fallback = switch (status) {
+            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> addOperation
+                    ? "Прегледайте избраните изображения и опитайте отново."
+                    : "Медийното изображение не може да бъде премахнато в момента.";
+            case UNAUTHORIZED, FORBIDDEN -> "Нямате право да управлявате медийните изображения на този клуб.";
+            case NOT_FOUND -> addOperation
+                    ? "Клубът не беше намерен."
+                    : "Клубът или медийното изображение не беше намерено.";
+            default -> addOperation
+                    ? "Медийните изображения не могат да бъдат качени в момента. Опитайте отново."
+                    : "Медийното изображение не може да бъде премахнато в момента. Опитайте отново.";
+        };
+
+        return firstNonBlank(extractUserMessage(ex), fallback);
     }
 
     private String toTeacherAssignmentErrorMessage(FeignException ex, boolean addOperation) {
@@ -1069,6 +1212,32 @@ public class ClubController {
             }
         }
         return normalized;
+    }
+
+    private List<MediaDto> normalizeMedia(List<MediaDto> media) {
+        if (media == null || media.isEmpty()) {
+            return List.of();
+        }
+
+        List<MediaDto> normalized = new ArrayList<>();
+        for (MediaDto item : media) {
+            if (item != null && item.id() != null) {
+                normalized.add(item);
+            }
+        }
+        return normalized;
+    }
+
+    private List<MediaDto> resolveClubMedia(Long clubId) {
+        if (clubId == null) {
+            return List.of();
+        }
+
+        try {
+            return normalizeMedia(clubClient.getById(clubId).media());
+        } catch (RuntimeException ex) {
+            return List.of();
+        }
     }
 
     private boolean containsTeacher(List<TeacherDto> teachers, Long teacherId) {

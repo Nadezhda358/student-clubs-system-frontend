@@ -21,7 +21,7 @@
   </head>
   <body th:replace="~{fragments/teacher-shell :: teacherShell('manage-events-page', ~{::teacherPageContent}, ~{::pageScripts})}">
     <th:block th:fragment="teacherPageContent">
-      <div class="manage-events-page">
+      <div class="manage-events-page manage-events-page--side-media">
         <div class="container">
           <div class="manage-events">
             <section class="manage-events__hero">
@@ -86,7 +86,11 @@
             </form>
 
             <section class="manage-events__list" th:if="${!#lists.isEmpty(events)}">
-              <article class="manage-event-row" th:each="event : ${events}">
+              <article
+                class="manage-event-row"
+                th:each="event : ${events}"
+                th:classappend="${event.mainImageUrl != null and !#strings.isEmpty(event.mainImageUrl)} ? ' manage-event-row--has-media' : ''"
+              >
                 <div class="manage-event-row__top">
                   <div>
                     <p class="manage-event-row__club" th:text="${event.clubName}">Научен клуб</p>
@@ -123,9 +127,9 @@
 
                 <div class="manage-event-row__actions">
                   <a class="events-link events-link--ghost" th:href="@{/events/{id}(id=${event.id})}">Виж</a>
-                  <a class="events-link events-link--ghost" th:href="@{/teacher/events/{id}/participants(id=${event.id})}">Участници</a>
+                  <a class="events-link events-link--ghost" th:href="@{/teacher/events/{id}/participants(id=${event.id})}">Регистрации</a>
                   <a class="events-link events-link--primary" th:href="@{/teacher/events/{id}/edit(id=${event.id})}">Редактирай</a>
-                  <form method="post" th:action="@{/teacher/events/{id}/delete(id=${event.id})}" onsubmit="return confirm('Да изтрием ли това събитие?');">
+                  <form method="post" th:action="@{/teacher/events/{id}/delete(id=${event.id})}" data-delete-confirm>
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                     <input type="hidden" name="clubId" th:value="${event.clubId}" />
                     <button class="events-button events-button--danger" type="submit">Изтрий</button>

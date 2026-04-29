@@ -15,6 +15,7 @@
                 clubsActive=${path == '/teacher' or path == '/teacher/clubs' or #strings.startsWith(path, '/teacher/clubs/')},
                 eventsActive=${path == '/teacher/events' or path == '/teacher/events/create' or #strings.startsWith(path, '/teacher/events/')},
                 announcementsActive=${path == '/teacher/announcements' or path == '/teacher/announcements/create' or #strings.startsWith(path, '/teacher/announcements/')},
+                eventAppsActive=${path == '/teacher/event-participations'},
                 clubAppsActive=${path == '/teacher/membership-applications'}
               "
             >
@@ -58,6 +59,14 @@
                   >
                     Кандидатури за членство в клубове
                   </a>
+                  <a
+                    class="admin-sidebar__link"
+                    th:classappend="${eventAppsActive} ? ' is-active' : ''"
+                    th:attr="aria-current=${eventAppsActive} ? 'page' : null"
+                    th:href="@{/teacher/event-participations}"
+                  >
+                    Регистрации за събития
+                  </a>
                 </nav>
               </div>
             </details>
@@ -70,7 +79,9 @@
       </div>
     </main>
 
+    <th:block th:replace="fragments/delete-confirmation :: deleteConfirmationModal"></th:block>
     <footer th:replace="fragments/site-chrome :: siteFooter"></footer>
+    <script th:src="@{/js/delete-confirmation.js}" defer></script>
     <th:block th:if="${pageScripts != null}" th:replace="${pageScripts}"></th:block>
   </body>
 </html>

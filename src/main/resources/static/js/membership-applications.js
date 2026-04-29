@@ -4,7 +4,6 @@ document.addEventListener("DOMContentLoaded", function () {
     return;
   }
 
-  const table = document.getElementById("membershipAppsTable");
   const modal = document.getElementById("membershipActionModal");
   const modalMessage = document.getElementById("membershipModalMessage");
   const modalStudent = document.getElementById("membershipModalStudent");
@@ -22,17 +21,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let pendingAction = null;
   let lastFocusedElement = null;
-
-  if (table && window.jQuery && window.jQuery.fn && window.jQuery.fn.DataTable) {
-    window.jQuery("#membershipAppsTable").DataTable({
-      paging: false,
-      searching: false,
-      ordering: false,
-      info: false,
-      autoWidth: false,
-      dom: "t"
-    });
-  }
 
   document.querySelectorAll(".js-membership-action").forEach((button) => {
     button.addEventListener("click", function (event) {

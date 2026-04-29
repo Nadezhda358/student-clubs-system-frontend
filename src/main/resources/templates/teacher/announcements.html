@@ -127,7 +127,7 @@
                 <div class="manage-event-row__actions">
                   <a class="events-link events-link--ghost" th:href="@{/clubs/{id}(id=${announcement.clubId},tab='announcements')}">Отвори клуба</a>
                   <a class="events-link events-link--primary" th:href="@{/teacher/announcements/{id}/edit(id=${announcement.id})}">Редактирай</a>
-                  <form method="post" th:action="@{/teacher/announcements/{id}/delete(id=${announcement.id})}" onsubmit="return confirm('Да изтрием ли това съобщение?');">
+                  <form method="post" th:action="@{/teacher/announcements/{id}/delete(id=${announcement.id})}" data-delete-confirm>
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                     <input type="hidden" name="clubId" th:value="${announcement.clubId}" />
                     <button class="events-button events-button--danger" type="submit">Изтрий</button>
