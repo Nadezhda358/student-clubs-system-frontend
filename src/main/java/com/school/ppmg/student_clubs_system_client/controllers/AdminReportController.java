@@ -2,6 +2,7 @@ package com.school.ppmg.student_clubs_system_client.controllers;
 
 import com.school.ppmg.student_clubs_system_client.clients.AdminReportClient;
 import com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport;
+import com.school.ppmg.student_clubs_system_client.dtos.report.AdminClubParticipantsByClubDto;
 import com.school.ppmg.student_clubs_system_client.dtos.report.AdminEventsByPeriodDto;
 import com.school.ppmg.student_clubs_system_client.dtos.report.AdminEventsByPeriodPointDto;
 import com.school.ppmg.student_clubs_system_client.dtos.report.AdminReportsOverviewDto;
@@ -40,6 +41,7 @@ public class AdminReportController {
         model.addAttribute("periodValues", ReportPeriod.values());
         model.addAttribute("eventsByPeriodPoints", List.of());
         model.addAttribute("eventsByPeriodMaxCount", 0L);
+        model.addAttribute("clubParticipants", List.of());
 
         AdminReportsOverviewDto overview = null;
         try {
@@ -51,6 +53,17 @@ public class AdminReportController {
             }
 
             model.addAttribute("overviewErrorMessage", toOverviewLoadErrorMessage(ex));
+        }
+
+        try {
+            List<AdminClubParticipantsByClubDto> clubParticipants = adminReportClient.getParticipantsByClub();
+            model.addAttribute("clubParticipants", clubParticipants);
+        } catch (FeignException ex) {
+            if (ex.status() == HttpStatus.UNAUTHORIZED.value()) {
+                return "redirect:/login";
+            }
+
+            model.addAttribute("clubParticipantsErrorMessage", toClubParticipantsLoadErrorMessage(ex));
         }
 
         AdminEventsByPeriodDto eventsByPeriod = null;
@@ -114,6 +127,17 @@ public class AdminReportController {
         return switch (EventViewSupport.resolveStatus(ex)) {
             case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Прегледайте филтрите за хронологията и опитайте отново.";
             default -> "Данните за събития по период не могат да се заредят в момента. Опитайте отново.";
+        };
+    }
+    private String toClubParticipantsLoadErrorMessage(FeignException ex) {
+        String extracted = EventViewSupport.extractUserMessage(ex);
+        if (!extracted.isBlank()) {
+            return extracted;
+        }
+
+        return switch (EventViewSupport.resolveStatus(ex)) {
+            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Прегледайте клубната справка и опитайте отново.";
+            default -> "Клубните участници не могат да се заредят в момента. Опитайте отново.";
         };
     }
 }

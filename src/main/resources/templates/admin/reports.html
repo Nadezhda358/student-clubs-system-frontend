@@ -121,6 +121,43 @@
           <section class="admin-reports__panel">
             <div class="admin-reports__panel-header">
               <div>
+                <p class="admin-reports__eyebrow">Клубове</p>
+                <h2>Активни участници по клубове</h2>
+              </div>
+              <p class="admin-reports__window">Текущо разпределение на активните членства</p>
+            </div>
+
+            <div class="admin-alert admin-alert--error" th:if="${clubParticipantsErrorMessage}" th:text="${clubParticipantsErrorMessage}"></div>
+
+            <div class="admin-reports__club-list" th:if="${!#lists.isEmpty(clubParticipants)}">
+              <article class="admin-reports__club-card" th:each="clubParticipation : ${clubParticipants}">
+                <div class="admin-reports__club-copy">
+                  <span class="admin-reports__club-label">Клуб</span>
+                  <strong th:text="${clubParticipation.clubName}">Роботика</strong>
+                  <div class="admin-reports__club-meta">
+                    <span class="admin-reports__club-chip admin-reports__club-chip--active" th:if="${clubParticipation.active}">
+                      Активен
+                    </span>
+                    <span class="admin-reports__club-chip admin-reports__club-chip--inactive" th:unless="${clubParticipation.active}">
+                      Неактивен
+                    </span>
+                  </div>
+                </div>
+                <div class="admin-reports__club-count-wrap">
+                  <span class="admin-reports__club-count-label">Участници</span>
+                  <strong class="admin-reports__club-count" th:text="${clubParticipation.participantsCount != null ? clubParticipation.participantsCount : 0}">0</strong>
+                </div>
+              </article>
+            </div>
+
+            <div class="admin-reports__empty" th:if="${#lists.isEmpty(clubParticipants) and clubParticipantsErrorMessage == null}">
+              Няма данни за клубни участници за момента.
+            </div>
+          </section>
+
+          <section class="admin-reports__panel">
+            <div class="admin-reports__panel-header">
+              <div>
                 <p class="admin-reports__eyebrow">Хронология</p>
                 <h2>Събития по период</h2>
               </div>
