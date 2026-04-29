@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<html lang="bg" xmlns:th="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title th:text="${pageTitle} + ' | ClubsHub Admin'">Admin Section | ClubsHub Admin</title>
+    <title th:text="${pageTitle} + ' | ClubsHub Администрация'">Административен раздел | ClubsHub Администрация</title>
     <link th:href="@{/assets/logo.png}" rel="icon" type="image/png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -21,20 +21,19 @@
     <th:block th:fragment="adminPageContent">
       <div class="admin-placeholder">
         <div class="admin-placeholder__header">
-          <p class="admin-placeholder__tag">Admin Workspace</p>
-          <h1 th:text="${pageTitle}">Events</h1>
+          <h1 th:text="${pageTitle}">Събития</h1>
           <p class="admin-placeholder__subtitle" th:text="${pageSubtitle}">
-            This admin section is being prepared.
+            Този административен раздел се подготвя.
           </p>
         </div>
 
         <section class="admin-placeholder__panel" aria-live="polite">
-          <h2>Coming soon</h2>
+          <h2>Очаквайте скоро</h2>
           <p th:text="${comingSoonMessage}">
-            This page is available in the navigation and will be implemented soon.
+            Тази страница е налична в навигацията и ще бъде реализирана скоро.
           </p>
           <div class="admin-placeholder__actions">
-            <a class="admin-placeholder__link" th:href="@{/admin/clubs}">Back to Clubs</a>
+            <a class="admin-placeholder__link" th:href="@{/admin/clubs}">Назад към клубовете</a>
           </div>
         </section>
       </div>

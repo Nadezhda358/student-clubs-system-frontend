@@ -5,6 +5,7 @@ import com.school.ppmg.student_clubs_system_client.clients.AnnouncementClient;
 import com.school.ppmg.student_clubs_system_client.clients.ClubClient;
 import com.school.ppmg.student_clubs_system_client.clients.EventClient;
 import com.school.ppmg.student_clubs_system_client.clients.MembershipApplicationClient;
+import com.school.ppmg.student_clubs_system_client.clients.StudentClubClient;
 import com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport;
 import com.school.ppmg.student_clubs_system_client.dtos.announcement.AnnouncementDto;
 import com.school.ppmg.student_clubs_system_client.dtos.auth.AuthUserDto;
@@ -12,6 +13,7 @@ import com.school.ppmg.student_clubs_system_client.dtos.auth.UserDto;
 import com.school.ppmg.student_clubs_system_client.dtos.club.AddClubTeachersRequest;
 import com.school.ppmg.student_clubs_system_client.dtos.club.ClubDto;
 import com.school.ppmg.student_clubs_system_client.dtos.club.ClubListDto;
+import com.school.ppmg.student_clubs_system_client.dtos.club.CreateClubDto;
 import com.school.ppmg.student_clubs_system_client.dtos.club.CreateClubRequest;
 import com.school.ppmg.student_clubs_system_client.dtos.club.CreateMembershipApplicationRequest;
 import com.school.ppmg.student_clubs_system_client.dtos.club.MediaDto;
@@ -24,6 +26,8 @@ import com.school.ppmg.student_clubs_system_client.enums.MembershipRequestStatus
 import com.school.ppmg.student_clubs_system_client.enums.UserRole;
 import feign.FeignException;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -50,31 +54,44 @@ public class ClubController {
     private final ClubClient clubClient;
     private final EventClient eventClient;
     private final MembershipApplicationClient membershipApplicationClient;
-    private static final int PAGE_SIZE = 9;
+    private final StudentClubClient studentClubClient;
+    private final Validator validator;
+    private static final int PUBLIC_PAGE_SIZE = 9;
+    private static final int ADMIN_PAGE_SIZE = 10;
 
-    @GetMapping("/clubs")
+    @GetMapping({"/", "/clubs"})
     public String clubsPage(
             @RequestParam(required = false) String q,
+            @RequestParam(defaultValue = "all") String scope,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "9") int size,
-            @RequestParam(required = false) String sort,
+            @ModelAttribute("sessionUser") AuthUserDto sessionUser,
             Model model
     ) {
-        // default sort if you want
-        if (sort == null || sort.isBlank()) {
-            sort = "name,asc";
-        }
-
         String normalizedQuery = trimToNull(q);
-        PageResponse<ClubListDto> result = clubClient.getAll(true, normalizedQuery, page, PAGE_SIZE, sort);
+        String normalizedScope = normalizeScope(scope);
+
+        model.addAttribute("scope", normalizedScope);
+        model.addAttribute("scopeMessage", null);
+
+        PageResponse<ClubListDto> result;
+        if ("mine".equals(normalizedScope)) {
+            if (sessionUser == null) {
+                return "redirect:/login";
+            }
+
+            if (!isStudent(sessionUser)) {
+                result = emptyPage(page, PUBLIC_PAGE_SIZE);
+                model.addAttribute("scopeMessage", "Само ученици могат да филтрират клубове по активно членство.");
+            } else {
+                result = studentClubClient.getMyClubs(true, normalizedQuery, page, PUBLIC_PAGE_SIZE, null);
+            }
+        } else {
+            result = clubClient.getAll(true, normalizedQuery, page, PUBLIC_PAGE_SIZE, null);
+        }
 
         model.addAttribute("page", result);
         model.addAttribute("clubs", result.getContent());
         model.addAttribute("q", normalizedQuery == null ? "" : normalizedQuery);
-
-        // keep query params for pagination links
-        model.addAttribute("sort", sort);
-        model.addAttribute("size", PAGE_SIZE);
 
         return "clubs/index";
     }
@@ -83,20 +100,16 @@ public class ClubController {
     public String adminClubsPage(
             @RequestParam(required = false) Boolean active,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(required = false) String sort,
             @RequestParam(required = false) String success,
             @ModelAttribute("successMessage") String flashSuccessMessage,
             @ModelAttribute("errorMessage") String flashErrorMessage,
             Model model
     ) {
-        String resolvedSort = (sort == null || sort.isBlank()) ? "name,asc" : sort;
-        PageResponse<ClubListDto> result = clubClient.getAll(active, null, page, PAGE_SIZE, resolvedSort);
+        PageResponse<ClubListDto> result = clubClient.getAll(active, null, page, ADMIN_PAGE_SIZE, null);
 
         model.addAttribute("page", result);
         model.addAttribute("clubs", result.getContent());
         model.addAttribute("active", active);
-        model.addAttribute("sort", resolvedSort);
-        model.addAttribute("size", PAGE_SIZE);
         model.addAttribute("successMessage", firstNonBlank(flashSuccessMessage, successMessage(success)));
         model.addAttribute("errorMessage", trimToNull(flashErrorMessage));
 
@@ -138,7 +151,7 @@ public class ClubController {
                     isActive,
                     teacherIds
             );
-            model.addAttribute("errorMessage", "Club Name is required.");
+            model.addAttribute("errorMessage", "Името на клуба е задължително.");
             return "admin/club-form";
         }
 
@@ -154,7 +167,7 @@ public class ClubController {
                     isActive,
                     teacherIds
             );
-            model.addAttribute("errorMessage", "Description is required.");
+            model.addAttribute("errorMessage", "Описанието е задължително.");
             return "admin/club-form";
         }
 
@@ -170,7 +183,7 @@ public class ClubController {
                     isActive,
                     teacherIds
             );
-            model.addAttribute("errorMessage", "Main image must be 5 MB or smaller. Please choose another file.");
+            model.addAttribute("errorMessage", "Основното изображение трябва да е 5 MB или по-малко. Изберете друг файл.");
             return "admin/club-form";
         }
 
@@ -186,7 +199,7 @@ public class ClubController {
                     isActive,
                     teacherIds
             );
-            model.addAttribute("errorMessage", "Main image must be an image file.");
+            model.addAttribute("errorMessage", "Основното изображение трябва да е файл с изображение.");
             return "admin/club-form";
         }
 
@@ -205,7 +218,7 @@ public class ClubController {
                 );
                 model.addAttribute(
                         "errorMessage",
-                        "Each uploaded media file must be 5 MB or smaller. Please choose another file."
+                        "Всеки качен медиен файл трябва да е 5 MB или по-малък. Изберете друг файл."
                 );
                 return "admin/club-form";
             }
@@ -222,9 +235,36 @@ public class ClubController {
                         isActive,
                         teacherIds
                 );
-                model.addAttribute("errorMessage", "Club media uploads must be image files.");
+                model.addAttribute("errorMessage", "Клубните медийни файлове трябва да са изображения.");
                 return "admin/club-form";
             }
+        }
+
+        CreateClubDto createDto = new CreateClubDto(
+                normalizedName,
+                normalizedDescription,
+                normalizedScheduleText,
+                normalizedRoom,
+                normalizedContactEmail,
+                normalizedContactPhone,
+                isActive,
+                teacherIds.isEmpty() ? null : teacherIds
+        );
+        String validationMessage = firstValidationMessage(createDto);
+        if (validationMessage != null) {
+            populateCreateFormModel(
+                    model,
+                    normalizedName,
+                    normalizedDescription,
+                    normalizedScheduleText,
+                    normalizedRoom,
+                    normalizedContactEmail,
+                    normalizedContactPhone,
+                    isActive,
+                    teacherIds
+            );
+            model.addAttribute("errorMessage", validationMessage);
+            return "admin/club-form";
         }
 
         request.setName(normalizedName);
@@ -240,7 +280,7 @@ public class ClubController {
 
         try {
             if (mediaFiles.isEmpty()) {
-                ClubDto createdClub = clubClient.create(request.toCreateClubDto());
+                ClubDto createdClub = clubClient.create(createDto);
                 if (mainImage != null) {
                     try {
                         clubClient.uploadMainImage(createdClub.id(), mainImage);
@@ -249,7 +289,7 @@ public class ClubController {
                                 "errorMessage",
                                 firstNonBlank(
                                         extractUserMessage(ex),
-                                        "Club created, but the main image upload failed. You can try again from the edit page."
+                                        "Клубът беше създаден, но качването на основното изображение не успя. Можете да опитате отново от страницата за редакция."
                                 )
                         );
                         return "redirect:/admin/clubs/" + createdClub.id() + "/edit";
@@ -292,7 +332,7 @@ public class ClubController {
             return "errors/404";
         } catch (RuntimeException ex) {
             String message = ex.getMessage() == null ? "" : ex.getMessage().toLowerCase();
-            if (message.contains("not found")) {
+            if ((message.contains("not found") || message.contains("не е намер"))) {
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 model.addAttribute("missingClubId", id);
                 return "errors/404";
@@ -335,7 +375,7 @@ public class ClubController {
                     resolveAssignedTeachers(id),
                     extractSelectedTeacherIds(model)
             );
-            model.addAttribute("errorMessage", "Club Name is required.");
+            model.addAttribute("errorMessage", "Името на клуба е задължително.");
             return "admin/club-form";
         }
 
@@ -353,20 +393,40 @@ public class ClubController {
                     resolveAssignedTeachers(id),
                     extractSelectedTeacherIds(model)
             );
-            model.addAttribute("errorMessage", "Description is required.");
+            model.addAttribute("errorMessage", "Описанието е задължително.");
             return "admin/club-form";
         }
 
-        try {
-            clubClient.update(id, new UpsertClubDto(
+        UpsertClubDto dto = new UpsertClubDto(
+                normalizedName,
+                normalizedDescription,
+                normalizedScheduleText,
+                normalizedRoom,
+                normalizedContactEmail,
+                normalizedContactPhone,
+                isActive
+        );
+        String validationMessage = firstValidationMessage(dto);
+        if (validationMessage != null) {
+            populateEditFormModel(
+                    model,
+                    id,
                     normalizedName,
                     normalizedDescription,
                     normalizedScheduleText,
                     normalizedRoom,
                     normalizedContactEmail,
                     normalizedContactPhone,
-                    isActive
-            ));
+                    isActive,
+                    resolveAssignedTeachers(id),
+                    extractSelectedTeacherIds(model)
+            );
+            model.addAttribute("errorMessage", validationMessage);
+            return "admin/club-form";
+        }
+
+        try {
+            clubClient.update(id, dto);
             return "redirect:/admin/clubs?success=updated";
         } catch (FeignException.NotFound ex) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -399,7 +459,7 @@ public class ClubController {
     ) {
         List<Long> normalizedTeacherIds = normalizeTeacherIds(teacherIds);
         if (normalizedTeacherIds.isEmpty()) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Select at least one teacher to add.");
+            redirectAttributes.addFlashAttribute("errorMessage", "Изберете поне един учител за добавяне.");
             redirectAttributes.addFlashAttribute("selectedTeacherIds", normalizedTeacherIds);
             return redirectToAdminClubEdit(id);
         }
@@ -408,7 +468,7 @@ public class ClubController {
             clubClient.addTeachers(id, new AddClubTeachersRequest(normalizedTeacherIds));
             redirectAttributes.addFlashAttribute(
                     "successMessage",
-                    normalizedTeacherIds.size() == 1 ? "Teacher added successfully." : "Teachers added successfully."
+                    normalizedTeacherIds.size() == 1 ? "Учителят е добавен успешно." : "Учителите са добавени успешно."
             );
         } catch (FeignException ex) {
             redirectAttributes.addFlashAttribute("errorMessage", toTeacherAssignmentErrorMessage(ex, true));
@@ -426,7 +486,7 @@ public class ClubController {
     ) {
         try {
             clubClient.removeTeacher(id, teacherId);
-            redirectAttributes.addFlashAttribute("successMessage", "Teacher removed successfully.");
+            redirectAttributes.addFlashAttribute("successMessage", "Учителят е премахнат успешно.");
         } catch (FeignException ex) {
             redirectAttributes.addFlashAttribute("errorMessage", toTeacherAssignmentErrorMessage(ex, false));
         }
@@ -441,31 +501,73 @@ public class ClubController {
             RedirectAttributes redirectAttributes
     ) {
         if (!hasFile(mainImage)) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Please choose an image to upload.");
+            redirectAttributes.addFlashAttribute("errorMessage", "Изберете изображение за качване.");
             return redirectToAdminClubEdit(id);
         }
 
         if (mainImage.getSize() > MAX_IMAGE_FILE_SIZE_BYTES) {
             redirectAttributes.addFlashAttribute(
                     "errorMessage",
-                    "Main image must be 5 MB or smaller. Please choose another file."
+                    "Основното изображение трябва да е 5 MB или по-малко. Изберете друг файл."
             );
             return redirectToAdminClubEdit(id);
         }
 
         if (!isImageFile(mainImage)) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Main image must be an image file.");
+            redirectAttributes.addFlashAttribute("errorMessage", "Основното изображение трябва да е файл с изображение.");
             return redirectToAdminClubEdit(id);
         }
 
         try {
             clubClient.uploadMainImage(id, mainImage);
-            redirectAttributes.addFlashAttribute("successMessage", "Main image updated successfully.");
+            redirectAttributes.addFlashAttribute("successMessage", "Основното изображение е обновено успешно.");
         } catch (FeignException ex) {
             redirectAttributes.addFlashAttribute(
                     "errorMessage",
-                    firstNonBlank(extractUserMessage(ex), "Unable to upload the main image right now. Please try again.")
+                    firstNonBlank(extractUserMessage(ex), "Основното изображение не може да бъде качено в момента. Опитайте отново.")
             );
+        }
+
+        return redirectToAdminClubEdit(id);
+    }
+
+    @PostMapping("/admin/clubs/{id}/media")
+    public String uploadClubMedia(
+            @PathVariable Long id,
+            @RequestParam(name = "mediaFiles", required = false) List<MultipartFile> mediaFiles,
+            RedirectAttributes redirectAttributes
+    ) {
+        List<MultipartFile> files = normalizeFiles(mediaFiles);
+        String validationMessage = validateMediaFiles(files);
+        if (validationMessage != null) {
+            redirectAttributes.addFlashAttribute("errorMessage", validationMessage);
+            return redirectToAdminClubEdit(id);
+        }
+
+        try {
+            clubClient.uploadMedia(id, files.toArray(MultipartFile[]::new));
+            redirectAttributes.addFlashAttribute(
+                    "successMessage",
+                    files.size() == 1 ? "Медийното изображение е добавено успешно." : "Медийните изображения са добавени успешно."
+            );
+        } catch (FeignException ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", toClubMediaErrorMessage(ex, true));
+        }
+
+        return redirectToAdminClubEdit(id);
+    }
+
+    @PostMapping("/admin/clubs/{id}/media/{mediaId}/remove")
+    public String removeClubMedia(
+            @PathVariable Long id,
+            @PathVariable Long mediaId,
+            RedirectAttributes redirectAttributes
+    ) {
+        try {
+            clubClient.removeMedia(id, mediaId);
+            redirectAttributes.addFlashAttribute("successMessage", "Медийното изображение е премахнато успешно.");
+        } catch (FeignException ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", toClubMediaErrorMessage(ex, false));
         }
 
         return redirectToAdminClubEdit(id);
@@ -480,7 +582,7 @@ public class ClubController {
             clubClient.delete(id);
             redirectAttributes.addFlashAttribute(
                     "successMessage",
-                    "Club deleted. Future events were cancelled and active memberships were marked as left."
+                    "Клубът е изтрит. Бъдещите събития бяха отменени, а активните членства бяха отбелязани като напуснали."
             );
         } catch (FeignException ex) {
             redirectAttributes.addFlashAttribute("errorMessage", toClubDeleteErrorMessage(ex));
@@ -526,12 +628,12 @@ public class ClubController {
             RedirectAttributes redirectAttributes
     ) {
         if (sessionUser == null) {
-            redirectAttributes.addFlashAttribute("success", "Please sign in to apply for club membership.");
+            redirectAttributes.addFlashAttribute("success", "Влезте, за да кандидатствате за членство в клуб.");
             return "redirect:/login";
         }
 
         if (!isStudent(sessionUser)) {
-            redirectAttributes.addFlashAttribute("membershipApplyWarningMessage", "Only students can apply.");
+            redirectAttributes.addFlashAttribute("membershipApplyWarningMessage", "Само ученици могат да кандидатстват.");
             return "redirect:/clubs/" + clubId;
         }
 
@@ -539,7 +641,7 @@ public class ClubController {
         if (normalizedMotivation != null && normalizedMotivation.length() > 2000) {
             redirectAttributes.addFlashAttribute(
                     "membershipApplyErrorMessage",
-                    "Motivation text must be 2000 characters or fewer."
+                    "Мотивацията трябва да е до 2000 знака."
             );
             redirectAttributes.addFlashAttribute("membershipApplyDraft", normalizedMotivation);
             return "redirect:/clubs/" + clubId;
@@ -547,12 +649,12 @@ public class ClubController {
 
         try {
             membershipApplicationClient.apply(clubId, new CreateMembershipApplicationRequest(normalizedMotivation));
-            redirectAttributes.addFlashAttribute("membershipApplySuccessMessage", "Application submitted.");
+            redirectAttributes.addFlashAttribute("membershipApplySuccessMessage", "Кандидатурата е подадена.");
             redirectAttributes.addFlashAttribute("membershipApplicationSubmitted", true);
             return "redirect:/clubs/" + clubId;
         } catch (FeignException ex) {
             if (ex.status() == HttpStatus.UNAUTHORIZED.value()) {
-                redirectAttributes.addFlashAttribute("success", "Please sign in to apply for club membership.");
+                redirectAttributes.addFlashAttribute("success", "Влезте, за да кандидатствате за членство в клуб.");
                 return "redirect:/login";
             }
 
@@ -573,12 +675,12 @@ public class ClubController {
                     null,
                     0,
                     EventViewSupport.TAB_PAGE_SIZE,
-                    EventViewSupport.EVENT_SORT
+                    null
             );
             model.addAttribute("events", result.getContent() == null ? List.of() : result.getContent());
             model.addAttribute("clubId", id);
         } catch (Exception ex) {
-            model.addAttribute("error", "Events are not available yet.");
+            model.addAttribute("error", "Събитията все още не са налични.");
         }
 
         return "clubs/tabs/events :: content";
@@ -591,7 +693,7 @@ public class ClubController {
             List<MediaDto> media = club.media() == null ? List.of() : club.media();
             model.addAttribute("media", media);
         } catch (Exception ex) {
-            model.addAttribute("error", "Media is not available yet.");
+            model.addAttribute("error", "Медията все още не е налична.");
         }
 
         return "clubs/tabs/media :: content";
@@ -607,12 +709,12 @@ public class ClubController {
                     null,
                     0,
                     EventViewSupport.TAB_PAGE_SIZE,
-                    "publishedAt,desc"
+                    null
             );
             List<AnnouncementDto> announcements = result.getContent() == null ? List.of() : result.getContent();
             model.addAttribute("announcements", announcements);
         } catch (Exception ex) {
-            model.addAttribute("error", "Announcements are not available yet.");
+            model.addAttribute("error", "Съобщенията все още не са налични.");
         }
 
         return "clubs/tabs/announcements :: content";
@@ -640,11 +742,11 @@ public class ClubController {
         model.addAttribute("clubContactEmail", nonNull(contactEmail));
         model.addAttribute("clubContactPhone", nonNull(contactPhone));
         model.addAttribute("clubIsActive", isActive);
-        model.addAttribute("pageTitle", isEdit ? "Edit Club" : "Create Club");
+        model.addAttribute("pageTitle", isEdit ? "Редактирай клуб" : "Създай клуб");
         model.addAttribute("pageSubtitle", isEdit
-                ? "Update club details and keep information current."
-                : "Add a new club with schedule and contact details.");
-        model.addAttribute("submitLabel", isEdit ? "Save Changes" : "Create Club");
+                ? "Обновете данните за клуба и поддържайте информацията актуална."
+                : "Добавете нов клуб с график и данни за контакт.");
+        model.addAttribute("submitLabel", isEdit ? "Запази промените" : "Създай клуб");
     }
 
     private void populateCreateFormModel(
@@ -692,6 +794,7 @@ public class ClubController {
                 normalizeTeachers(club.teachers()),
                 selectedTeacherIds
         );
+        model.addAttribute("clubMedia", normalizeMedia(club.media()));
     }
 
     private void populateEditFormModel(
@@ -735,6 +838,7 @@ public class ClubController {
         model.addAttribute("selectedTeacherIds", normalizeTeacherIds(selectedTeacherIds));
         model.addAttribute("teacherOptionsAvailable", !allTeacherOptions.isEmpty());
         model.addAttribute("availableTeacherOptionsAvailable", !availableTeacherOptions.isEmpty());
+        model.addAttribute("clubMedia", resolveClubMedia(clubId));
     }
 
     private String successMessage(String success) {
@@ -743,15 +847,15 @@ public class ClubController {
         }
 
         if ("created".equalsIgnoreCase(success)) {
-            return "Club created successfully.";
+            return "Клубът е създаден успешно.";
         }
 
         if ("updated".equalsIgnoreCase(success)) {
-            return "Club updated successfully.";
+            return "Клубът е обновен успешно.";
         }
 
         if ("deleted".equalsIgnoreCase(success)) {
-            return "Club deleted successfully.";
+            return "Клубът е изтрит успешно.";
         }
 
         return null;
@@ -786,7 +890,7 @@ public class ClubController {
                 null,
                 0,
                 1,
-                "createdAt,desc"
+                null
         );
 
         List<MembershipApplicationDto> applications = response.getContent() == null ? List.of() : response.getContent();
@@ -813,16 +917,16 @@ public class ClubController {
         }
 
         String message = switch (status) {
-            case CONFLICT -> "You already have a pending application for this club.";
-            case FORBIDDEN -> "Only students can apply.";
-            case NOT_FOUND -> "This club was not found.";
+            case CONFLICT -> "Вече имате чакаща кандидатура за този клуб.";
+            case FORBIDDEN -> "Само ученици могат да кандидатстват.";
+            case NOT_FOUND -> "Този клуб не беше намерен.";
             case BAD_REQUEST, UNPROCESSABLE_ENTITY -> firstNonBlank(
                     extractUserMessage(ex),
-                    "Please review your motivation text and try again."
+                    "Прегледайте мотивацията си и опитайте отново."
             );
             default -> firstNonBlank(
                     extractUserMessage(ex),
-                    "Unable to submit your application right now. Please try again."
+                    "Кандидатурата ви не може да бъде подадена в момента. Опитайте отново."
             );
         };
 
@@ -867,6 +971,14 @@ public class ClubController {
         return primary != null && !primary.isBlank() ? primary : fallback;
     }
 
+    private <T> String firstValidationMessage(T value) {
+        return validator.validate(value).stream()
+                .sorted(Comparator.comparing(violation -> violation.getPropertyPath().toString()))
+                .map(ConstraintViolation::getMessage)
+                .findFirst()
+                .orElse(null);
+    }
+
     private String trimToNull(String value) {
         if (value == null) {
             return null;
@@ -874,6 +986,24 @@ public class ClubController {
 
         String normalized = value.trim();
         return normalized.isEmpty() ? null : normalized;
+    }
+
+    private String normalizeScope(String scope) {
+        return "mine".equalsIgnoreCase(scope) ? "mine" : "all";
+    }
+
+    private <T> PageResponse<T> emptyPage(int page, int size) {
+        PageResponse<T> response = new PageResponse<>();
+        response.setContent(List.of());
+        response.setNumber(Math.max(page, 0));
+        response.setSize(size);
+        response.setNumberOfElements(0);
+        response.setTotalElements(0);
+        response.setTotalPages(0);
+        response.setFirst(true);
+        response.setLast(true);
+        response.setEmpty(true);
+        return response;
     }
 
     private String toClubSaveErrorMessage(FeignException ex) {
@@ -906,10 +1036,10 @@ public class ClubController {
         }
 
         return switch (status) {
-            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Please review the club details and try again.";
-            case UNAUTHORIZED, FORBIDDEN -> "You are not authorized to perform this action.";
-            case NOT_FOUND -> "Requested resource not found.";
-            default -> "Unable to save the club right now. Please try again.";
+            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Прегледайте данните за клуба и опитайте отново.";
+            case UNAUTHORIZED, FORBIDDEN -> "Нямате право да извършите това действие.";
+            case NOT_FOUND -> "Заявеният ресурс не е намерен.";
+            default -> "Клубът не може да бъде запазен в момента. Опитайте отново.";
         };
     }
 
@@ -919,7 +1049,47 @@ public class ClubController {
             return message;
         }
 
-        return message + " Please re-select any files before trying again.";
+        return message + " Моля, изберете файловете отново, преди да опитате.";
+    }
+
+    private String validateMediaFiles(List<MultipartFile> files) {
+        if (files == null || files.isEmpty()) {
+            return "Изберете поне едно медийно изображение за качване.";
+        }
+
+        for (MultipartFile file : files) {
+            if (file.getSize() > MAX_IMAGE_FILE_SIZE_BYTES) {
+                return "Всяко медийно изображение трябва да е 5 MB или по-малко. Изберете друг файл.";
+            }
+
+            if (!isImageFile(file)) {
+                return "Медийните файлове трябва да са изображения.";
+            }
+        }
+
+        return null;
+    }
+
+    private String toClubMediaErrorMessage(FeignException ex, boolean addOperation) {
+        HttpStatus status = HttpStatus.resolve(ex.status());
+        if (status == null) {
+            status = HttpStatus.BAD_GATEWAY;
+        }
+
+        String fallback = switch (status) {
+            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> addOperation
+                    ? "Прегледайте избраните изображения и опитайте отново."
+                    : "Медийното изображение не може да бъде премахнато в момента.";
+            case UNAUTHORIZED, FORBIDDEN -> "Нямате право да управлявате медийните изображения на този клуб.";
+            case NOT_FOUND -> addOperation
+                    ? "Клубът не беше намерен."
+                    : "Клубът или медийното изображение не беше намерено.";
+            default -> addOperation
+                    ? "Медийните изображения не могат да бъдат качени в момента. Опитайте отново."
+                    : "Медийното изображение не може да бъде премахнато в момента. Опитайте отново.";
+        };
+
+        return firstNonBlank(extractUserMessage(ex), fallback);
     }
 
     private String toTeacherAssignmentErrorMessage(FeignException ex, boolean addOperation) {
@@ -930,15 +1100,15 @@ public class ClubController {
 
         String fallback = switch (status) {
             case BAD_REQUEST, UNPROCESSABLE_ENTITY -> addOperation
-                    ? "Please review the selected teachers and try again."
-                    : "Unable to remove this teacher assignment right now.";
-            case UNAUTHORIZED, FORBIDDEN -> "You are not authorized to manage teachers for this club.";
+                    ? "Прегледайте избраните учители и опитайте отново."
+                    : "Назначението на този учител не може да бъде премахнато в момента.";
+            case UNAUTHORIZED, FORBIDDEN -> "Нямате право да управлявате учителите на този клуб.";
             case NOT_FOUND -> addOperation
-                    ? "The club or selected teacher could not be found."
-                    : "The teacher assignment could not be found.";
+                    ? "Клубът или избраният учител не беше намерен."
+                    : "Назначението на учителя не беше намерено.";
             default -> addOperation
-                    ? "Unable to add teachers right now. Please try again."
-                    : "Unable to remove the teacher right now. Please try again.";
+                    ? "Учителите не могат да бъдат добавени в момента. Опитайте отново."
+                    : "Учителят не може да бъде премахнат в момента. Опитайте отново.";
         };
 
         return firstNonBlank(extractUserMessage(ex), fallback);
@@ -951,10 +1121,10 @@ public class ClubController {
         }
 
         String fallback = switch (status) {
-            case FORBIDDEN, UNAUTHORIZED -> "You are not authorized to delete this club.";
-            case NOT_FOUND -> "This club no longer exists.";
-            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "This club could not be deleted right now. Please refresh and try again.";
-            default -> "Unable to delete the club right now. Please try again.";
+            case FORBIDDEN, UNAUTHORIZED -> "Нямате право да изтриете този клуб.";
+            case NOT_FOUND -> "Този клуб вече не съществува.";
+            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Този клуб не може да бъде изтрит в момента. Обновете страницата и опитайте отново.";
+            default -> "Клубът не може да бъде изтрит в момента. Опитайте отново.";
         };
 
         return firstNonBlank(extractUserMessage(ex), fallback);
@@ -1027,7 +1197,7 @@ public class ClubController {
             return email;
         }
 
-        return "Teacher #" + teacher.id();
+        return "Учител #" + teacher.id();
     }
 
     private List<TeacherDto> normalizeTeachers(List<TeacherDto> teachers) {
@@ -1042,6 +1212,32 @@ public class ClubController {
             }
         }
         return normalized;
+    }
+
+    private List<MediaDto> normalizeMedia(List<MediaDto> media) {
+        if (media == null || media.isEmpty()) {
+            return List.of();
+        }
+
+        List<MediaDto> normalized = new ArrayList<>();
+        for (MediaDto item : media) {
+            if (item != null && item.id() != null) {
+                normalized.add(item);
+            }
+        }
+        return normalized;
+    }
+
+    private List<MediaDto> resolveClubMedia(Long clubId) {
+        if (clubId == null) {
+            return List.of();
+        }
+
+        try {
+            return normalizeMedia(clubClient.getById(clubId).media());
+        } catch (RuntimeException ex) {
+            return List.of();
+        }
     }
 
     private boolean containsTeacher(List<TeacherDto> teachers, Long teacherId) {

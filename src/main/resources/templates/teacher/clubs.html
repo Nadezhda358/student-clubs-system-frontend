@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<html lang="bg" xmlns:th="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Clubs | ClubsHub Teacher</title>
+    <title>Моите клубове | ClubsHub Учител</title>
     <link th:href="@{/assets/logo.png}" rel="icon" type="image/png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -15,6 +15,7 @@
     <link rel="stylesheet" th:href="@{/css/design-tokens.css}" />
     <link rel="stylesheet" th:href="@{/css/admin-shell.css}" />
     <link rel="stylesheet" th:href="@{/css/admin-clubs.css}" />
+    <link rel="stylesheet" th:href="@{/css/manage-events.css}" />
     <link rel="stylesheet" th:href="@{/css/site-ui.css}" />
   </head>
   <body th:replace="~{fragments/teacher-shell :: teacherShell('admin-clubs-page', ~{::teacherPageContent}, ~{::pageScripts})}">
@@ -23,10 +24,9 @@
         <div class="container admin-clubs__container">
           <section class="admin-clubs__hero">
             <div>
-              <p class="admin-clubs__tag">Teacher Workspace</p>
-              <h1>Manage My Clubs</h1>
+              <h1>Управление на моите клубове</h1>
               <p class="admin-clubs__subtitle">
-                Review and update the clubs assigned to you.
+                Преглеждайте и обновявайте клубовете, които са ви назначени.
               </p>
             </div>
           </section>
@@ -34,79 +34,115 @@
           <div class="admin-alert admin-alert--success" th:if="${successMessage}" th:text="${successMessage}"></div>
           <div class="admin-alert admin-alert--error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
 
+          <form method="get" th:action="@{/teacher/clubs}" class="manage-events__filters" style="margin-bottom: 1.2rem;">
+            <div class="manage-events__filters-grid">
+              <div class="manage-events__field manage-events__field--wide">
+                <label for="teacherClubSearch">Търсене</label>
+                <input id="teacherClubSearch" class="manage-events__input" type="text" name="q" th:value="${q}" placeholder="Търсене в управляваните клубове" />
+              </div>
+
+              <div class="manage-events__field">
+                <label for="teacherClubActive">Статус</label>
+                <select id="teacherClubActive" class="manage-events__select" name="active">
+                  <option value="" th:selected="${active == null}">Всички клубове</option>
+                  <option value="true" th:selected="${active != null and active}">Активен</option>
+                  <option value="false" th:selected="${active != null and !active}">Неактивен</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="manage-events__filter-actions" style="margin-top: 0.9rem;">
+              <button class="events-button events-button--primary" type="submit">Приложи филтрите</button>
+              <a class="events-link events-link--ghost" th:href="@{/teacher/clubs}">Изчисти</a>
+            </div>
+          </form>
+
           <section class="admin-clubs__list" th:if="${!#lists.isEmpty(clubs)}">
             <article class="admin-club-row" th:each="club : ${clubs}">
               <div class="admin-club-row__main">
-                <h2 th:text="${club.name}">Club Name</h2>
+                <h2 th:text="${club.name}">Име на клуба</h2>
                 <p>
-                  <span>Room:</span>
-                  <strong th:text="${club.room != null and !#strings.isEmpty(club.room) ? club.room : 'TBD'}">A-204</strong>
+                  <span>Стая:</span>
+                  <strong th:text="${club.room != null and !#strings.isEmpty(club.room) ? club.room : 'Предстои'}">A-204</strong>
                 </p>
               </div>
               <div class="admin-club-row__status">
                 <span class="status-chip" th:classappend="${club.isActive} ? ' is-active' : ' is-inactive'">
-                  <span th:text="${club.isActive} ? 'Active' : 'Inactive'">Active</span>
+                  <span th:text="${club.isActive} ? 'Активен' : 'Неактивен'">Активен</span>
                 </span>
               </div>
               <div class="admin-club-row__actions">
-                <a class="ghost-link" th:href="@{/clubs/{id}(id=${club.id})}">View</a>
-                <a class="ghost-link" th:href="@{/teacher/events(clubId=${club.id})}">Events</a>
-                <a class="primary-link" th:href="@{/teacher/clubs/{id}/edit(id=${club.id})}">Edit</a>
+                <a class="ghost-link" th:href="@{/clubs/{id}(id=${club.id})}">Виж</a>
+                <a class="ghost-link" th:href="@{/teacher/events(clubId=${club.id})}">Събития</a>
+                <a class="primary-link" th:href="@{/teacher/clubs/{id}/edit(id=${club.id})}">Редактирай</a>
               </div>
             </article>
           </section>
 
           <section class="admin-clubs__empty" th:if="${#lists.isEmpty(clubs)}">
-            <h2>No clubs assigned yet</h2>
-            <p>Your managed clubs will appear here when they are linked to you.</p>
+            <h2>Все още няма назначени клубове</h2>
+            <p>Клубовете, които управлявате, ще се покажат тук, когато бъдат свързани с вас.</p>
           </section>
 
           <section
             class="admin-pagination"
-            th:if="${page != null and page.totalPages > 1}"
-            th:with="lastIndex=${page.totalPages - 1}"
+            th:if="${page != null}"
+            th:with="currentPage=${page.totalPages > 0 ? page.number + 1 : 1}, totalPages=${page.totalPages > 0 ? page.totalPages : 1}, lastIndex=${page.totalPages > 0 ? page.totalPages - 1 : 0}"
           >
             <a
               class="page-link"
               th:classappend="${page.first} ? ' disabled' : ''"
-              th:href="${page.first} ? '#' : @{/teacher/clubs(page=0, sort=${sort}, active=${active})}"
+              th:href="${page.first} ? '#' : @{/teacher/clubs(page=0, active=${active}, q=${q})}"
               th:attr="aria-disabled=${page.first}"
             >
-              First
+              Първа
             </a>
             <a
               class="page-link"
               th:classappend="${page.first} ? ' disabled' : ''"
-              th:href="${page.first} ? '#' : @{/teacher/clubs(page=${page.number - 1}, sort=${sort}, active=${active})}"
+              th:href="${page.first} ? '#' : @{/teacher/clubs(page=${page.number - 1}, active=${active}, q=${q})}"
               th:attr="aria-disabled=${page.first}"
             >
-              Previous
+              Предишна
             </a>
-            <span class="page-state">
-              Page <strong th:text="${page.number + 1}">1</strong> of
-              <strong th:text="${page.totalPages}">1</strong>
-            </span>
+            <form class="pagination-input" th:action="@{/teacher/clubs}" method="get" data-page-input>
+              <input type="hidden" name="active" th:value="${active}" />
+              <input type="hidden" name="q" th:value="${q}" />
+              <label class="pagination-input__sr-only" for="teacherClubsPageNumber">Страница</label>
+              <input
+                id="teacherClubsPageNumber"
+                name="pageDisplay"
+                type="number"
+                min="1"
+                inputmode="numeric"
+                th:attr="max=${totalPages}"
+                th:value="${currentPage}"
+              />
+              <span class="pagination-input__state">от <strong th:text="${totalPages}">1</strong></span>
+            </form>
             <a
               class="page-link"
               th:classappend="${page.last} ? ' disabled' : ''"
-              th:href="${page.last} ? '#' : @{/teacher/clubs(page=${page.number + 1}, sort=${sort}, active=${active})}"
+              th:href="${page.last} ? '#' : @{/teacher/clubs(page=${page.number + 1}, active=${active}, q=${q})}"
               th:attr="aria-disabled=${page.last}"
             >
-              Next
+              Следваща
             </a>
             <a
               class="page-link"
               th:classappend="${page.last} ? ' disabled' : ''"
-              th:href="${page.last} ? '#' : @{/teacher/clubs(page=${lastIndex}, sort=${sort}, active=${active})}"
+              th:href="${page.last} ? '#' : @{/teacher/clubs(page=${lastIndex}, active=${active}, q=${q})}"
               th:attr="aria-disabled=${page.last}"
             >
-              Last
+              Последна
             </a>
           </section>
         </div>
       </div>
     </th:block>
 
-    <th:block th:fragment="pageScripts"></th:block>
+    <th:block th:fragment="pageScripts">
+      <script th:src="@{/js/pagination-input.js}" defer></script>
+    </th:block>
   </body>
 </html>

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<html lang="bg" xmlns:th="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Events | ClubsHub Admin</title>
+    <title>Събития | ClubsHub Администрация</title>
     <link th:href="@{/assets/logo.png}" rel="icon" type="image/png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -21,16 +21,15 @@
   </head>
   <body th:replace="~{fragments/admin-shell :: adminShell('manage-events-page', ~{::adminPageContent}, ~{::pageScripts})}">
     <th:block th:fragment="adminPageContent">
-      <div class="manage-events-page">
+      <div class="manage-events-page manage-events-page--side-media">
         <div class="container">
           <div class="manage-events">
             <section class="manage-events__hero">
               <div>
-                <p class="manage-events__tag">Admin Workspace</p>
-                <h1>Manage Events</h1>
-                <p class="manage-events__subtitle">Oversee every club event, correct scheduling issues, and keep the event catalog consistent.</p>
+                <h1>Управление на събития</h1>
+                <p class="manage-events__subtitle">Следете всички клубни събития, коригирайте проблеми в графика и поддържайте каталога със събития актуален.</p>
               </div>
-              <a class="admin-clubs__create-button" th:href="@{/admin/events/create}">Create Event</a>
+              <a class="admin-clubs__create-button" th:href="@{/admin/events/create}">Създай събитие</a>
             </section>
 
             <div class="admin-alert admin-alert--success" th:if="${successMessage}" th:text="${successMessage}"></div>
@@ -39,14 +38,14 @@
             <form method="get" th:action="@{/admin/events}" class="manage-events__filters">
               <div class="manage-events__filters-grid">
                 <div class="manage-events__field manage-events__field--wide">
-                  <label for="adminEventSearch">Search</label>
-                  <input id="adminEventSearch" class="manage-events__input" type="text" name="q" th:value="${q}" placeholder="Search by title or keyword" />
+                  <label for="adminEventSearch">Търсене</label>
+                  <input id="adminEventSearch" class="manage-events__input" type="text" name="q" th:value="${q}" placeholder="Търсене по заглавие или ключова дума" />
                 </div>
 
                 <div class="manage-events__field">
-                  <label for="adminEventClub">Club</label>
+                  <label for="adminEventClub">Клуб</label>
                   <select id="adminEventClub" class="manage-events__select" name="clubId">
-                    <option value="">All clubs</option>
+                    <option value="">Всички клубове</option>
                     <option
                       th:each="club : ${clubOptions}"
                       th:value="${club.id}"
@@ -57,9 +56,9 @@
                 </div>
 
                 <div class="manage-events__field">
-                  <label for="adminEventStatus">Status</label>
+                  <label for="adminEventStatus">Статус</label>
                   <select id="adminEventStatus" class="manage-events__select" name="status">
-                    <option value="">All statuses</option>
+                    <option value="">Всички статуси</option>
                     <option
                       th:each="statusValue : ${statusValues}"
                       th:value="${statusValue.name()}"
@@ -70,86 +69,113 @@
                 </div>
 
                 <div class="manage-events__field">
-                  <label for="adminEventFromDate">From</label>
+                  <label for="adminEventFromDate">От</label>
                   <input id="adminEventFromDate" class="manage-events__input" type="date" name="fromDate" th:value="${fromDate}" />
                 </div>
 
                 <div class="manage-events__field">
-                  <label for="adminEventToDate">To</label>
+                  <label for="adminEventToDate">До</label>
                   <input id="adminEventToDate" class="manage-events__input" type="date" name="toDate" th:value="${toDate}" />
                 </div>
               </div>
 
               <div class="manage-events__filter-actions" style="margin-top: 0.9rem;">
-                <button class="events-button events-button--primary" type="submit">Apply Filters</button>
-                <a class="events-link events-link--ghost" th:href="@{/admin/events}">Reset</a>
+                <button class="events-button events-button--primary" type="submit">Приложи филтрите</button>
+                <a class="events-link events-link--ghost" th:href="@{/admin/events}">Изчисти</a>
               </div>
             </form>
 
             <section class="manage-events__list" th:if="${!#lists.isEmpty(events)}">
-              <article class="manage-event-row" th:each="event : ${events}">
+              <article
+                class="manage-event-row"
+                th:each="event : ${events}"
+                th:classappend="${event.mainImageUrl != null and !#strings.isEmpty(event.mainImageUrl)} ? ' manage-event-row--has-media' : ''"
+              >
                 <div class="manage-event-row__top">
-                  <div>
-                    <p class="manage-event-row__club" th:text="${event.clubName}">Science Club</p>
-                    <h2 class="manage-event-row__title">
-                      <a th:href="@{/events/{id}(id=${event.id})}" th:text="${event.title}">Event title</a>
-                    </h2>
-                    <p class="manage-event-row__subtitle" th:text="${event.location != null and !#strings.isEmpty(event.location) ? event.location : 'Location pending'}">Location</p>
-                  </div>
+                      <div>
+                        <p class="manage-event-row__club" th:text="${event.clubName}">Научен клуб</p>
+                        <h2 class="manage-event-row__title">
+                          <a th:href="@{/events/{id}(id=${event.id})}" th:text="${event.title}">Заглавие на събитие</a>
+                        </h2>
+                        <p class="manage-event-row__subtitle" th:text="${event.location != null and !#strings.isEmpty(event.location) ? event.location : 'Мястото предстои'}">Място</p>
+                      </div>
 
-                  <div class="manage-event-row__chips">
-                    <span class="manage-event-chip" th:classappend="${' manage-event-chip--' + #strings.toLowerCase(event.status.name())}" th:text="${T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatLabel(event.status)}">Draft</span>
-                    <span class="manage-event-chip" th:classappend="${' manage-event-chip--' + #strings.toLowerCase(event.audience.name())}" th:text="${T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatLabel(event.audience)}">All students</span>
-                  </div>
+                      <div class="manage-event-row__chips">
+                        <span class="manage-event-chip" th:classappend="${' manage-event-chip--' + #strings.toLowerCase(event.status.name())}" th:text="${T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatLabel(event.status)}">Чернова</span>
+                        <span class="manage-event-chip" th:classappend="${' manage-event-chip--' + #strings.toLowerCase(event.audience.name())}" th:text="${T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatLabel(event.audience)}">Всички ученици</span>
+                      </div>
+                    </div>
+
+                <div class="manage-event-row__media" th:if="${event.mainImageUrl != null and !#strings.isEmpty(event.mainImageUrl)}">
+                  <img th:src="${event.mainImageUrl}" alt="Изображение на събитието" />
                 </div>
 
-                <div class="manage-event-row__stats">
-                  <div class="manage-event-stat">
-                    <span class="manage-event-stat__label">Starts</span>
-                    <span class="manage-event-stat__value" th:text="${event.startAt != null ? T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatDateTime(event.startAt) : '-'}">2026-04-18 16:00</span>
-                  </div>
-                  <div class="manage-event-stat">
-                    <span class="manage-event-stat__label">Registered</span>
-                    <span class="manage-event-stat__value" th:text="${event.registeredCount != null ? event.registeredCount : 0}">18</span>
-                  </div>
-                  <div class="manage-event-stat">
-                    <span class="manage-event-stat__label">Available Spots</span>
-                    <span class="manage-event-stat__value" th:text="${event.availableSpots != null ? event.availableSpots : 'Flexible'}">22</span>
-                  </div>
-                </div>
+                    <div class="manage-event-row__stats">
+                      <div class="manage-event-stat">
+                        <span class="manage-event-stat__label">Започва</span>
+                        <span class="manage-event-stat__value" th:text="${event.startAt != null ? T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatDateTime(event.startAt) : '-'}">2026-04-18 16:00</span>
+                      </div>
+                      <div class="manage-event-stat">
+                        <span class="manage-event-stat__label">Регистриран</span>
+                        <span class="manage-event-stat__value" th:text="${event.registeredCount != null ? event.registeredCount : 0}">18</span>
+                      </div>
+                      <div class="manage-event-stat">
+                        <span class="manage-event-stat__label">Свободни места</span>
+                        <span class="manage-event-stat__value" th:text="${event.availableSpots != null ? event.availableSpots : 'Гъвкав'}">22</span>
+                      </div>
+                    </div>
 
-                <div class="manage-event-row__actions">
-                  <a class="events-link events-link--ghost" th:href="@{/events/{id}(id=${event.id})}">View</a>
-                  <a class="events-link events-link--ghost" th:href="@{/admin/event-participations(eventId=${event.id})}">Participations</a>
-                  <a class="events-link events-link--primary" th:href="@{/admin/events/{id}/edit(id=${event.id})}">Edit</a>
-                  <form method="post" th:action="@{/admin/events/{id}/delete(id=${event.id})}" onsubmit="return confirm('Delete this event?');">
-                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                    <button class="events-button events-button--danger" type="submit">Delete</button>
-                  </form>
-                </div>
+                    <div class="manage-event-row__actions">
+                      <a class="events-link events-link--ghost" th:href="@{/events/{id}(id=${event.id})}">Виж</a>
+                      <a class="events-link events-link--ghost" th:href="@{/admin/event-participations}">Участия</a>
+                      <a class="events-link events-link--primary" th:href="@{/admin/events/{id}/edit(id=${event.id})}">Редактирай</a>
+                      <form method="post" th:action="@{/admin/events/{id}/delete(id=${event.id})}" data-delete-confirm>
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                        <button class="events-button events-button--danger" type="submit">Изтрий</button>
+                      </form>
+                    </div>
               </article>
             </section>
 
             <section class="manage-events__empty" th:if="${#lists.isEmpty(events)}">
-              No events matched the current admin filters.
+              Няма събития по текущите администраторски филтри.
             </section>
 
             <section
               class="manage-events__pagination"
-              th:if="${eventPage != null and eventPage.totalPages > 1}"
-              th:with="lastIndex=${eventPage.totalPages - 1}"
+              th:if="${eventPage != null}"
+              th:with="currentPage=${eventPage.totalPages > 0 ? eventPage.number + 1 : 1}, totalPages=${eventPage.totalPages > 0 ? eventPage.totalPages : 1}, lastIndex=${eventPage.totalPages > 0 ? eventPage.totalPages - 1 : 0}"
             >
-              <a class="events-link events-link--ghost" th:href="${eventPage.first} ? '#' : @{/admin/events(page=0, clubId=${selectedClubId}, q=${q}, fromDate=${fromDate}, toDate=${toDate}, status=${selectedStatus})}" th:classappend="${eventPage.first} ? ' disabled' : ''">First</a>
-              <a class="events-link events-link--ghost" th:href="${eventPage.first} ? '#' : @{/admin/events(page=${eventPage.number - 1}, clubId=${selectedClubId}, q=${q}, fromDate=${fromDate}, toDate=${toDate}, status=${selectedStatus})}" th:classappend="${eventPage.first} ? ' disabled' : ''">Previous</a>
-              <span>Page <strong th:text="${eventPage.number + 1}">1</strong> of <strong th:text="${eventPage.totalPages}">1</strong></span>
-              <a class="events-link events-link--ghost" th:href="${eventPage.last} ? '#' : @{/admin/events(page=${eventPage.number + 1}, clubId=${selectedClubId}, q=${q}, fromDate=${fromDate}, toDate=${toDate}, status=${selectedStatus})}" th:classappend="${eventPage.last} ? ' disabled' : ''">Next</a>
-              <a class="events-link events-link--ghost" th:href="${eventPage.last} ? '#' : @{/admin/events(page=${lastIndex}, clubId=${selectedClubId}, q=${q}, fromDate=${fromDate}, toDate=${toDate}, status=${selectedStatus})}" th:classappend="${eventPage.last} ? ' disabled' : ''">Last</a>
+              <a class="events-link events-link--ghost" th:href="${eventPage.first} ? '#' : @{/admin/events(page=0, clubId=${selectedClubId}, q=${q}, fromDate=${fromDate}, toDate=${toDate}, status=${selectedStatus})}" th:classappend="${eventPage.first} ? ' disabled' : ''">Първа</a>
+              <a class="events-link events-link--ghost" th:href="${eventPage.first} ? '#' : @{/admin/events(page=${eventPage.number - 1}, clubId=${selectedClubId}, q=${q}, fromDate=${fromDate}, toDate=${toDate}, status=${selectedStatus})}" th:classappend="${eventPage.first} ? ' disabled' : ''">Предишна</a>
+              <form class="pagination-input" th:action="@{/admin/events}" method="get" data-page-input>
+                <input type="hidden" name="clubId" th:value="${selectedClubId}" />
+                <input type="hidden" name="q" th:value="${q}" />
+                <input type="hidden" name="fromDate" th:value="${fromDate}" />
+                <input type="hidden" name="toDate" th:value="${toDate}" />
+                <input type="hidden" name="status" th:value="${selectedStatus != null ? selectedStatus.name() : ''}" />
+                <label class="pagination-input__sr-only" for="adminEventsPageNumber">Страница</label>
+                <input
+                  id="adminEventsPageNumber"
+                  name="pageDisplay"
+                  type="number"
+                  min="1"
+                  inputmode="numeric"
+                  th:attr="max=${totalPages}"
+                  th:value="${currentPage}"
+                />
+                <span class="pagination-input__state">от <strong th:text="${totalPages}">1</strong></span>
+              </form>
+              <a class="events-link events-link--ghost" th:href="${eventPage.last} ? '#' : @{/admin/events(page=${eventPage.number + 1}, clubId=${selectedClubId}, q=${q}, fromDate=${fromDate}, toDate=${toDate}, status=${selectedStatus})}" th:classappend="${eventPage.last} ? ' disabled' : ''">Следваща</a>
+              <a class="events-link events-link--ghost" th:href="${eventPage.last} ? '#' : @{/admin/events(page=${lastIndex}, clubId=${selectedClubId}, q=${q}, fromDate=${fromDate}, toDate=${toDate}, status=${selectedStatus})}" th:classappend="${eventPage.last} ? ' disabled' : ''">Последна</a>
             </section>
           </div>
         </div>
       </div>
     </th:block>
 
-    <th:block th:fragment="pageScripts"></th:block>
+    <th:block th:fragment="pageScripts">
+      <script th:src="@{/js/pagination-input.js}" defer></script>
+    </th:block>
   </body>
 </html>

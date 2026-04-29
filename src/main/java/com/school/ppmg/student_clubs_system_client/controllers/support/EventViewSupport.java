@@ -1,6 +1,10 @@
 package com.school.ppmg.student_clubs_system_client.controllers.support;
 
 import com.school.ppmg.student_clubs_system_client.dtos.auth.AuthUserDto;
+import com.school.ppmg.student_clubs_system_client.dtos.event.EventDto;
+import com.school.ppmg.student_clubs_system_client.dtos.event.EventListDto;
+import com.school.ppmg.student_clubs_system_client.dtos.event.EventParticipationDto;
+import com.school.ppmg.student_clubs_system_client.enums.DisplayText;
 import com.school.ppmg.student_clubs_system_client.enums.RegistrationStatus;
 import com.school.ppmg.student_clubs_system_client.enums.UserRole;
 import feign.FeignException;
@@ -15,8 +19,6 @@ public final class EventViewSupport {
     public static final int BROWSER_PAGE_SIZE = 12;
     public static final int TAB_PAGE_SIZE = 24;
     public static final int PARTICIPANTS_PAGE_SIZE = 20;
-    public static final String EVENT_SORT = "startAt,asc";
-    public static final String PARTICIPATION_SORT = "registeredAt,desc";
 
     private static final ZoneId BUSINESS_ZONE = ZoneId.of("Europe/Sofia");
     private static final DateTimeFormatter FORM_DATE_TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
@@ -121,6 +123,63 @@ public final class EventViewSupport {
         return value.atZoneSameInstant(BUSINESS_ZONE).toLocalDateTime().format(DISPLAY_DATE_TIME);
     }
 
+    public static boolean hasEventStarted(EventDto event) {
+        return event != null && hasEventStarted(event.startAt());
+    }
+
+    public static boolean hasEventStarted(EventParticipationDto participation) {
+        return participation != null && hasEventStarted(participation.eventStartAt());
+    }
+
+    public static boolean hasEventStarted(OffsetDateTime startAt) {
+        return startAt != null && !OffsetDateTime.now(BUSINESS_ZONE).isBefore(startAt);
+    }
+
+    public static boolean isRegistrationCutoffPassed(EventListDto event) {
+        if (event == null) {
+            return false;
+        }
+
+        return isRegistrationCutoffPassed(
+                event.effectiveRegistrationDeadline(),
+                event.registrationDeadline(),
+                event.startAt()
+        );
+    }
+
+    public static boolean isRegistrationCutoffPassed(EventDto event) {
+        if (event == null) {
+            return false;
+        }
+
+        return isRegistrationCutoffPassed(
+                event.effectiveRegistrationDeadline(),
+                event.registrationDeadline(),
+                event.startAt()
+        );
+    }
+
+    public static boolean isRegistrationCutoffPassed(
+            OffsetDateTime effectiveRegistrationDeadline,
+            OffsetDateTime registrationDeadline,
+            OffsetDateTime startAt
+    ) {
+        OffsetDateTime cutoff = resolveRegistrationCutoff(effectiveRegistrationDeadline, registrationDeadline, startAt);
+        return cutoff != null && cutoff.isBefore(OffsetDateTime.now(BUSINESS_ZONE));
+    }
+
+    public static OffsetDateTime resolveRegistrationCutoff(
+            OffsetDateTime effectiveRegistrationDeadline,
+            OffsetDateTime registrationDeadline,
+            OffsetDateTime startAt
+    ) {
+        if (effectiveRegistrationDeadline != null) {
+            return effectiveRegistrationDeadline;
+        }
+
+        return registrationDeadline != null ? registrationDeadline : startAt;
+    }
+
     public static HttpStatus resolveStatus(FeignException ex) {
         HttpStatus status = HttpStatus.resolve(ex.status());
         return status == null ? HttpStatus.BAD_GATEWAY : status;
@@ -158,6 +217,10 @@ public final class EventViewSupport {
     public static String formatLabel(Enum<?> value) {
         if (value == null) {
             return "";
+        }
+
+        if (value instanceof DisplayText displayText) {
+            return displayText.getText();
         }
 
         String normalized = value.name().toLowerCase().replace('_', ' ');

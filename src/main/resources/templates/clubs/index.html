@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<html lang="bg" xmlns:th="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Student Clubs | ClubsHub</title>
+    <title>Ученически клубове | ClubsHub</title>
     <link th:href="@{/assets/logo.png}" rel="icon" type="image/png"/>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -20,28 +20,19 @@
       <div class="container">
         <section class="hero">
           <div>
-            <span class="hero-tag">Human-centered clubs</span>
-            <h1>We are your partners in student clubs & campus events.</h1>
+            <span class="hero-tag">Клубове, насочени към учениците</span>
+            <h1>Ваш партньор в намирането на ученически клубове и събития.</h1>
             <p>
-              Build communities, track activities, and share events with one
-              modern dashboard. Give every club a home, every member a voice,
-              and every event a moment to shine.
+              Създавайте общности, следете дейности и споделяйте събития от едно модерно табло. Всеки клуб получава свое място, всеки член - глас, а всяко събитие - шанс да изпъкне.
             </p>
             <div class="hero-buttons">
-              <button class="cta-button" type="button">Get Started</button>
-              <button class="ghost-button" type="button">Learn More</button>
+              <a class="cta-button" th:href="@{/clubs#clubs-section}">Разгледай клубовете</a>
+              <a class="ghost-button" th:href="@{/events}">Виж събитията</a>
             </div>
           </div>
 
-          <div class="hero-visual">
-            <div class="mock-image" role="img" aria-label="Club dashboard mockup">
-              <div class="mock-lines"></div>
-            </div>
-            <div class="float-pill">Live Club Feed</div>
-            <div class="float-card">
-              <h4>28 Clubs Active</h4>
-              <p>Next: Activities Fair</p>
-            </div>
+          <div class="hero-media">
+            <img class="hero-media__image" th:src="@{/assets/mainPageImage.png}" alt="Ученици работят заедно в клубна среда" />
           </div>
         </section>
       </div>
@@ -51,28 +42,36 @@
       <section class="clubs-section" id="clubs-section">
         <div class="container">
           <div class="section-heading">
-            <h2>Explore Student Clubs</h2>
-            <p>Find your community, meet new friends, and see where each club meets.</p>
+            <h2>Разгледай ученическите клубове</h2>
+            <p>Намерете своята общност, срещнете нови приятели и вижте къде се събира всеки клуб.</p>
           </div>
 
           <form class="club-search" method="get" th:action="@{/clubs#clubs-section}">
             <label class="club-search__field" for="clubSearch">
-              <span class="club-search__label">Search clubs</span>
+              <span class="club-search__label">Търсене на клубове</span>
               <input
                 id="clubSearch"
                 class="club-search__input"
                 type="search"
                 name="q"
                 th:value="${q}"
-                placeholder="Search by club name"
+                placeholder="Търсене по име на клуб"
               />
             </label>
-            <input type="hidden" name="sort" th:value="${sort}" />
+            <label class="club-search__field club-search__field--scope" for="clubScope">
+              <span class="club-search__label">Покажи</span>
+              <select id="clubScope" class="club-search__select" name="scope">
+                <option value="all" th:selected="${scope == null or scope == 'all'}">Всички клубове</option>
+                <option value="mine" th:selected="${scope == 'mine'}">Моите клубове</option>
+              </select>
+            </label>
             <div class="club-search__actions">
-              <button class="club-search__button" type="submit">Search</button>
-              <a class="club-search__button club-search__button--ghost" th:href="@{/clubs#clubs-section}">Reset</a>
+              <button class="club-search__button" type="submit">Търсене</button>
+              <a class="club-search__button club-search__button--ghost" th:href="@{/clubs#clubs-section}">Изчисти</a>
             </div>
           </form>
+
+          <div class="club-empty" th:if="${scopeMessage}" th:text="${scopeMessage}"></div>
 
           <div class="club-grid">
             <article
@@ -86,7 +85,7 @@
                 <img
                   th:if="${club.mainImageUrl != null and !#strings.isEmpty(club.mainImageUrl)}"
                   th:src="${club.mainImageUrl}"
-                  th:alt="${club.name} + ' cover'"
+                  th:alt="${club.name} + ' - корица'"
                 />
                 <span
                   class="club-card__placeholder"
@@ -103,25 +102,25 @@
                     th:href="@{/clubs/{id}(id=${club.id})}"
                     th:text="${club.name}"
                   >
-                    Club Name
+                    Име на клуба
                   </a>
                 </h3>
                 <p class="club-room">
-                  <span>Room</span>
-                  <span th:text="${club.room != null and !#strings.isEmpty(club.room) ? club.room : 'TBD'}">A-204</span>
+                  <span>Стая</span>
+                  <span th:text="${club.room != null and !#strings.isEmpty(club.room) ? club.room : 'Предстои'}">A-204</span>
                 </p>
                 <div class="club-card__footer">
                   <a
                     class="club-card__more-button"
                     th:href="@{/clubs/{id}(id=${club.id})}"
                   >
-                    More
+                    Още
                   </a>
                 </div>
               </div>
             </article>
             <div class="club-empty" th:if="${#lists.isEmpty(clubs)}">
-              <p>No clubs available yet. Check back soon!</p>
+              <p>Все още няма налични клубове. Проверете отново скоро!</p>
             </div>
           </div>
 
@@ -132,25 +131,25 @@
             <a
               class="page-button"
               th:classappend="${page.first} ? ' disabled' : ''"
-              th:href="${page.first} ? '#' : (@{/clubs(page=0, size=${size}, sort=${sort}, q=${q})} + '#clubs-section')"
+              th:href="${page.first} ? '#' : (@{/clubs(page=0, q=${q}, scope=${scope})} + '#clubs-section')"
               th:attr="aria-disabled=${page.first}"
             >
-              First
+              Първа
             </a>
             <a
               class="page-button"
               th:classappend="${page.first} ? ' disabled' : ''"
-              th:href="${page.first} ? '#' : (@{/clubs(page=${page.number - 1}, size=${size}, sort=${sort}, q=${q})} + '#clubs-section')"
+              th:href="${page.first} ? '#' : (@{/clubs(page=${page.number - 1}, q=${q}, scope=${scope})} + '#clubs-section')"
               th:attr="aria-disabled=${page.first}"
             >
-              Previous
+              Предишна
             </a>
 
             <form class="page-input" th:action="@{/clubs#clubs-section}" method="get">
               <input type="hidden" name="q" th:value="${q}" />
+              <input type="hidden" name="scope" th:value="${scope}" />
               <input type="hidden" name="size" th:value="${size}" />
-              <input type="hidden" name="sort" th:value="${sort}" />
-              <label class="sr-only" for="pageNumber">Page</label>
+              <label class="sr-only" for="pageNumber">Страница</label>
               <input
                 id="pageNumber"
                 name="pageDisplay"
@@ -160,24 +159,24 @@
                 th:attr="max=${totalPages}"
                 th:value="${currentPage}"
               />
-              <span class="page-total">of <span th:text="${totalPages}">1</span></span>
+              <span class="page-total">от <span th:text="${totalPages}">1</span></span>
             </form>
 
             <a
               class="page-button"
               th:classappend="${page.last} ? ' disabled' : ''"
-              th:href="${page.last} ? '#' : (@{/clubs(page=${page.number + 1}, size=${size}, sort=${sort}, q=${q})} + '#clubs-section')"
+              th:href="${page.last} ? '#' : (@{/clubs(page=${page.number + 1}, q=${q}, scope=${scope})} + '#clubs-section')"
               th:attr="aria-disabled=${page.last}"
             >
-              Next
+              Следваща
             </a>
             <a
               class="page-button"
               th:classappend="${page.last} ? ' disabled' : ''"
-              th:href="${page.last} ? '#' : (@{/clubs(page=${lastIndex}, size=${size}, sort=${sort}, q=${q})} + '#clubs-section')"
+              th:href="${page.last} ? '#' : (@{/clubs(page=${lastIndex}, q=${q}, scope=${scope})} + '#clubs-section')"
               th:attr="aria-disabled=${page.last}"
             >
-              Last
+              Последна
             </a>
           </div>
         </div>

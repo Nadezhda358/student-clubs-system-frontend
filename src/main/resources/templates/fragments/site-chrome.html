@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<html lang="bg" xmlns:th="http://www.w3.org/1999/xhtml">
   <body>
     <header class="site-header" th:fragment="siteHeader">
       <div class="container">
         <nav class="site-navbar">
           <div class="brand">
             <div class="brand-mark">
-              <img th:src="@{/assets/logo.png}" alt="ClubsHub logo" />
+              <img th:src="@{/assets/logo.png}" alt="Лого на ClubsHub" />
             </div>
             <div class="brand-text">
               <span>ClubsHub</span>
-              <span>Student Life</span>
+              <span>Ученически живот</span>
             </div>
           </div>
 
@@ -19,51 +19,51 @@
               th:href="@{/clubs}"
               th:classappend="${currentPath != null and #strings.startsWith(currentPath, '/clubs')} ? ' active' : ''"
             >
-              Clubs
+              Клубове
             </a>
             <a
               th:href="@{/events}"
               th:classappend="${currentPath != null and #strings.startsWith(currentPath, '/events')} ? ' active' : ''"
             >
-              Events
+              Събития
             </a>
             <a
               th:if="${sessionUser != null and sessionUser.role == T(com.school.ppmg.student_clubs_system_client.enums.UserRole).ADMIN}"
               th:href="@{/admin/clubs}"
               th:classappend="${currentPath != null and #strings.startsWith(currentPath, '/admin')} ? ' active' : ''"
             >
-              Admin
+              Администратор
             </a>
             <a
               th:if="${sessionUser != null and sessionUser.role == T(com.school.ppmg.student_clubs_system_client.enums.UserRole).STUDENT}"
               th:href="@{/me/events}"
               th:classappend="${currentPath != null and #strings.startsWith(currentPath, '/me/events')} ? ' active' : ''"
             >
-              My Events
+              Моите събития
             </a>
             <a
               th:if="${sessionUser != null and sessionUser.role == T(com.school.ppmg.student_clubs_system_client.enums.UserRole).STUDENT}"
               th:href="@{/me/membership-applications}"
               th:classappend="${currentPath != null and #strings.startsWith(currentPath, '/me/membership-applications')} ? ' active' : ''"
             >
-              My Applications
+              Моите кандидатури
             </a>
             <a
               th:if="${sessionUser != null and sessionUser.role == T(com.school.ppmg.student_clubs_system_client.enums.UserRole).TEACHER}"
               th:href="@{/teacher}"
               th:classappend="${currentPath != null and #strings.startsWith(currentPath, '/teacher')} ? ' active' : ''"
             >
-              Teacher
+              Учител
             </a>
           </div>
 
           <div class="nav-actions">
-            <a class="ghost-button" th:if="${sessionUser == null}" th:href="@{/login}">Login</a>
+            <a class="ghost-button" th:if="${sessionUser == null}" th:href="@{/login}">Вход</a>
             <div class="nav-user" th:if="${sessionUser != null}">
-              <span class="nav-greeting" th:text="'Hello, ' + ${sessionUser.firstName}">Hello, User</span>
+              <span class="nav-greeting" th:text="'Здравейте, ' + ${sessionUser.firstName}">Здравейте, потребител</span>
               <form class="logout-form" th:action="@{/logout}" method="post">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                <button class="ghost-button" type="submit">Logout</button>
+                <button class="ghost-button" type="submit">Изход</button>
               </form>
             </div>
           </div>
@@ -73,7 +73,7 @@
 
     <footer class="page-footer" th:fragment="siteFooter">
       <div class="container">
-        <p>&copy; 2026 ClubsHub. Built for student communities.</p>
+        <p>&copy; 2026 ClubsHub. Създаден за ученически общности.</p>
       </div>
     </footer>
   </body>

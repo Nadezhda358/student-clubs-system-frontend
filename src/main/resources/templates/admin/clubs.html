@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<html lang="bg" xmlns:th="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Manage Clubs | ClubsHub Admin</title>
+    <title>Управление на клубове | ClubsHub Администрация</title>
     <link th:href="@{/assets/logo.png}" rel="icon" type="image/png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -23,14 +23,13 @@
         <div class="container admin-clubs__container">
         <section class="admin-clubs__hero">
           <div>
-            <p class="admin-clubs__tag">Admin Workspace</p>
-            <h1>Manage Student Clubs</h1>
+            <h1>Управление на ученически клубове</h1>
             <p class="admin-clubs__subtitle">
-              Create new clubs or update current records in one place.
+              Създавайте нови клубове или обновявайте съществуващите записи от едно място.
             </p>
           </div>
           <a class="admin-clubs__create-button" th:href="@{/admin/clubs/create}">
-            Create Club
+            Създай клуб
           </a>
         </section>
 
@@ -40,76 +39,88 @@
         <section class="admin-clubs__list" th:if="${!#lists.isEmpty(clubs)}">
           <article class="admin-club-row" th:each="club : ${clubs}">
             <div class="admin-club-row__main">
-              <h2 th:text="${club.name}">Club Name</h2>
+              <h2 th:text="${club.name}">Име на клуба</h2>
               <p>
-                <span>Room:</span>
-                <strong th:text="${club.room != null and !#strings.isEmpty(club.room) ? club.room : 'TBD'}">A-204</strong>
+                <span>Стая:</span>
+                <strong th:text="${club.room != null and !#strings.isEmpty(club.room) ? club.room : 'Предстои'}">A-204</strong>
               </p>
             </div>
             <div class="admin-club-row__status">
               <span class="status-chip" th:classappend="${club.isActive} ? ' is-active' : ' is-inactive'">
-                <span th:text="${club.isActive} ? 'Active' : 'Inactive'">Active</span>
+                <span th:text="${club.isActive} ? 'Активен' : 'Неактивен'">Активен</span>
               </span>
             </div>
             <div class="admin-club-row__actions">
-              <a class="ghost-link" th:href="@{/clubs/{id}(id=${club.id})}">View</a>
-              <a class="primary-link" th:href="@{/admin/clubs/{id}/edit(id=${club.id})}">Edit</a>
+              <a class="ghost-link" th:href="@{/clubs/{id}(id=${club.id})}">Виж</a>
+              <a class="primary-link" th:href="@{/admin/clubs/{id}/edit(id=${club.id})}">Редактирай</a>
             </div>
           </article>
         </section>
 
         <section class="admin-clubs__empty" th:if="${#lists.isEmpty(clubs)}">
-          <h2>No clubs yet</h2>
-          <p>Create the first club to get started.</p>
-          <a class="admin-clubs__create-button" th:href="@{/admin/clubs/create}">Create Club</a>
+          <h2>Все още няма клубове</h2>
+          <p>Създайте първия клуб, за да започнете.</p>
+          <a class="admin-clubs__create-button" th:href="@{/admin/clubs/create}">Създай клуб</a>
         </section>
 
         <section
           class="admin-pagination"
-          th:if="${page != null and page.totalPages > 1}"
-          th:with="lastIndex=${page.totalPages - 1}"
+          th:if="${page != null}"
+          th:with="currentPage=${page.totalPages > 0 ? page.number + 1 : 1}, totalPages=${page.totalPages > 0 ? page.totalPages : 1}, lastIndex=${page.totalPages > 0 ? page.totalPages - 1 : 0}"
         >
           <a
             class="page-link"
             th:classappend="${page.first} ? ' disabled' : ''"
-            th:href="${page.first} ? '#' : @{/admin/clubs(page=0, sort=${sort}, active=${active})}"
+            th:href="${page.first} ? '#' : @{/admin/clubs(page=0, active=${active})}"
             th:attr="aria-disabled=${page.first}"
           >
-            First
+            Първа
           </a>
           <a
             class="page-link"
             th:classappend="${page.first} ? ' disabled' : ''"
-            th:href="${page.first} ? '#' : @{/admin/clubs(page=${page.number - 1}, sort=${sort}, active=${active})}"
+            th:href="${page.first} ? '#' : @{/admin/clubs(page=${page.number - 1}, active=${active})}"
             th:attr="aria-disabled=${page.first}"
           >
-            Previous
+            Предишна
           </a>
-          <span class="page-state">
-            Page <strong th:text="${page.number + 1}">1</strong> of
-            <strong th:text="${page.totalPages}">1</strong>
-          </span>
+          <form class="pagination-input" th:action="@{/admin/clubs}" method="get" data-page-input>
+            <input type="hidden" name="active" th:value="${active}" />
+            <label class="pagination-input__sr-only" for="adminClubsPageNumber">Страница</label>
+            <input
+              id="adminClubsPageNumber"
+              name="pageDisplay"
+              type="number"
+              min="1"
+              inputmode="numeric"
+              th:attr="max=${totalPages}"
+              th:value="${currentPage}"
+            />
+            <span class="pagination-input__state">от <strong th:text="${totalPages}">1</strong></span>
+          </form>
           <a
             class="page-link"
             th:classappend="${page.last} ? ' disabled' : ''"
-            th:href="${page.last} ? '#' : @{/admin/clubs(page=${page.number + 1}, sort=${sort}, active=${active})}"
+            th:href="${page.last} ? '#' : @{/admin/clubs(page=${page.number + 1}, active=${active})}"
             th:attr="aria-disabled=${page.last}"
           >
-            Next
+            Следваща
           </a>
           <a
             class="page-link"
             th:classappend="${page.last} ? ' disabled' : ''"
-            th:href="${page.last} ? '#' : @{/admin/clubs(page=${lastIndex}, sort=${sort}, active=${active})}"
+            th:href="${page.last} ? '#' : @{/admin/clubs(page=${lastIndex}, active=${active})}"
             th:attr="aria-disabled=${page.last}"
           >
-            Last
+            Последна
           </a>
         </section>
         </div>
       </div>
     </th:block>
 
-    <th:block th:fragment="pageScripts"></th:block>
+    <th:block th:fragment="pageScripts">
+      <script th:src="@{/js/pagination-input.js}" defer></script>
+    </th:block>
   </body>
 </html>

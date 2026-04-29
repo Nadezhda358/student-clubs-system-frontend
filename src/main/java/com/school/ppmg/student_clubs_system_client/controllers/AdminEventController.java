@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.OffsetDateTime;
@@ -34,6 +35,10 @@ import java.util.List;
 @Controller
 @RequiredArgsConstructor
 public class AdminEventController {
+    private static final long MAX_IMAGE_FILE_SIZE_BYTES = 5L * 1024 * 1024;
+    private static final int PAGE_SIZE = 10;
+    private static final int PARTICIPANTS_PAGE_SIZE = 10;
+
     private final AdminEventClient adminEventClient;
     private final ClubClient clubClient;
 
@@ -71,8 +76,8 @@ public class AdminEventController {
                     null,
                     status,
                     page,
-                    EventViewSupport.BROWSER_PAGE_SIZE,
-                    EventViewSupport.EVENT_SORT
+                    PAGE_SIZE,
+                    null
             );
             model.addAttribute("eventPage", result);
             model.addAttribute("events", result.getContent() == null ? Collections.emptyList() : result.getContent());
@@ -94,12 +99,12 @@ public class AdminEventController {
                 model,
                 form,
                 loadClubs(),
-                "Admin Workspace",
-                "Create Event",
-                "Add a new event and assign it to the appropriate club.",
-                "Create Event",
+                "Създай събитие",
+                "Създайте ново събитие и го свържете с подходящия клуб.",
+                "Създай събитие",
                 "/admin/events/create",
-                "/admin/events"
+                "/admin/events",
+                ""
         );
         return "admin/event-form";
     }
@@ -112,37 +117,55 @@ public class AdminEventController {
     ) {
         List<ClubListDto> clubOptions = loadClubs();
         String validationMessage = validateEventForm(form);
+        if (validationMessage == null) {
+            validationMessage = validateMainImage(form.getMainImage());
+        }
+
         if (validationMessage != null) {
             populateFormModel(
                     model,
                     form,
                     clubOptions,
-                    "Admin Workspace",
-                    "Create Event",
-                    "Add a new event and assign it to the appropriate club.",
-                    "Create Event",
+                    "Създай събитие",
+                    "Създайте ново събитие и го свържете с подходящия клуб.",
+                    "Създай събитие",
                     "/admin/events/create",
-                    "/admin/events"
+                    "/admin/events",
+                    ""
             );
             model.addAttribute("errorMessage", validationMessage);
             return "admin/event-form";
         }
 
         try {
-            adminEventClient.createAdminEvent(toUpsertEventDto(form));
-            redirectAttributes.addFlashAttribute("successMessage", "Event created successfully.");
+            EventDto createdEvent = adminEventClient.createAdminEvent(toUpsertEventDto(form));
+            if (hasFile(form.getMainImage())) {
+                try {
+                    adminEventClient.uploadAdminEventMainImage(createdEvent.id(), form.getMainImage());
+                } catch (FeignException ex) {
+                    redirectAttributes.addFlashAttribute(
+                            "errorMessage",
+                            EventViewSupport.firstNonBlank(
+                                    EventViewSupport.extractUserMessage(ex),
+                                    "Събитието беше създадено, но качването на основното изображение не успя. Можете да опитате отново от страницата за редакция."
+                            )
+                    );
+                    return "redirect:/admin/events/" + createdEvent.id() + "/edit";
+                }
+            }
+            redirectAttributes.addFlashAttribute("successMessage", "Събитието е създадено успешно.");
             return "redirect:/admin/events";
         } catch (FeignException ex) {
             populateFormModel(
                     model,
                     form,
                     clubOptions,
-                    "Admin Workspace",
-                    "Create Event",
-                    "Add a new event and assign it to the appropriate club.",
-                    "Create Event",
+                    "Създай събитие",
+                    "Създайте ново събитие и го свържете с подходящия клуб.",
+                    "Създай събитие",
                     "/admin/events/create",
-                    "/admin/events"
+                    "/admin/events",
+                    ""
             );
             model.addAttribute("errorMessage", toEventSaveErrorMessage(ex, true));
             return "admin/event-form";
@@ -161,12 +184,12 @@ public class AdminEventController {
                     model,
                     toFormRequest(event),
                     loadClubs(),
-                    "Admin Workspace",
-                    "Edit Event",
-                    "Adjust event visibility, timing, or capacity across the platform.",
-                    "Save Changes",
+                    "Редактирай събитие",
+                    "Променете видимостта, времето или капацитета на събитието.",
+                    "Запази промените",
                     "/admin/events/" + id + "/edit",
-                    "/admin/events"
+                    "/admin/events",
+                    nonNull(event.mainImageUrl())
             );
             model.addAttribute("eventId", id);
             return "admin/event-form";
@@ -188,17 +211,21 @@ public class AdminEventController {
     ) {
         List<ClubListDto> clubOptions = loadClubs();
         String validationMessage = validateEventForm(form);
+        if (validationMessage == null) {
+            validationMessage = validateMainImage(form.getMainImage());
+        }
+
         if (validationMessage != null) {
             populateFormModel(
                     model,
                     form,
                     clubOptions,
-                    "Admin Workspace",
-                    "Edit Event",
-                    "Adjust event visibility, timing, or capacity across the platform.",
-                    "Save Changes",
+                    "Редактирай събитие",
+                    "Променете видимостта, времето или капацитета на събитието.",
+                    "Запази промените",
                     "/admin/events/" + id + "/edit",
-                    "/admin/events"
+                    "/admin/events",
+                    resolveCurrentMainImageUrl(id)
             );
             model.addAttribute("eventId", id);
             model.addAttribute("errorMessage", validationMessage);
@@ -207,7 +234,21 @@ public class AdminEventController {
 
         try {
             adminEventClient.updateAdminEvent(id, toUpsertEventDto(form));
-            redirectAttributes.addFlashAttribute("successMessage", "Event updated successfully.");
+            if (hasFile(form.getMainImage())) {
+                try {
+                    adminEventClient.uploadAdminEventMainImage(id, form.getMainImage());
+                } catch (FeignException ex) {
+                    redirectAttributes.addFlashAttribute(
+                            "errorMessage",
+                            EventViewSupport.firstNonBlank(
+                                    EventViewSupport.extractUserMessage(ex),
+                                    "Данните за събитието бяха запазени, но качването на основното изображение не успя. Опитайте отново."
+                            )
+                    );
+                    return "redirect:/admin/events/" + id + "/edit";
+                }
+            }
+            redirectAttributes.addFlashAttribute("successMessage", "Събитието е обновено успешно.");
             return "redirect:/admin/events";
         } catch (FeignException.NotFound ex) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -219,12 +260,12 @@ public class AdminEventController {
                     model,
                     form,
                     clubOptions,
-                    "Admin Workspace",
-                    "Edit Event",
-                    "Adjust event visibility, timing, or capacity across the platform.",
-                    "Save Changes",
+                    "Редактирай събитие",
+                    "Променете видимостта, времето или капацитета на събитието.",
+                    "Запази промените",
                     "/admin/events/" + id + "/edit",
-                    "/admin/events"
+                    "/admin/events",
+                    resolveCurrentMainImageUrl(id)
             );
             model.addAttribute("eventId", id);
             model.addAttribute("errorMessage", toEventSaveErrorMessage(ex, false));
@@ -236,7 +277,7 @@ public class AdminEventController {
     public String deleteAdminEvent(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
             adminEventClient.deleteAdminEvent(id);
-            redirectAttributes.addFlashAttribute("successMessage", "Event deleted successfully.");
+            redirectAttributes.addFlashAttribute("successMessage", "Събитието е изтрито успешно.");
         } catch (FeignException ex) {
             redirectAttributes.addFlashAttribute("errorMessage", toDeleteErrorMessage(ex));
         }
@@ -247,7 +288,6 @@ public class AdminEventController {
     @GetMapping({"/admin/applications/events", "/admin/event-participations", "/admin/event-applications"})
     public String adminEventParticipations(
             @RequestParam(required = false) Long clubId,
-            @RequestParam(required = false) Long eventId,
             @RequestParam(required = false) String registrationStatus,
             @RequestParam(required = false) EventStatus eventStatus,
             @RequestParam(required = false) String q,
@@ -262,7 +302,6 @@ public class AdminEventController {
         model.addAttribute("participations", Collections.emptyList());
         model.addAttribute("participationPage", null);
         model.addAttribute("selectedClubId", clubId);
-        model.addAttribute("selectedEventId", eventId);
         model.addAttribute("selectedRegistrationStatus", selectedRegistrationStatus);
         model.addAttribute("selectedEventStatus", eventStatus);
         model.addAttribute("q", q == null ? "" : q.trim());
@@ -274,14 +313,14 @@ public class AdminEventController {
         try {
             PageResponse<EventParticipationDto> result = adminEventClient.getAdminParticipations(
                     clubId,
-                    eventId,
+                    null,
                     selectedRegistrationStatus,
                     eventStatus,
                     EventViewSupport.trimToNull(q),
                     null,
                     page,
-                    EventViewSupport.PARTICIPANTS_PAGE_SIZE,
-                    EventViewSupport.PARTICIPATION_SORT
+                    PARTICIPANTS_PAGE_SIZE,
+                    null
             );
             model.addAttribute("participationPage", result);
             model.addAttribute("participations", result.getContent() == null ? Collections.emptyList() : result.getContent());
@@ -304,22 +343,31 @@ public class AdminEventController {
             RedirectAttributes redirectAttributes
     ) {
         try {
+            EventDto event = adminEventClient.getAdminEventById(eventId);
+            if (EventViewSupport.hasEventStarted(event)) {
+                redirectAttributes.addFlashAttribute(
+                        "errorMessage",
+                        "Статусът на участието може да се променя само преди началото на събитието."
+                );
+                return "redirect:/admin/event-participations";
+            }
+
             adminEventClient.updateAdminParticipationStatus(
                     eventId,
                     studentId,
                     new UpdateEventParticipationStatusRequest(status)
             );
-            redirectAttributes.addFlashAttribute("successMessage", "Participation status updated.");
+            redirectAttributes.addFlashAttribute("successMessage", "Статусът на участието е обновен.");
         } catch (FeignException ex) {
             redirectAttributes.addFlashAttribute("errorMessage", toParticipantUpdateErrorMessage(ex));
         }
 
-        return "redirect:/admin/event-participations?eventId=" + eventId;
+        return "redirect:/admin/event-participations";
     }
 
     private List<ClubListDto> loadClubs() {
         try {
-            PageResponse<ClubListDto> response = clubClient.getAll(null, null, 0, 200, "name,asc");
+            PageResponse<ClubListDto> response = clubClient.getAll(null, null, 0, 200, null);
             return response.getContent() == null ? List.of() : response.getContent();
         } catch (RuntimeException ex) {
             return List.of();
@@ -330,14 +378,13 @@ public class AdminEventController {
             Model model,
             EventFormRequest form,
             List<ClubListDto> clubOptions,
-            String workspaceLabel,
             String pageTitle,
             String pageSubtitle,
             String submitLabel,
             String formAction,
-            String cancelHref
+            String cancelHref,
+            String eventMainImageUrl
     ) {
-        model.addAttribute("workspaceLabel", workspaceLabel);
         model.addAttribute("pageTitle", pageTitle);
         model.addAttribute("pageSubtitle", pageSubtitle);
         model.addAttribute("submitLabel", submitLabel);
@@ -346,28 +393,29 @@ public class AdminEventController {
         model.addAttribute("clubOptions", clubOptions);
         model.addAttribute("statusValues", EventStatus.values());
         model.addAttribute("audienceValues", EventAudience.values());
+        model.addAttribute("eventMainImageUrl", nonNull(eventMainImageUrl));
         model.addAttribute("form", form);
     }
 
     private String validateEventForm(EventFormRequest form) {
         if (form.getClubId() == null) {
-            return "Please choose a club.";
+            return "Изберете клуб.";
         }
 
         if (EventViewSupport.trimToNull(form.getTitle()) == null) {
-            return "Event title is required.";
+            return "Заглавието на събитието е задължително.";
         }
 
         if (EventViewSupport.trimToNull(form.getDescription()) == null) {
-            return "Description is required.";
+            return "Описанието е задължително.";
         }
 
         if (EventViewSupport.parseDateTimeInput(form.getStartAt()) == null) {
-            return "Start date and time are required.";
+            return "Началната дата и час са задължителни.";
         }
 
         if (EventViewSupport.trimToNull(form.getEndAt()) != null && EventViewSupport.parseDateTimeInput(form.getEndAt()) == null) {
-            return "End date and time must be valid.";
+            return "Крайната дата и час трябва да са валидни.";
         }
 
         OffsetDateTime startAt = EventViewSupport.parseDateTimeInput(form.getStartAt());
@@ -375,23 +423,39 @@ public class AdminEventController {
         OffsetDateTime registrationDeadline = EventViewSupport.parseDateTimeInput(form.getRegistrationDeadline());
 
         if (endAt != null && startAt != null && endAt.isBefore(startAt)) {
-            return "End date and time must be after the start.";
+            return "Крайната дата и час трябва да са след началото.";
         }
 
         if (registrationDeadline != null && startAt != null && registrationDeadline.isAfter(startAt)) {
-            return "Registration deadline must be on or before the event start.";
+            return "Крайният срок за записване трябва да е на или преди началото на събитието.";
         }
 
         if (form.getCapacity() != null && form.getCapacity() < 1) {
-            return "Capacity must be at least 1.";
+            return "Капацитетът трябва да е поне 1.";
         }
 
         if (form.getStatus() == null) {
-            return "Please choose an event status.";
+            return "Изберете статус на събитието.";
         }
 
         if (form.getAudience() == null) {
-            return "Please choose who can see the event.";
+            return "Изберете кой може да вижда събитието.";
+        }
+
+        return null;
+    }
+
+    private String validateMainImage(MultipartFile mainImage) {
+        if (!hasFile(mainImage)) {
+            return null;
+        }
+
+        if (mainImage.getSize() > MAX_IMAGE_FILE_SIZE_BYTES) {
+            return "Основното изображение трябва да е 5 MB или по-малко. Изберете друг файл.";
+        }
+
+        if (!isImageFile(mainImage)) {
+            return "Основното изображение трябва да е файл с изображение.";
         }
 
         return null;
@@ -427,6 +491,15 @@ public class AdminEventController {
         return form;
     }
 
+    private String resolveCurrentMainImageUrl(Long id) {
+        try {
+            EventDto event = adminEventClient.getAdminEventById(id);
+            return nonNull(event.mainImageUrl());
+        } catch (RuntimeException ignored) {
+            return "";
+        }
+    }
+
     private String toEventsLoadErrorMessage(FeignException ex) {
         String extracted = EventViewSupport.extractUserMessage(ex);
         if (!extracted.isBlank()) {
@@ -434,8 +507,8 @@ public class AdminEventController {
         }
 
         return switch (EventViewSupport.resolveStatus(ex)) {
-            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Please review the filters and try again.";
-            default -> "Unable to load events right now. Please try again.";
+            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Прегледайте филтрите и опитайте отново.";
+            default -> "Събитията не могат да се заредят в момента. Опитайте отново.";
         };
     }
 
@@ -446,8 +519,8 @@ public class AdminEventController {
         }
 
         return switch (EventViewSupport.resolveStatus(ex)) {
-            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Please review the participation filters and try again.";
-            default -> "Unable to load event participations right now. Please try again.";
+            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Прегледайте филтрите за участия и опитайте отново.";
+            default -> "Регистрациите за събития не могат да се заредят в момента. Опитайте отново.";
         };
     }
 
@@ -459,12 +532,12 @@ public class AdminEventController {
 
         return switch (EventViewSupport.resolveStatus(ex)) {
             case BAD_REQUEST, UNPROCESSABLE_ENTITY -> creating
-                    ? "Please review the new event details and try again."
-                    : "Please review the updated event details and try again.";
-            case NOT_FOUND -> "The selected club or event is no longer available.";
+                    ? "Прегледайте данните за новото събитие и опитайте отново."
+                    : "Прегледайте обновените данни за събитието и опитайте отново.";
+            case NOT_FOUND -> "Избраният клуб или събитие вече не е налично.";
             default -> creating
-                    ? "Unable to create the event right now. Please try again."
-                    : "Unable to save the event right now. Please try again.";
+                    ? "Събитието не може да бъде създадено в момента. Опитайте отново."
+                    : "Събитието не може да бъде запазено в момента. Опитайте отново.";
         };
     }
 
@@ -475,8 +548,8 @@ public class AdminEventController {
         }
 
         return switch (EventViewSupport.resolveStatus(ex)) {
-            case NOT_FOUND -> "This event no longer exists.";
-            default -> "Unable to delete the event right now. Please try again.";
+            case NOT_FOUND -> "Това събитие вече не съществува.";
+            default -> "Събитието не може да бъде изтрито в момента. Опитайте отново.";
         };
     }
 
@@ -487,9 +560,23 @@ public class AdminEventController {
         }
 
         return switch (EventViewSupport.resolveStatus(ex)) {
-            case NOT_FOUND -> "This participation no longer exists.";
-            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Unable to update the participation status. Please refresh and try again.";
-            default -> "Unable to update the participation right now. Please try again.";
+            case NOT_FOUND -> "Това участие вече не съществува.";
+            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Статусът на участието не може да бъде обновен. Обновете страницата и опитайте отново.";
+            default -> "Участието не може да бъде обновено в момента. Опитайте отново.";
         };
+    }
+
+    private String nonNull(String value) {
+        return value == null ? "" : value;
+    }
+
+    private boolean hasFile(MultipartFile file) {
+        return file != null && !file.isEmpty();
+    }
+
+    private boolean isImageFile(MultipartFile file) {
+        return hasFile(file)
+                && file.getContentType() != null
+                && file.getContentType().toLowerCase().startsWith("image/");
     }
 }

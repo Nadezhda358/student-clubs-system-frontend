@@ -43,8 +43,11 @@ public class EventController {
             @RequestParam(required = false) String toDate,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(required = false) String view,
+            @RequestParam(defaultValue = "all") String scope,
+            @ModelAttribute("sessionUser") AuthUserDto sessionUser,
             Model model
     ) {
+        String normalizedScope = normalizeScope(scope);
         model.addAttribute("clubOptions", loadClubOptions(true));
         model.addAttribute("events", Collections.emptyList());
         model.addAttribute("eventPage", null);
@@ -53,21 +56,50 @@ public class EventController {
         model.addAttribute("fromDate", fromDate == null ? "" : fromDate.trim());
         model.addAttribute("toDate", toDate == null ? "" : toDate.trim());
         model.addAttribute("view", normalizeView(view));
+        model.addAttribute("scope", normalizedScope);
+        model.addAttribute("scopeMessage", null);
+
+        if ("mine".equals(normalizedScope) && sessionUser == null) {
+            return "redirect:/login";
+        }
+
+        if ("mine".equals(normalizedScope) && !EventViewSupport.isStudent(sessionUser)) {
+            model.addAttribute("eventPage", emptyPage(page, EventViewSupport.BROWSER_PAGE_SIZE));
+            model.addAttribute("scopeMessage", "Само ученици могат да филтрират събития по активна регистрация.");
+            return "events/index";
+        }
 
         try {
-            PageResponse<EventListDto> result = eventClient.getPublicEvents(
-                    clubId,
-                    EventViewSupport.trimToNull(q),
-                    EventViewSupport.parseFromDate(fromDate),
-                    EventViewSupport.parseToDate(toDate),
-                    null,
-                    page,
-                    EventViewSupport.BROWSER_PAGE_SIZE,
-                    EventViewSupport.EVENT_SORT
-            );
+            OffsetDateTime from = EventViewSupport.parseFromDate(fromDate);
+            OffsetDateTime to = EventViewSupport.parseToDate(toDate);
+            PageResponse<EventListDto> result = "mine".equals(normalizedScope)
+                    ? eventClient.getMyRegisteredPublicEvents(
+                            clubId,
+                            EventViewSupport.trimToNull(q),
+                            from,
+                            to,
+                            null,
+                            page,
+                            EventViewSupport.BROWSER_PAGE_SIZE,
+                            null
+                    )
+                    : eventClient.getPublicEvents(
+                            clubId,
+                            EventViewSupport.trimToNull(q),
+                            from,
+                            to,
+                            null,
+                            page,
+                            EventViewSupport.BROWSER_PAGE_SIZE,
+                            null
+                    );
             model.addAttribute("eventPage", result);
             model.addAttribute("events", result.getContent() == null ? Collections.emptyList() : result.getContent());
         } catch (FeignException ex) {
+            if (ex.status() == HttpStatus.UNAUTHORIZED.value()) {
+                return "redirect:/login";
+            }
+
             model.addAttribute("loadErrorMessage", toEventsLoadErrorMessage(ex));
         }
 
@@ -95,16 +127,19 @@ public class EventController {
             }
 
             RegistrationStatus myRegistrationStatus = myEvent != null ? myEvent.registrationStatus() : null;
+            boolean registrationCutoffPassed = EventViewSupport.isRegistrationCutoffPassed(event);
             boolean canRegister = EventViewSupport.isStudent(sessionUser)
                     && myRegistrationStatus != RegistrationStatus.REGISTERED
                     && event.status() == EventStatus.PUBLISHED
-                    && Boolean.TRUE.equals(event.registrationOpen());
+                    && Boolean.TRUE.equals(event.registrationOpen())
+                    && !registrationCutoffPassed;
             boolean canCancel = myRegistrationStatus == RegistrationStatus.REGISTERED && isCancellationStillAllowed(event);
 
             model.addAttribute("myEvent", myEvent);
             model.addAttribute("myRegistrationStatus", myRegistrationStatus);
             model.addAttribute("canRegister", canRegister);
             model.addAttribute("canCancelRegistration", canCancel);
+            model.addAttribute("registrationCutoffPassed", registrationCutoffPassed);
             model.addAttribute("registrationWindowClosed", myRegistrationStatus == RegistrationStatus.REGISTERED && !canCancel);
 
             return "events/details";
@@ -128,21 +163,21 @@ public class EventController {
             RedirectAttributes redirectAttributes
     ) {
         if (sessionUser == null) {
-            redirectAttributes.addFlashAttribute("success", "Please sign in to register for events.");
+            redirectAttributes.addFlashAttribute("success", "Влезте, за да се записвате за събития.");
             return "redirect:/login";
         }
 
         if (!EventViewSupport.isStudent(sessionUser)) {
-            redirectAttributes.addFlashAttribute("eventActionWarningMessage", "Only students can register for events.");
+            redirectAttributes.addFlashAttribute("eventActionWarningMessage", "Само ученици могат да се записват за събития.");
             return "redirect:" + resolveReturnTo(returnTo, "/events/" + id);
         }
 
         try {
             eventClient.register(id);
-            redirectAttributes.addFlashAttribute("eventActionSuccessMessage", "Registration confirmed.");
+            redirectAttributes.addFlashAttribute("eventActionSuccessMessage", "Регистрацията е потвърдена.");
         } catch (FeignException ex) {
             if (ex.status() == HttpStatus.UNAUTHORIZED.value()) {
-                redirectAttributes.addFlashAttribute("success", "Please sign in to register for events.");
+                redirectAttributes.addFlashAttribute("success", "Влезте, за да се записвате за събития.");
                 return "redirect:/login";
             }
 
@@ -151,7 +186,7 @@ public class EventController {
                         "eventActionWarningMessage",
                         EventViewSupport.firstNonBlank(
                                 EventViewSupport.extractUserMessage(ex),
-                                "You are not allowed to register for this event."
+                                "Нямате право да се запишете за това събитие."
                         )
                 );
             } else {
@@ -170,21 +205,21 @@ public class EventController {
             RedirectAttributes redirectAttributes
     ) {
         if (sessionUser == null) {
-            redirectAttributes.addFlashAttribute("success", "Please sign in to manage your event registrations.");
+            redirectAttributes.addFlashAttribute("success", "Влезте, за да управлявате регистрациите си за събития.");
             return "redirect:/login";
         }
 
         if (!EventViewSupport.isStudent(sessionUser)) {
-            redirectAttributes.addFlashAttribute("eventActionWarningMessage", "Only students can cancel event registrations.");
+            redirectAttributes.addFlashAttribute("eventActionWarningMessage", "Само ученици могат да отменят регистрации за събития.");
             return "redirect:" + resolveReturnTo(returnTo, "/events/" + id);
         }
 
         try {
             eventClient.cancelRegistration(id);
-            redirectAttributes.addFlashAttribute("eventActionSuccessMessage", "Registration cancelled.");
+            redirectAttributes.addFlashAttribute("eventActionSuccessMessage", "Регистрацията е отменена.");
         } catch (FeignException ex) {
             if (ex.status() == HttpStatus.UNAUTHORIZED.value()) {
-                redirectAttributes.addFlashAttribute("success", "Please sign in to manage your event registrations.");
+                redirectAttributes.addFlashAttribute("success", "Влезте, за да управлявате регистрациите си за събития.");
                 return "redirect:/login";
             }
 
@@ -193,7 +228,7 @@ public class EventController {
                         "eventActionWarningMessage",
                         EventViewSupport.firstNonBlank(
                                 EventViewSupport.extractUserMessage(ex),
-                                "You are not allowed to cancel this registration."
+                                "Нямате право да отмените тази регистрация."
                         )
                 );
             } else {
@@ -223,7 +258,7 @@ public class EventController {
         }
 
         if (!EventViewSupport.isStudent(sessionUser)) {
-            model.addAttribute("accessMessage", "Only students can view their event registrations.");
+            model.addAttribute("accessMessage", "Само ученици могат да виждат регистрациите си за събития.");
             return "me/events";
         }
 
@@ -235,7 +270,7 @@ public class EventController {
                     null,
                     page,
                     EventViewSupport.BROWSER_PAGE_SIZE,
-                    EventViewSupport.EVENT_SORT
+                    null
             );
             model.addAttribute("eventPage", result);
             model.addAttribute("events", result.getContent() == null ? Collections.emptyList() : result.getContent());
@@ -245,7 +280,7 @@ public class EventController {
             }
 
             if (ex.status() == HttpStatus.FORBIDDEN.value()) {
-                model.addAttribute("accessMessage", "Only students can view their event registrations.");
+                model.addAttribute("accessMessage", "Само ученици могат да виждат регистрациите си за събития.");
                 return "me/events";
             }
 
@@ -257,7 +292,7 @@ public class EventController {
 
     private List<ClubListDto> loadClubOptions(boolean activeOnly) {
         try {
-            PageResponse<ClubListDto> response = clubClient.getAll(activeOnly ? true : null, null, 0, 200, "name,asc");
+            PageResponse<ClubListDto> response = clubClient.getAll(activeOnly ? true : null, null, 0, 200, null);
             return response.getContent() == null ? List.of() : response.getContent();
         } catch (RuntimeException ex) {
             return List.of();
@@ -272,7 +307,7 @@ public class EventController {
                 null,
                 0,
                 200,
-                EventViewSupport.PARTICIPATION_SORT
+                null
         );
 
         List<MyEventDto> events = response.getContent() == null ? List.of() : response.getContent();
@@ -285,7 +320,11 @@ public class EventController {
     }
 
     private boolean isCancellationStillAllowed(EventDto event) {
-        OffsetDateTime deadline = event.effectiveRegistrationDeadline();
+        OffsetDateTime deadline = EventViewSupport.resolveRegistrationCutoff(
+                event.effectiveRegistrationDeadline(),
+                event.registrationDeadline(),
+                event.startAt()
+        );
         if (deadline == null) {
             return true;
         }
@@ -295,6 +334,24 @@ public class EventController {
 
     private String normalizeView(String view) {
         return "calendar".equalsIgnoreCase(view) ? "calendar" : "list";
+    }
+
+    private String normalizeScope(String scope) {
+        return "mine".equalsIgnoreCase(scope) ? "mine" : "all";
+    }
+
+    private <T> PageResponse<T> emptyPage(int page, int size) {
+        PageResponse<T> response = new PageResponse<>();
+        response.setContent(List.of());
+        response.setNumber(Math.max(page, 0));
+        response.setSize(size);
+        response.setNumberOfElements(0);
+        response.setTotalElements(0);
+        response.setTotalPages(0);
+        response.setFirst(true);
+        response.setLast(true);
+        response.setEmpty(true);
+        return response;
     }
 
     private String resolveReturnTo(String returnTo, String fallback) {
@@ -313,9 +370,9 @@ public class EventController {
         }
 
         return switch (EventViewSupport.resolveStatus(ex)) {
-            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Please review the event filters and try again.";
-            case NOT_FOUND -> "The events endpoint is not available right now.";
-            default -> "Unable to load events right now. Please try again.";
+            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Прегледайте филтрите за събития и опитайте отново.";
+            case NOT_FOUND -> "Събитията не са налични в момента.";
+            default -> "Събитията не могат да се заредят в момента. Опитайте отново.";
         };
     }
 
@@ -326,9 +383,9 @@ public class EventController {
         }
 
         return switch (EventViewSupport.resolveStatus(ex)) {
-            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Please review the selected status filter and try again.";
-            case NOT_FOUND -> "Your event registrations are not available right now.";
-            default -> "Unable to load your events right now. Please try again.";
+            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Прегледайте избрания филтър за статус и опитайте отново.";
+            case NOT_FOUND -> "Регистрациите ви за събития не са налични в момента.";
+            default -> "Вашите събития не могат да се заредят в момента. Опитайте отново.";
         };
     }
 
@@ -339,10 +396,10 @@ public class EventController {
         }
 
         return switch (EventViewSupport.resolveStatus(ex)) {
-            case CONFLICT -> "You already have a registration for this event.";
-            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "This event is no longer open for registration.";
-            case NOT_FOUND -> "This event is not available.";
-            default -> "Unable to complete registration right now. Please try again.";
+            case CONFLICT -> "Вече имате регистрация за това събитие.";
+            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Това събитие вече не е отворено за записване.";
+            case NOT_FOUND -> "Това събитие не е налично.";
+            default -> "Регистрацията не може да бъде завършена в момента. Опитайте отново.";
         };
     }
 
@@ -353,10 +410,10 @@ public class EventController {
         }
 
         return switch (EventViewSupport.resolveStatus(ex)) {
-            case CONFLICT -> "This registration has already been updated.";
-            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "This registration can no longer be cancelled.";
-            case NOT_FOUND -> "This event registration was not found.";
-            default -> "Unable to cancel the registration right now. Please try again.";
+            case CONFLICT -> "Тази регистрация вече е обновена.";
+            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Тази регистрация вече не може да бъде отменена.";
+            case NOT_FOUND -> "Регистрацията за това събитие не беше намерена.";
+            default -> "Регистрацията не може да бъде отменена в момента. Опитайте отново.";
         };
     }
 }

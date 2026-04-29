@@ -19,21 +19,19 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
 @Controller
 @RequiredArgsConstructor
 public class TeacherMembershipApplicationsController {
-    private static final int PAGE_SIZE = 20;
+    private static final int PAGE_SIZE = 10;
 
     private final MembershipApplicationClient membershipApplicationClient;
 
     @GetMapping("/teacher/membership-applications")
     public String teacherMembershipApplications(
             @RequestParam(required = false) MembershipRequestStatus status,
-            @RequestParam(required = false) Long clubId,
             @RequestParam(required = false) String q,
             @RequestParam(defaultValue = "0") int page,
             Model model
@@ -41,32 +39,30 @@ public class TeacherMembershipApplicationsController {
         model.addAttribute("applications", Collections.emptyList());
         model.addAttribute("membershipPage", null);
         model.addAttribute("status", status);
-        model.addAttribute("clubId", clubId);
         model.addAttribute("q", q == null ? "" : q.trim());
-        model.addAttribute("membershipPageBaseHref", buildMembershipPageBaseHref(status, clubId, q));
+        model.addAttribute("membershipPageBaseHref", buildMembershipPageBaseHref(status, q));
         model.addAttribute("statusValues", MembershipRequestStatus.values());
         model.addAttribute("pendingStatus", MembershipRequestStatus.PENDING);
         model.addAttribute("approvedStatusName", MembershipRequestStatus.APPROVED.name());
         model.addAttribute("rejectedStatusName", MembershipRequestStatus.REJECTED.name());
-        model.addAttribute("membershipWorkspaceLabel", "Teacher Workspace");
-        model.addAttribute("membershipPageTitle", "Club Membership Applications");
+        model.addAttribute("membershipPageTitle", "Кандидатури за членство в клубове");
         model.addAttribute(
                 "membershipPageSubtitle",
-                "Review requests for the clubs you manage, approve eligible students, and keep membership decisions moving."
+                "Преглеждайте заявките за клубовете, които управлявате, одобрявайте подходящите ученици и поддържайте решенията за членство в движение."
         );
         model.addAttribute("membershipFilterAction", "/teacher/membership-applications");
         model.addAttribute("membershipResetAction", "/teacher/membership-applications");
         model.addAttribute("membershipActionBasePath", "/teacher/membership-applications");
-        model.addAttribute("membershipEmptyMessage", "No membership applications found for your clubs.");
+        model.addAttribute("membershipEmptyMessage", "Няма намерени кандидатури за членство за вашите клубове.");
 
         try {
             PageResponse<MembershipApplicationDto> result = membershipApplicationClient.teacherGetAllApplications(
                     status,
-                    clubId,
+                    null,
                     normalizeQuery(q),
                     page,
                     PAGE_SIZE,
-                    "createdAt,desc"
+                    null
             );
             model.addAttribute("membershipPage", result);
             model.addAttribute("applications", result.getContent() == null ? Collections.emptyList() : result.getContent());
@@ -114,13 +110,10 @@ public class TeacherMembershipApplicationsController {
         return normalized.isEmpty() ? null : normalized;
     }
 
-    private String buildMembershipPageBaseHref(MembershipRequestStatus status, Long clubId, String q) {
+    private String buildMembershipPageBaseHref(MembershipRequestStatus status, String q) {
         StringBuilder href = new StringBuilder("/teacher/membership-applications?");
         if (status != null) {
             href.append("status=").append(status.name()).append("&");
-        }
-        if (clubId != null) {
-            href.append("clubId=").append(clubId).append("&");
         }
 
         String normalizedQuery = normalizeQuery(q);
@@ -143,10 +136,10 @@ public class TeacherMembershipApplicationsController {
         }
 
         return switch (resolveStatus(ex)) {
-            case NOT_FOUND -> "Membership applications endpoint is not available.";
-            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Please review the filters and try again.";
-            case FORBIDDEN -> "You are not authorized to view membership applications for these clubs.";
-            default -> "Unable to load membership applications right now. Please try again.";
+            case NOT_FOUND -> "Кандидатурите за членство не са налични в момента.";
+            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Прегледайте филтрите и опитайте отново.";
+            case FORBIDDEN -> "Нямате право да виждате кандидатурите за членство за тези клубове.";
+            default -> "Кандидатурите за членство не могат да се заредят в момента. Опитайте отново.";
         };
     }
 
@@ -157,11 +150,11 @@ public class TeacherMembershipApplicationsController {
         }
 
         return switch (resolveStatus(ex)) {
-            case NOT_FOUND -> "This membership application no longer exists.";
-            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Unable to update this membership application. Please refresh and try again.";
-            case FORBIDDEN -> "You are not authorized to update this membership application.";
-            case CONFLICT -> "This membership application has already been updated.";
-            default -> "Unable to update membership application.";
+            case NOT_FOUND -> "Тази кандидатура за членство вече не съществува.";
+            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Тази кандидатура за членство не може да бъде обновена. Обновете страницата и опитайте отново.";
+            case FORBIDDEN -> "Нямате право да обновявате тази кандидатура за членство.";
+            case CONFLICT -> "Тази кандидатура за членство вече е обновена.";
+            default -> "Кандидатурата за членство не може да бъде обновена.";
         };
     }
 

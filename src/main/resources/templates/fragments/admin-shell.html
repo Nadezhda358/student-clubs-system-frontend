@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<html lang="bg" xmlns:th="http://www.w3.org/1999/xhtml">
   <body th:fragment="adminShell(pageBodyClass, content, pageScripts)" th:classappend="${pageBodyClass}">
     <header th:replace="fragments/site-chrome :: siteHeader"></header>
 
     <main class="admin-shell">
       <div class="admin-shell__container">
         <div class="admin-shell__grid">
-          <aside class="admin-sidebar" aria-label="Admin navigation">
+          <aside class="admin-sidebar" aria-label="Административна навигация">
             <details
               class="admin-sidebar__details"
               open
@@ -14,18 +14,18 @@
                 path=${currentPath != null ? currentPath : ''},
                 clubsActive=${path == '/admin/clubs' or #strings.startsWith(path, '/admin/clubs/')},
                 eventsActive=${path == '/admin/events' or path == '/admin/events/create' or #strings.startsWith(path, '/admin/events/')},
+                announcementsActive=${path == '/admin/announcements' or path == '/admin/announcements/create' or #strings.startsWith(path, '/admin/announcements/')},
                 clubAppsActive=${path == '/admin/applications/clubs' or path == '/admin/membership-applications'},
                 eventAppsActive=${path == '/admin/applications/events' or path == '/admin/event-participations' or path == '/admin/event-applications'},
                 reportsActive=${path == '/admin/stats' or path == '/admin/reports'},
                 teacherInvitesActive=${path == '/admin/teacher-invites' or path == '/admin/teacher-invites/new'}
               "
             >
-              <summary class="admin-sidebar__toggle">Admin Menu</summary>
+              <summary class="admin-sidebar__toggle">Администраторско меню</summary>
 
               <div class="admin-sidebar__panel">
                 <div class="admin-sidebar__heading">
-                  <p class="admin-sidebar__eyebrow">Admin Workspace</p>
-                  <h2>Manage</h2>
+                  <h2>Управлявай</h2>
                 </div>
 
                 <nav class="admin-sidebar__nav">
@@ -35,7 +35,7 @@
                     th:attr="aria-current=${clubsActive} ? 'page' : null"
                     th:href="@{/admin/clubs}"
                   >
-                    Clubs
+                    Клубове
                   </a>
                   <a
                     class="admin-sidebar__link"
@@ -43,7 +43,15 @@
                     th:attr="aria-current=${eventsActive} ? 'page' : null"
                     th:href="@{/admin/events}"
                   >
-                    Events
+                    Събития
+                  </a>
+                  <a
+                    class="admin-sidebar__link"
+                    th:classappend="${announcementsActive} ? ' is-active' : ''"
+                    th:attr="aria-current=${announcementsActive} ? 'page' : null"
+                    th:href="@{/admin/announcements}"
+                  >
+                    Съобщения
                   </a>
                   <a
                     class="admin-sidebar__link"
@@ -51,7 +59,7 @@
                     th:attr="aria-current=${clubAppsActive} ? 'page' : null"
                     th:href="@{/admin/applications/clubs}"
                   >
-                    Club Membership Applications
+                    Кандидатури за членство в клубове
                   </a>
                   <a
                     class="admin-sidebar__link"
@@ -59,7 +67,7 @@
                     th:attr="aria-current=${eventAppsActive} ? 'page' : null"
                     th:href="@{/admin/event-participations}"
                   >
-                    Event Participations
+                    Регистрации за събития
                   </a>
                   <a
                     class="admin-sidebar__link"
@@ -67,7 +75,7 @@
                     th:attr="aria-current=${reportsActive} ? 'page' : null"
                     th:href="@{/admin/reports}"
                   >
-                    Reports
+                    Справки
                   </a>
                   <a
                     class="admin-sidebar__link"
@@ -75,7 +83,7 @@
                     th:attr="aria-current=${teacherInvitesActive} ? 'page' : null"
                     th:href="@{/admin/teacher-invites}"
                   >
-                    Invite Teacher
+                    Покани учител
                   </a>
                 </nav>
               </div>
@@ -89,7 +97,9 @@
       </div>
     </main>
 
+    <th:block th:replace="fragments/delete-confirmation :: deleteConfirmationModal"></th:block>
     <footer th:replace="fragments/site-chrome :: siteFooter"></footer>
+    <script th:src="@{/js/delete-confirmation.js}" defer></script>
     <th:block th:if="${pageScripts != null}" th:replace="${pageScripts}"></th:block>
   </body>
 </html>

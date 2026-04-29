@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<html lang="bg" xmlns:th="http://www.w3.org/1999/xhtml">
   <body th:fragment="teacherShell(pageBodyClass, content, pageScripts)" th:classappend="${pageBodyClass}">
     <header th:replace="fragments/site-chrome :: siteHeader"></header>
 
     <main class="admin-shell">
       <div class="admin-shell__container">
         <div class="admin-shell__grid">
-          <aside class="admin-sidebar" aria-label="Teacher navigation">
+          <aside class="admin-sidebar" aria-label="Навигация за учители">
             <details
               class="admin-sidebar__details"
               open
@@ -14,15 +14,16 @@
                 path=${currentPath != null ? currentPath : ''},
                 clubsActive=${path == '/teacher' or path == '/teacher/clubs' or #strings.startsWith(path, '/teacher/clubs/')},
                 eventsActive=${path == '/teacher/events' or path == '/teacher/events/create' or #strings.startsWith(path, '/teacher/events/')},
+                announcementsActive=${path == '/teacher/announcements' or path == '/teacher/announcements/create' or #strings.startsWith(path, '/teacher/announcements/')},
+                eventAppsActive=${path == '/teacher/event-participations'},
                 clubAppsActive=${path == '/teacher/membership-applications'}
               "
             >
-              <summary class="admin-sidebar__toggle">Teacher Menu</summary>
+              <summary class="admin-sidebar__toggle">Учителско меню</summary>
 
               <div class="admin-sidebar__panel">
                 <div class="admin-sidebar__heading">
-                  <p class="admin-sidebar__eyebrow">Teacher Workspace</p>
-                  <h2>Manage</h2>
+                  <h2>Управлявай</h2>
                 </div>
 
                 <nav class="admin-sidebar__nav">
@@ -32,7 +33,7 @@
                     th:attr="aria-current=${clubsActive} ? 'page' : null"
                     th:href="@{/teacher/clubs}"
                   >
-                    My Clubs
+                    Моите клубове
                   </a>
                   <a
                     class="admin-sidebar__link"
@@ -40,7 +41,15 @@
                     th:attr="aria-current=${eventsActive} ? 'page' : null"
                     th:href="@{/teacher/events}"
                   >
-                    Events
+                    Събития
+                  </a>
+                  <a
+                    class="admin-sidebar__link"
+                    th:classappend="${announcementsActive} ? ' is-active' : ''"
+                    th:attr="aria-current=${announcementsActive} ? 'page' : null"
+                    th:href="@{/teacher/announcements}"
+                  >
+                    Съобщения
                   </a>
                   <a
                     class="admin-sidebar__link"
@@ -48,7 +57,15 @@
                     th:attr="aria-current=${clubAppsActive} ? 'page' : null"
                     th:href="@{/teacher/membership-applications}"
                   >
-                    Club Membership Applications
+                    Кандидатури за членство в клубове
+                  </a>
+                  <a
+                    class="admin-sidebar__link"
+                    th:classappend="${eventAppsActive} ? ' is-active' : ''"
+                    th:attr="aria-current=${eventAppsActive} ? 'page' : null"
+                    th:href="@{/teacher/event-participations}"
+                  >
+                    Регистрации за събития
                   </a>
                 </nav>
               </div>
@@ -62,7 +79,9 @@
       </div>
     </main>
 
+    <th:block th:replace="fragments/delete-confirmation :: deleteConfirmationModal"></th:block>
     <footer th:replace="fragments/site-chrome :: siteFooter"></footer>
+    <script th:src="@{/js/delete-confirmation.js}" defer></script>
     <th:block th:if="${pageScripts != null}" th:replace="${pageScripts}"></th:block>
   </body>
 </html>

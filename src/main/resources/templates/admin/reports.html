@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<html lang="bg" xmlns:th="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Reports | ClubsHub Admin</title>
+    <title>Справки | ClubsHub Администрация</title>
     <link th:href="@{/assets/logo.png}" rel="icon" type="image/png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -14,8 +14,8 @@
     <link rel="stylesheet" th:href="@{/css/site-chrome.css}" />
     <link rel="stylesheet" th:href="@{/css/design-tokens.css}" />
     <link rel="stylesheet" th:href="@{/css/admin-shell.css}" />
-    <link rel="stylesheet" th:href="@{/css/site-ui.css}" />
     <link rel="stylesheet" th:href="@{/css/admin-reports.css}" />
+    <link rel="stylesheet" th:href="@{/css/site-ui.css}" />
   </head>
   <body th:replace="~{fragments/admin-shell :: adminShell('admin-reports-page', ~{::adminPageContent}, ~{::pageScripts})}">
     <th:block th:fragment="adminPageContent">
@@ -23,10 +23,9 @@
         <div class="container admin-reports__container">
           <section class="admin-reports__hero">
             <div>
-              <p class="admin-reports__tag">Admin Workspace</p>
-              <h1>Reports</h1>
+              <h1>Справки</h1>
               <p class="admin-reports__subtitle">
-                Review current club totals and historical event activity from one reporting surface.
+                Преглеждайте текущите клубни показатели и историческата активност на събитията от един екран.
               </p>
             </div>
           </section>
@@ -34,17 +33,17 @@
           <form method="get" th:action="@{/admin/reports}" class="admin-reports__filters">
             <div class="admin-reports__filters-grid">
               <label class="admin-reports__field" for="reportFromDate">
-                <span>From</span>
+                <span>От</span>
                 <input id="reportFromDate" class="admin-reports__input" type="date" name="fromDate" th:value="${fromDate}" />
               </label>
 
               <label class="admin-reports__field" for="reportToDate">
-                <span>To</span>
+                <span>До</span>
                 <input id="reportToDate" class="admin-reports__input" type="date" name="toDate" th:value="${toDate}" />
               </label>
 
               <label class="admin-reports__field" for="reportPeriod">
-                <span>Period</span>
+                <span>Период</span>
                 <select id="reportPeriod" class="admin-reports__select" name="period">
                   <option
                     th:each="periodValue : ${periodValues}"
@@ -57,30 +56,23 @@
             </div>
 
             <div class="admin-reports__filter-actions">
-              <button class="admin-reports__button admin-reports__button--primary" type="submit">Apply Filters</button>
-              <a class="admin-reports__button admin-reports__button--ghost" th:href="@{/admin/reports}">Reset</a>
+              <button class="admin-reports__button admin-reports__button--primary" type="submit">Приложи филтрите</button>
+              <a class="admin-reports__button admin-reports__button--ghost" th:href="@{/admin/reports}">Изчисти</a>
             </div>
           </form>
-
-          <section class="admin-reports__note">
-            <h2>Reporting Rules</h2>
-            <p>Current club totals and active-member counts only include clubs that are not deleted.</p>
-            <p>Historical event and participation metrics still include past events from clubs that existed during that period.</p>
-            <p>Future events from deleted clubs no longer count because club deletion automatically cancels them.</p>
-          </section>
 
           <section class="admin-reports__panel">
             <div class="admin-reports__panel-header">
               <div>
-                <p class="admin-reports__eyebrow">Overview</p>
-                <h2>Platform Totals</h2>
+                <p class="admin-reports__eyebrow">Обобщение</p>
+                <h2>Общи показатели</h2>
               </div>
               <p
                 class="admin-reports__window"
                 th:if="${reportWindowFrom != null or reportWindowTo != null}"
-                th:text="|Window: ${reportWindowFrom != null ? T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).toDateInput(reportWindowFrom) : 'Start'} to ${reportWindowTo != null ? T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).toDateInput(reportWindowTo) : 'Now'}|"
+                th:text="|Период: ${reportWindowFrom != null ? T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).toDateInput(reportWindowFrom) : 'Начало'} до ${reportWindowTo != null ? T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).toDateInput(reportWindowTo) : 'Сега'}|"
               >
-                Window: 2026-04-01 to 2026-04-30
+                Период: 2026-04-01 до 2026-04-30
               </p>
             </div>
 
@@ -88,52 +80,89 @@
 
             <div class="admin-reports__stats" th:if="${overview != null}">
               <article class="admin-reports__stat-card">
-                <span class="admin-reports__stat-label">Total Clubs</span>
+                <span class="admin-reports__stat-label">Общо клубове</span>
                 <strong th:text="${overview.totalClubs != null ? overview.totalClubs : 0}">0</strong>
               </article>
               <article class="admin-reports__stat-card">
-                <span class="admin-reports__stat-label">Active Clubs</span>
+                <span class="admin-reports__stat-label">Активни клубове</span>
                 <strong th:text="${overview.activeClubs != null ? overview.activeClubs : 0}">0</strong>
               </article>
               <article class="admin-reports__stat-card">
-                <span class="admin-reports__stat-label">Inactive Clubs</span>
+                <span class="admin-reports__stat-label">Неактивни клубове</span>
                 <strong th:text="${overview.inactiveClubs != null ? overview.inactiveClubs : 0}">0</strong>
               </article>
               <article class="admin-reports__stat-card">
-                <span class="admin-reports__stat-label">Active Members</span>
+                <span class="admin-reports__stat-label">Активни членове</span>
                 <strong th:text="${overview.activeMembers != null ? overview.activeMembers : 0}">0</strong>
               </article>
               <article class="admin-reports__stat-card">
-                <span class="admin-reports__stat-label">Total Events</span>
+                <span class="admin-reports__stat-label">Общо събития</span>
                 <strong th:text="${overview.totalEvents != null ? overview.totalEvents : 0}">0</strong>
               </article>
               <article class="admin-reports__stat-card">
-                <span class="admin-reports__stat-label">Registered Participations</span>
+                <span class="admin-reports__stat-label">Регистрирани участия</span>
                 <strong th:text="${overview.registeredParticipations != null ? overview.registeredParticipations : 0}">0</strong>
               </article>
               <article class="admin-reports__stat-card">
-                <span class="admin-reports__stat-label">Cancelled Participations</span>
+                <span class="admin-reports__stat-label">Отменени участия</span>
                 <strong th:text="${overview.cancelledParticipations != null ? overview.cancelledParticipations : 0}">0</strong>
               </article>
               <article class="admin-reports__stat-card">
-                <span class="admin-reports__stat-label">Unique Registered Participants</span>
+                <span class="admin-reports__stat-label">Уникални регистрирани участници</span>
                 <strong th:text="${overview.uniqueRegisteredParticipants != null ? overview.uniqueRegisteredParticipants : 0}">0</strong>
               </article>
             </div>
 
             <div class="admin-reports__empty" th:if="${overview == null and overviewErrorMessage == null}">
-              Overview metrics are not available for the selected window.
+              Обобщените показатели не са налични за избрания период.
             </div>
           </section>
 
           <section class="admin-reports__panel">
             <div class="admin-reports__panel-header">
               <div>
-                <p class="admin-reports__eyebrow">Timeline</p>
-                <h2>Events By Period</h2>
+                <p class="admin-reports__eyebrow">Клубове</p>
+                <h2>Активни участници по клубове</h2>
               </div>
-              <p class="admin-reports__window" th:text="|Grouped by ${T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatLabel(selectedPeriod)}|">
-                Grouped by Month
+              <p class="admin-reports__window">Текущо разпределение на активните членства</p>
+            </div>
+
+            <div class="admin-alert admin-alert--error" th:if="${clubParticipantsErrorMessage}" th:text="${clubParticipantsErrorMessage}"></div>
+
+            <div class="admin-reports__club-list" th:if="${!#lists.isEmpty(clubParticipants)}">
+              <article class="admin-reports__club-card" th:each="clubParticipation : ${clubParticipants}">
+                <div class="admin-reports__club-copy">
+                  <span class="admin-reports__club-label">Клуб</span>
+                  <strong th:text="${clubParticipation.clubName}">Роботика</strong>
+                  <div class="admin-reports__club-meta">
+                    <span class="admin-reports__club-chip admin-reports__club-chip--active" th:if="${clubParticipation.active}">
+                      Активен
+                    </span>
+                    <span class="admin-reports__club-chip admin-reports__club-chip--inactive" th:unless="${clubParticipation.active}">
+                      Неактивен
+                    </span>
+                  </div>
+                </div>
+                <div class="admin-reports__club-count-wrap">
+                  <span class="admin-reports__club-count-label">Участници</span>
+                  <strong class="admin-reports__club-count" th:text="${clubParticipation.participantsCount != null ? clubParticipation.participantsCount : 0}">0</strong>
+                </div>
+              </article>
+            </div>
+
+            <div class="admin-reports__empty" th:if="${#lists.isEmpty(clubParticipants) and clubParticipantsErrorMessage == null}">
+              Няма данни за клубни участници за момента.
+            </div>
+          </section>
+
+          <section class="admin-reports__panel">
+            <div class="admin-reports__panel-header">
+              <div>
+                <p class="admin-reports__eyebrow">Хронология</p>
+                <h2>Събития по период</h2>
+              </div>
+              <p class="admin-reports__window" th:text="|Групирано по ${T(com.school.ppmg.student_clubs_system_client.controllers.support.EventViewSupport).formatLabel(selectedPeriod)}|">
+                Групирано по месец
               </p>
             </div>
 
@@ -155,7 +184,7 @@
             </div>
 
             <div class="admin-reports__empty" th:if="${#lists.isEmpty(eventsByPeriodPoints) and timelineErrorMessage == null}">
-              No events matched the selected date range.
+              Няма събития в избрания период.
             </div>
           </section>
         </div>

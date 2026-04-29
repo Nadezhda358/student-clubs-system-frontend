@@ -10,9 +10,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-import java.util.Map;
-
 @FeignClient(
         name = "student-clubs-system",
         contextId = "clubClient",
@@ -68,5 +65,18 @@ public interface ClubClient {
     ClubDto uploadMainImage(
             @PathVariable Long id,
             @RequestPart("file") MultipartFile file
+    );
+
+    @PostMapping(value = "/{id}/media", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    ClubDto uploadMedia(
+            @PathVariable Long id,
+            @RequestPart("files") MultipartFile[] files
+    );
+
+    @DeleteMapping("/{id}/media/{mediaId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void removeMedia(
+            @PathVariable Long id,
+            @PathVariable Long mediaId
     );
 }

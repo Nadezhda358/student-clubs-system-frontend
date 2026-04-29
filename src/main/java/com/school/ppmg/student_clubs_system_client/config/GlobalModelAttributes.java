@@ -59,8 +59,20 @@ public class GlobalModelAttributes {
             String uri = request.getRequestURI();
             if (uri != null && uri.startsWith("/admin/clubs/") && uri.endsWith("/main-image")) {
                 targetUrl = uri.substring(0, uri.length() - "/main-image".length()) + "/edit";
+            } else if (uri != null && uri.startsWith("/admin/clubs/") && uri.contains("/media")) {
+                targetUrl = uri.substring(0, uri.indexOf("/media")) + "/edit";
             } else if (uri != null && uri.startsWith("/teacher/clubs/") && uri.endsWith("/main-image")) {
                 targetUrl = uri.substring(0, uri.length() - "/main-image".length()) + "/edit";
+            } else if (uri != null && uri.startsWith("/teacher/clubs/") && uri.contains("/media")) {
+                targetUrl = uri.substring(0, uri.indexOf("/media")) + "/edit";
+            } else if ("/admin/events/create".equals(uri)) {
+                targetUrl = "/admin/events/create";
+            } else if (uri != null && uri.startsWith("/admin/events/") && uri.endsWith("/edit")) {
+                targetUrl = uri;
+            } else if ("/teacher/events/create".equals(uri)) {
+                targetUrl = "/teacher/events/create";
+            } else if (uri != null && uri.startsWith("/teacher/events/") && uri.endsWith("/edit")) {
+                targetUrl = uri;
             } else if ("/admin/clubs/create".equals(uri)) {
                 targetUrl = "/admin/clubs/create";
             } else {
@@ -69,7 +81,7 @@ public class GlobalModelAttributes {
         }
 
         FlashMap flashMap = RequestContextUtils.getOutputFlashMap(request);
-        flashMap.put("errorMessage", "Uploaded file is too large. Maximum size is 5 MB per file.");
+        flashMap.put("errorMessage", "Каченият файл е твърде голям. Максималният размер е 5 MB на файл.");
         RequestContextUtils.saveOutputFlashMap(targetUrl, request, response);
         return "redirect:" + targetUrl;
     }

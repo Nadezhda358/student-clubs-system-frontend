@@ -1,11 +1,11 @@
 <div th:fragment="content">
   <div class="tab-message" th:if="${error}" th:text="${error}">
-    Media is not available yet.
+    Медията все още не е налична.
   </div>
 
   <div th:if="${error == null}">
     <div class="tab-message" th:if="${media == null or #lists.isEmpty(media)}">
-      No images uploaded yet.
+      Все още няма качени изображения.
     </div>
     <ul class="tab-list club-media-grid" th:if="${media != null and !#lists.isEmpty(media)}">
       <li class="club-media-card" th:each="item : ${media}">
@@ -19,7 +19,7 @@
           <img
             class="club-media-card__image"
             th:src="${item.url}"
-            th:alt="${'Club image ' + (item.id != null ? item.id : '')}"
+            th:alt="${'Изображение на клуба ' + (item.id != null ? item.id : '')}"
             loading="lazy"
           />
         </a>
@@ -27,7 +27,7 @@
           class="club-media-card__placeholder"
           th:if="${item.url == null or #strings.isEmpty(item.url)}"
         >
-          Image unavailable
+          Изображението не е налично
         </div>
       </li>
     </ul>

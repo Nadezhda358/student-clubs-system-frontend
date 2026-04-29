@@ -36,6 +36,18 @@ public interface EventClient {
     @GetMapping("/events/{id}")
     EventDto getPublicEventById(@PathVariable Long id);
 
+    @GetMapping("/me/events/registered")
+    PageResponse<EventListDto> getMyRegisteredPublicEvents(
+            @RequestParam(required = false) Long clubId,
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime to,
+            @RequestParam(required = false) EventTimeFilter timeFilter,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size,
+            @RequestParam(required = false) String sort
+    );
+
     @PostMapping("/events/{id}/registrations")
     EventParticipationDto register(@PathVariable Long id);
 

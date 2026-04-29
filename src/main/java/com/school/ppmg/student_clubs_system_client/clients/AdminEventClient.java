@@ -9,7 +9,9 @@ import jakarta.validation.Valid;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.OffsetDateTime;
 
@@ -50,6 +52,12 @@ public interface AdminEventClient {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void deleteAdminEvent(@PathVariable Long id);
 
+    @PostMapping(value = "/events/{id}/main-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    EventDto uploadAdminEventMainImage(
+            @PathVariable Long id,
+            @RequestPart("file") MultipartFile file
+    );
+
     @GetMapping("/events/{id}/participants")
     PageResponse<EventParticipationDto> getAdminParticipantsForEvent(
             @PathVariable Long id,
@@ -60,7 +68,7 @@ public interface AdminEventClient {
             @RequestParam(required = false) String sort
     );
 
-    @PatchMapping("/events/{eventId}/participants/{studentId}")
+    @PostMapping("/events/{eventId}/participants/{studentId}")
     EventParticipationDto updateAdminParticipationStatus(
             @PathVariable Long eventId,
             @PathVariable Long studentId,

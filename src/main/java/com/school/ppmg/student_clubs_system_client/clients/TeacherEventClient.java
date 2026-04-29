@@ -9,7 +9,9 @@ import jakarta.validation.Valid;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.OffsetDateTime;
 
@@ -50,6 +52,12 @@ public interface TeacherEventClient {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void deleteTeacherEvent(@PathVariable Long id);
 
+    @PostMapping(value = "/{id}/main-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    EventDto uploadTeacherEventMainImage(
+            @PathVariable Long id,
+            @RequestPart("file") MultipartFile file
+    );
+
     @GetMapping("/{id}/participants")
     PageResponse<EventParticipationDto> getTeacherParticipants(
             @PathVariable Long id,
@@ -60,10 +68,16 @@ public interface TeacherEventClient {
             @RequestParam(required = false) String sort
     );
 
-    @PatchMapping("/{eventId}/participants/{studentId}")
-    EventParticipationDto updateTeacherParticipationStatus(
-            @PathVariable Long eventId,
-            @PathVariable Long studentId,
-            @Valid @RequestBody UpdateEventParticipationStatusRequest request
+    @GetMapping("/event-participations")
+    PageResponse<EventParticipationDto> getTeacherParticipations(
+            @RequestParam(required = false) Long clubId,
+            @RequestParam(required = false) Long eventId,
+            @RequestParam(required = false) RegistrationStatus registrationStatus,
+            @RequestParam(required = false) EventStatus eventStatus,
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) EventTimeFilter timeFilter,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String sort
     );
 }

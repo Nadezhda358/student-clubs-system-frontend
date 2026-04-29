@@ -9,7 +9,6 @@ import com.school.ppmg.student_clubs_system_client.dtos.event.EventDto;
 import com.school.ppmg.student_clubs_system_client.dtos.event.EventFormRequest;
 import com.school.ppmg.student_clubs_system_client.dtos.event.EventListDto;
 import com.school.ppmg.student_clubs_system_client.dtos.event.EventParticipationDto;
-import com.school.ppmg.student_clubs_system_client.dtos.event.UpdateEventParticipationStatusRequest;
 import com.school.ppmg.student_clubs_system_client.dtos.event.UpsertEventDto;
 import com.school.ppmg.student_clubs_system_client.enums.EventAudience;
 import com.school.ppmg.student_clubs_system_client.enums.EventStatus;
@@ -25,6 +24,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.OffsetDateTime;
@@ -34,6 +34,10 @@ import java.util.List;
 @Controller
 @RequiredArgsConstructor
 public class TeacherEventController {
+    private static final long MAX_IMAGE_FILE_SIZE_BYTES = 5L * 1024 * 1024;
+    private static final int PAGE_SIZE = 10;
+    private static final int PARTICIPANTS_PAGE_SIZE = 10;
+
     private final TeacherEventClient teacherEventClient;
     private final TeacherClubClient teacherClubClient;
 
@@ -73,8 +77,8 @@ public class TeacherEventController {
                     null,
                     status,
                     page,
-                    EventViewSupport.BROWSER_PAGE_SIZE,
-                    EventViewSupport.EVENT_SORT
+                    PAGE_SIZE,
+                    null
             );
             model.addAttribute("eventPage", result);
             model.addAttribute("events", result.getContent() == null ? Collections.emptyList() : result.getContent());
@@ -97,7 +101,7 @@ public class TeacherEventController {
     ) {
         List<ClubListDto> clubOptions = loadManagedClubs();
         if (clubOptions.isEmpty()) {
-            redirectAttributes.addFlashAttribute("errorMessage", "You need at least one managed club before creating events.");
+            redirectAttributes.addFlashAttribute("errorMessage", "Трябва да имате поне един управляван клуб, преди да създавате събития.");
             return "redirect:/teacher/events";
         }
 
@@ -112,12 +116,12 @@ public class TeacherEventController {
                 model,
                 form,
                 clubOptions,
-                "Teacher Workspace",
-                "Create Event",
-                "Plan a new event for one of the clubs you manage.",
-                "Create Event",
+                "Създай събитие",
+                "Планирайте ново събитие за един от клубовете, които управлявате.",
+                "Създай събитие",
                 "/teacher/events/create",
-                buildTeacherEventsHref(form.getClubId())
+                buildTeacherEventsHref(form.getClubId()),
+                ""
         );
         return "teacher/event-form";
     }
@@ -130,37 +134,55 @@ public class TeacherEventController {
     ) {
         List<ClubListDto> clubOptions = loadManagedClubs();
         String validationMessage = validateEventForm(form);
+        if (validationMessage == null) {
+            validationMessage = validateMainImage(form.getMainImage());
+        }
+
         if (validationMessage != null) {
             populateFormModel(
                     model,
                     form,
                     clubOptions,
-                    "Teacher Workspace",
-                    "Create Event",
-                    "Plan a new event for one of the clubs you manage.",
-                    "Create Event",
+                    "Създай събитие",
+                    "Планирайте ново събитие за един от клубовете, които управлявате.",
+                    "Създай събитие",
                     "/teacher/events/create",
-                    buildTeacherEventsHref(form.getClubId())
+                    buildTeacherEventsHref(form.getClubId()),
+                    ""
             );
             model.addAttribute("errorMessage", validationMessage);
             return "teacher/event-form";
         }
 
         try {
-            teacherEventClient.createTeacherEvent(toUpsertEventDto(form));
-            redirectAttributes.addFlashAttribute("successMessage", "Event created successfully.");
+            EventDto createdEvent = teacherEventClient.createTeacherEvent(toUpsertEventDto(form));
+            if (hasFile(form.getMainImage())) {
+                try {
+                    teacherEventClient.uploadTeacherEventMainImage(createdEvent.id(), form.getMainImage());
+                } catch (FeignException ex) {
+                    redirectAttributes.addFlashAttribute(
+                            "errorMessage",
+                            EventViewSupport.firstNonBlank(
+                                    EventViewSupport.extractUserMessage(ex),
+                                    "Събитието беше създадено, но качването на основното изображение не успя. Можете да опитате отново от страницата за редакция."
+                            )
+                    );
+                    return "redirect:/teacher/events/" + createdEvent.id() + "/edit";
+                }
+            }
+            redirectAttributes.addFlashAttribute("successMessage", "Събитието е създадено успешно.");
             return "redirect:" + buildTeacherEventsHref(form.getClubId());
         } catch (FeignException ex) {
             populateFormModel(
                     model,
                     form,
                     clubOptions,
-                    "Teacher Workspace",
-                    "Create Event",
-                    "Plan a new event for one of the clubs you manage.",
-                    "Create Event",
+                    "Създай събитие",
+                    "Планирайте ново събитие за един от клубовете, които управлявате.",
+                    "Създай събитие",
                     "/teacher/events/create",
-                    buildTeacherEventsHref(form.getClubId())
+                    buildTeacherEventsHref(form.getClubId()),
+                    ""
             );
             model.addAttribute("errorMessage", toEventSaveErrorMessage(ex, true));
             return "teacher/event-form";
@@ -181,12 +203,12 @@ public class TeacherEventController {
                     model,
                     form,
                     loadManagedClubs(),
-                    "Teacher Workspace",
-                    "Edit Event",
-                    "Adjust the schedule, registration settings, or capacity for this event.",
-                    "Save Changes",
+                    "Редактирай събитие",
+                    "Променете графика, настройките за записване или капацитета на това събитие.",
+                    "Запази промените",
                     "/teacher/events/" + id + "/edit",
-                    buildTeacherEventsHref(event.clubId())
+                    buildTeacherEventsHref(event.clubId()),
+                    nonNull(event.mainImageUrl())
             );
             model.addAttribute("eventId", id);
             return "teacher/event-form";
@@ -197,7 +219,7 @@ public class TeacherEventController {
             return "errors/404";
         } catch (FeignException ex) {
             if (ex.status() == HttpStatus.FORBIDDEN.value()) {
-                redirectAttributes.addFlashAttribute("errorMessage", "You can only manage events for clubs assigned to you.");
+                redirectAttributes.addFlashAttribute("errorMessage", "Можете да управлявате само събития за клубове, които са ви назначени.");
                 return "redirect:/teacher/events";
             }
             throw ex;
@@ -214,17 +236,21 @@ public class TeacherEventController {
     ) {
         List<ClubListDto> clubOptions = loadManagedClubs();
         String validationMessage = validateEventForm(form);
+        if (validationMessage == null) {
+            validationMessage = validateMainImage(form.getMainImage());
+        }
+
         if (validationMessage != null) {
             populateFormModel(
                     model,
                     form,
                     clubOptions,
-                    "Teacher Workspace",
-                    "Edit Event",
-                    "Adjust the schedule, registration settings, or capacity for this event.",
-                    "Save Changes",
+                    "Редактирай събитие",
+                    "Променете графика, настройките за записване или капацитета на това събитие.",
+                    "Запази промените",
                     "/teacher/events/" + id + "/edit",
-                    buildTeacherEventsHref(form.getClubId())
+                    buildTeacherEventsHref(form.getClubId()),
+                    resolveCurrentMainImageUrl(id)
             );
             model.addAttribute("eventId", id);
             model.addAttribute("errorMessage", validationMessage);
@@ -233,7 +259,21 @@ public class TeacherEventController {
 
         try {
             teacherEventClient.updateTeacherEvent(id, toUpsertEventDto(form));
-            redirectAttributes.addFlashAttribute("successMessage", "Event updated successfully.");
+            if (hasFile(form.getMainImage())) {
+                try {
+                    teacherEventClient.uploadTeacherEventMainImage(id, form.getMainImage());
+                } catch (FeignException ex) {
+                    redirectAttributes.addFlashAttribute(
+                            "errorMessage",
+                            EventViewSupport.firstNonBlank(
+                                    EventViewSupport.extractUserMessage(ex),
+                                    "Данните за събитието бяха запазени, но качването на основното изображение не успя. Опитайте отново."
+                            )
+                    );
+                    return "redirect:/teacher/events/" + id + "/edit";
+                }
+            }
+            redirectAttributes.addFlashAttribute("successMessage", "Събитието е обновено успешно.");
             return "redirect:" + buildTeacherEventsHref(form.getClubId());
         } catch (FeignException.NotFound ex) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -242,7 +282,7 @@ public class TeacherEventController {
             return "errors/404";
         } catch (FeignException ex) {
             if (ex.status() == HttpStatus.FORBIDDEN.value()) {
-                redirectAttributes.addFlashAttribute("errorMessage", "You can only manage events for clubs assigned to you.");
+                redirectAttributes.addFlashAttribute("errorMessage", "Можете да управлявате само събития за клубове, които са ви назначени.");
                 return "redirect:/teacher/events";
             }
 
@@ -250,12 +290,12 @@ public class TeacherEventController {
                     model,
                     form,
                     clubOptions,
-                    "Teacher Workspace",
-                    "Edit Event",
-                    "Adjust the schedule, registration settings, or capacity for this event.",
-                    "Save Changes",
+                    "Редактирай събитие",
+                    "Променете графика, настройките за записване или капацитета на това събитие.",
+                    "Запази промените",
                     "/teacher/events/" + id + "/edit",
-                    buildTeacherEventsHref(form.getClubId())
+                    buildTeacherEventsHref(form.getClubId()),
+                    resolveCurrentMainImageUrl(id)
             );
             model.addAttribute("eventId", id);
             model.addAttribute("errorMessage", toEventSaveErrorMessage(ex, false));
@@ -271,12 +311,62 @@ public class TeacherEventController {
     ) {
         try {
             teacherEventClient.deleteTeacherEvent(id);
-            redirectAttributes.addFlashAttribute("successMessage", "Event deleted successfully.");
+            redirectAttributes.addFlashAttribute("successMessage", "Събитието е изтрито успешно.");
         } catch (FeignException ex) {
             redirectAttributes.addFlashAttribute("errorMessage", toDeleteErrorMessage(ex));
         }
 
         return "redirect:" + buildTeacherEventsHref(clubId);
+    }
+
+    @GetMapping("/teacher/event-participations")
+    public String teacherEventParticipations(
+            @RequestParam(required = false) Long clubId,
+            @RequestParam(required = false) String registrationStatus,
+            @RequestParam(required = false) EventStatus eventStatus,
+            @RequestParam(required = false) String q,
+            @RequestParam(defaultValue = "0") int page,
+            @ModelAttribute("successMessage") String successMessage,
+            @ModelAttribute("errorMessage") String errorMessage,
+            Model model
+    ) {
+        RegistrationStatus selectedRegistrationStatus = EventViewSupport.parseRegistrationStatus(registrationStatus);
+
+        model.addAttribute("clubOptions", loadManagedClubs());
+        model.addAttribute("participations", Collections.emptyList());
+        model.addAttribute("participationPage", null);
+        model.addAttribute("selectedClubId", clubId);
+        model.addAttribute("selectedRegistrationStatus", selectedRegistrationStatus);
+        model.addAttribute("selectedEventStatus", eventStatus);
+        model.addAttribute("q", q == null ? "" : q.trim());
+        model.addAttribute("registrationStatusValues", RegistrationStatus.values());
+        model.addAttribute("eventStatusValues", EventStatus.values());
+        model.addAttribute("successMessage", EventViewSupport.trimToNull(successMessage));
+        model.addAttribute("errorMessage", EventViewSupport.trimToNull(errorMessage));
+
+        try {
+            PageResponse<EventParticipationDto> result = teacherEventClient.getTeacherParticipations(
+                    clubId,
+                    null,
+                    selectedRegistrationStatus,
+                    eventStatus,
+                    EventViewSupport.trimToNull(q),
+                    null,
+                    page,
+                    PARTICIPANTS_PAGE_SIZE,
+                    null
+            );
+            model.addAttribute("participationPage", result);
+            model.addAttribute("participations", result.getContent() == null ? Collections.emptyList() : result.getContent());
+        } catch (FeignException ex) {
+            if (ex.status() == HttpStatus.UNAUTHORIZED.value()) {
+                return "redirect:/login";
+            }
+
+            model.addAttribute("errorMessage", toParticipationLoadErrorMessage(ex));
+        }
+
+        return "teacher/event-participations";
     }
 
     @GetMapping("/teacher/events/{id}/participants")
@@ -309,8 +399,8 @@ public class TeacherEventController {
                     selectedStatus,
                     EventViewSupport.trimToNull(q),
                     page,
-                    EventViewSupport.PARTICIPANTS_PAGE_SIZE,
-                    EventViewSupport.PARTICIPATION_SORT
+                    PARTICIPANTS_PAGE_SIZE,
+                    null
             );
             model.addAttribute("participantPage", result);
             model.addAttribute("participants", result.getContent() == null ? Collections.emptyList() : result.getContent());
@@ -322,7 +412,7 @@ public class TeacherEventController {
             return "errors/404";
         } catch (FeignException ex) {
             if (ex.status() == HttpStatus.FORBIDDEN.value()) {
-                redirectAttributes.addFlashAttribute("errorMessage", "You are not authorized to view participants for this event.");
+                redirectAttributes.addFlashAttribute("errorMessage", "Нямате право да виждате участниците в това събитие.");
                 return "redirect:/teacher/events";
             }
 
@@ -330,30 +420,9 @@ public class TeacherEventController {
         }
     }
 
-    @PostMapping("/teacher/events/{eventId}/participants/{studentId}")
-    public String updateTeacherParticipation(
-            @PathVariable Long eventId,
-            @PathVariable Long studentId,
-            @RequestParam RegistrationStatus status,
-            RedirectAttributes redirectAttributes
-    ) {
-        try {
-            teacherEventClient.updateTeacherParticipationStatus(
-                    eventId,
-                    studentId,
-                    new UpdateEventParticipationStatusRequest(status)
-            );
-            redirectAttributes.addFlashAttribute("successMessage", "Participant status updated.");
-        } catch (FeignException ex) {
-            redirectAttributes.addFlashAttribute("errorMessage", toParticipantUpdateErrorMessage(ex));
-        }
-
-        return "redirect:/teacher/events/" + eventId + "/participants";
-    }
-
     private List<ClubListDto> loadManagedClubs() {
         try {
-            PageResponse<ClubListDto> response = teacherClubClient.getManagedClubs(null, 0, 200, "name,asc");
+            PageResponse<ClubListDto> response = teacherClubClient.getManagedClubs(null, null, 0, 200, null);
             return response.getContent() == null ? List.of() : response.getContent();
         } catch (RuntimeException ex) {
             return List.of();
@@ -364,14 +433,13 @@ public class TeacherEventController {
             Model model,
             EventFormRequest form,
             List<ClubListDto> clubOptions,
-            String workspaceLabel,
             String pageTitle,
             String pageSubtitle,
             String submitLabel,
             String formAction,
-            String cancelHref
+            String cancelHref,
+            String eventMainImageUrl
     ) {
-        model.addAttribute("workspaceLabel", workspaceLabel);
         model.addAttribute("pageTitle", pageTitle);
         model.addAttribute("pageSubtitle", pageSubtitle);
         model.addAttribute("submitLabel", submitLabel);
@@ -380,28 +448,29 @@ public class TeacherEventController {
         model.addAttribute("clubOptions", clubOptions);
         model.addAttribute("statusValues", EventStatus.values());
         model.addAttribute("audienceValues", EventAudience.values());
+        model.addAttribute("eventMainImageUrl", nonNull(eventMainImageUrl));
         model.addAttribute("form", form);
     }
 
     private String validateEventForm(EventFormRequest form) {
         if (form.getClubId() == null) {
-            return "Please choose a club.";
+            return "Изберете клуб.";
         }
 
         if (EventViewSupport.trimToNull(form.getTitle()) == null) {
-            return "Event title is required.";
+            return "Заглавието на събитието е задължително.";
         }
 
         if (EventViewSupport.trimToNull(form.getDescription()) == null) {
-            return "Description is required.";
+            return "Описанието е задължително.";
         }
 
         if (EventViewSupport.parseDateTimeInput(form.getStartAt()) == null) {
-            return "Start date and time are required.";
+            return "Началната дата и час са задължителни.";
         }
 
         if (EventViewSupport.trimToNull(form.getEndAt()) != null && EventViewSupport.parseDateTimeInput(form.getEndAt()) == null) {
-            return "End date and time must be valid.";
+            return "Крайната дата и час трябва да са валидни.";
         }
 
         OffsetDateTime startAt = EventViewSupport.parseDateTimeInput(form.getStartAt());
@@ -409,23 +478,39 @@ public class TeacherEventController {
         OffsetDateTime registrationDeadline = EventViewSupport.parseDateTimeInput(form.getRegistrationDeadline());
 
         if (endAt != null && startAt != null && endAt.isBefore(startAt)) {
-            return "End date and time must be after the start.";
+            return "Крайната дата и час трябва да са след началото.";
         }
 
         if (registrationDeadline != null && startAt != null && registrationDeadline.isAfter(startAt)) {
-            return "Registration deadline must be on or before the event start.";
+            return "Крайният срок за записване трябва да е на или преди началото на събитието.";
         }
 
         if (form.getCapacity() != null && form.getCapacity() < 1) {
-            return "Capacity must be at least 1.";
+            return "Капацитетът трябва да е поне 1.";
         }
 
         if (form.getStatus() == null) {
-            return "Please choose an event status.";
+            return "Изберете статус на събитието.";
         }
 
         if (form.getAudience() == null) {
-            return "Please choose who can see the event.";
+            return "Изберете кой може да вижда събитието.";
+        }
+
+        return null;
+    }
+
+    private String validateMainImage(MultipartFile mainImage) {
+        if (!hasFile(mainImage)) {
+            return null;
+        }
+
+        if (mainImage.getSize() > MAX_IMAGE_FILE_SIZE_BYTES) {
+            return "Основното изображение трябва да е 5 MB или по-малко. Изберете друг файл.";
+        }
+
+        if (!isImageFile(mainImage)) {
+            return "Основното изображение трябва да е файл с изображение.";
         }
 
         return null;
@@ -461,6 +546,15 @@ public class TeacherEventController {
         return form;
     }
 
+    private String resolveCurrentMainImageUrl(Long id) {
+        try {
+            EventDto event = teacherEventClient.getTeacherEventById(id);
+            return nonNull(event.mainImageUrl());
+        } catch (RuntimeException ignored) {
+            return "";
+        }
+    }
+
     private String buildTeacherCreateHref(Long clubId) {
         return clubId == null ? "/teacher/events/create" : "/teacher/events/create?clubId=" + clubId;
     }
@@ -476,9 +570,22 @@ public class TeacherEventController {
         }
 
         return switch (EventViewSupport.resolveStatus(ex)) {
-            case FORBIDDEN -> "You can only manage events for clubs assigned to you.";
-            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Please review the filters and try again.";
-            default -> "Unable to load your events right now. Please try again.";
+            case FORBIDDEN -> "Можете да управлявате само събития за клубове, които са ви назначени.";
+            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Прегледайте филтрите и опитайте отново.";
+            default -> "Вашите събития не могат да се заредят в момента. Опитайте отново.";
+        };
+    }
+
+    private String toParticipationLoadErrorMessage(FeignException ex) {
+        String extracted = EventViewSupport.extractUserMessage(ex);
+        if (!extracted.isBlank()) {
+            return extracted;
+        }
+
+        return switch (EventViewSupport.resolveStatus(ex)) {
+            case FORBIDDEN -> "Можете да виждате регистрации само за събития в клубове, които са ви назначени.";
+            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Прегледайте филтрите за участия и опитайте отново.";
+            default -> "Регистрациите за събития не могат да се заредят в момента. Опитайте отново.";
         };
     }
 
@@ -489,14 +596,14 @@ public class TeacherEventController {
         }
 
         return switch (EventViewSupport.resolveStatus(ex)) {
-            case FORBIDDEN -> "You can only manage events for clubs assigned to you.";
+            case FORBIDDEN -> "Можете да управлявате само събития за клубове, които са ви назначени.";
             case BAD_REQUEST, UNPROCESSABLE_ENTITY -> creating
-                    ? "Please review the new event details and try again."
-                    : "Please review the updated event details and try again.";
-            case NOT_FOUND -> "The selected club or event is no longer available.";
+                    ? "Прегледайте данните за новото събитие и опитайте отново."
+                    : "Прегледайте обновените данни за събитието и опитайте отново.";
+            case NOT_FOUND -> "Избраният клуб или събитие вече не е налично.";
             default -> creating
-                    ? "Unable to create the event right now. Please try again."
-                    : "Unable to save the event right now. Please try again.";
+                    ? "Събитието не може да бъде създадено в момента. Опитайте отново."
+                    : "Събитието не може да бъде запазено в момента. Опитайте отново.";
         };
     }
 
@@ -507,23 +614,23 @@ public class TeacherEventController {
         }
 
         return switch (EventViewSupport.resolveStatus(ex)) {
-            case FORBIDDEN -> "You can only delete events for clubs assigned to you.";
-            case NOT_FOUND -> "This event no longer exists.";
-            default -> "Unable to delete the event right now. Please try again.";
+            case FORBIDDEN -> "Можете да изтривате само събития за клубове, които са ви назначени.";
+            case NOT_FOUND -> "Това събитие вече не съществува.";
+            default -> "Събитието не може да бъде изтрито в момента. Опитайте отново.";
         };
     }
 
-    private String toParticipantUpdateErrorMessage(FeignException ex) {
-        String extracted = EventViewSupport.extractUserMessage(ex);
-        if (!extracted.isBlank()) {
-            return extracted;
-        }
+    private String nonNull(String value) {
+        return value == null ? "" : value;
+    }
 
-        return switch (EventViewSupport.resolveStatus(ex)) {
-            case FORBIDDEN -> "You are not authorized to update this participant.";
-            case NOT_FOUND -> "This participant registration no longer exists.";
-            case BAD_REQUEST, UNPROCESSABLE_ENTITY -> "Unable to update the participant status. Please refresh and try again.";
-            default -> "Unable to update the participant right now. Please try again.";
-        };
+    private boolean hasFile(MultipartFile file) {
+        return file != null && !file.isEmpty();
+    }
+
+    private boolean isImageFile(MultipartFile file) {
+        return hasFile(file)
+                && file.getContentType() != null
+                && file.getContentType().toLowerCase().startsWith("image/");
     }
 }
